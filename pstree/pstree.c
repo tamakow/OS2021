@@ -5,6 +5,8 @@
 #include <getopt.h>
 #include <dirent.h>
 
+#define PROC_BASE "/proc"
+
 // struct definition
 struct option options[] = {
   {"show-pids", 0, NULL, 'p'},
@@ -54,11 +56,15 @@ void usage(){
 }
 
 void print_version(){
-  printf("pstree 1.0\n");
-  printf("Copyright (C) 2021-2021 Tamakow\n");
+  fprintf(stderr,_("pstree 1.0\n"
+                   "Copyright (C) 2021-2021 Tamakow\n"));
 }
 
 void read_proc(){
   DIR *dir_ptr;
-  
+  struct dirent *direntp;
+  if (!(dir_ptr = opendir(PROC_BASE))) {
+    fprintf(stderr, _("Can't open /proc"));
+    exit(1);
+  }
 }
