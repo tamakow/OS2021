@@ -68,6 +68,6 @@ void read_proc(){
     exit(1);
   }
   else {
-    fprintf(stderr, "\033[34m Successfully open /proc\033[01m\n");
+    fprintf(stderr, "\033[34mSuccessfully open /proc\033[01m\n");
   }
 }
