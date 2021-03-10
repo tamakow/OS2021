@@ -67,4 +67,7 @@ void read_proc(){
     fprintf(stderr, ("Can't open /proc"));
     exit(1);
   }
+  else {
+    fprintf(stderr, "\033[34m Successfully open /proc\033[01m\n");
+  }
 }
