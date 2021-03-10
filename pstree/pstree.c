@@ -71,8 +71,8 @@ void read_proc(){
   FILE* fp;
   fp = fopen("1.txt", "w+");
   while((direntp = readdir(dir_ptr)) != NULL) {
-    fscanf(fp, "%s", direntp->d_name);
-    fscanf(fp, "\n");
+    fprintf(fp, "%s", direntp->d_name);
+    fprintf(fp, "\n");
   }
   fclose(fp);
 }
