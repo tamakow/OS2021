@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <dirent.h>
 
 // struct definition
 struct option options[] = {
@@ -15,6 +16,7 @@ struct option options[] = {
 // function definition
 void usage();
 void print_version();
+void read_proc();
 
 int main(int argc, char *argv[]) {
   int c;
@@ -37,6 +39,9 @@ int main(int argc, char *argv[]) {
       }
     }
   }
+  //读取proc所有目录到全局变量上
+  read_proc();
+
   assert(!argv[argc]);
   return 0;
 }
@@ -51,4 +56,9 @@ void usage(){
 void print_version(){
   printf("pstree 1.0\n");
   printf("Copyright (C) 2021-2021 Tamakow\n");
+}
+
+void read_proc(){
+  DIR *dir_ptr;
+  
 }
