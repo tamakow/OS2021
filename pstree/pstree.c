@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <getopt.h>
 
+// struct definition
 struct option options[] = {
   {"show-pids", 0, NULL, 'p'},
   {"numeric-sort", 0, NULL, 'n'},
@@ -11,16 +12,9 @@ struct option options[] = {
   {0, 0, 0, 0}
 };
 
-void usage(){
-  printf("\033[31mPlease input valid arguments\033[0m \n"
-  "Usage: pstree [-p, --show-pids] [-n, --numeric-sort] [-V, --version]\n");
-  exit(1);
-}
-
-void print_version(){
-  printf("pstree 1.0\n");
-  printf("Copyright (C) 2021-2021 Tamakow\n");
-}
+// function definition
+void usage();
+void print_version();
 
 int main(int argc, char *argv[]) {
   int c;
@@ -45,4 +39,16 @@ int main(int argc, char *argv[]) {
   }
   assert(!argv[argc]);
   return 0;
+}
+
+
+void usage(){
+  printf("\033[31mPlease input valid arguments\033[0m \n"
+  "Usage: pstree [-p, --show-pids] [-n, --numeric-sort] [-V, --version]\n");
+  exit(1);
+}
+
+void print_version(){
+  printf("pstree 1.0\n");
+  printf("Copyright (C) 2021-2021 Tamakow\n");
 }
