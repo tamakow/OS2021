@@ -13,12 +13,13 @@ struct option options[] = {
 
 void usage(){
   printf("\033[31mPlease input valid arguments\033[0m \n"
-  " Usage: pstree [-p, --show-pids] [-n, --numeric-sort] [-V, --version]\n");
+  "Usage: pstree [-p, --show-pids] [-n, --numeric-sort] [-V, --version]\n");
   exit(1);
 }
 
 void print_version(){
-  printf("\033[32m successfully identify -V --version\033[01m \n");
+  printf("pstree 1.0\n");
+  printf("Copyright (C) 2021-2021 Tamakow\n");
 }
 
 int main(int argc, char *argv[]) {
