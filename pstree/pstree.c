@@ -56,7 +56,7 @@ void usage(){
 }
 
 void print_version(){
-  fprintf(stderr,_("pstree 1.0\n"
+  fprintf(stderr,("pstree 1.0\n"
                    "Copyright (C) 2021-2021 Tamakow\n"));
 }
 
@@ -64,7 +64,7 @@ void read_proc(){
   DIR *dir_ptr;
   struct dirent *direntp;
   if (!(dir_ptr = opendir(PROC_BASE))) {
-    fprintf(stderr, _("Can't open /proc"));
+    fprintf(stderr, ("Can't open /proc"));
     exit(1);
   }
 }
