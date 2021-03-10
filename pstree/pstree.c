@@ -18,7 +18,7 @@ void usage(){
 }
 
 void print_version(){
-  printf("\033[32m successfully identify -V --version\033[01m ");
+  printf("\033[32m successfully identify -V --version\033[01m \n");
 }
 
 int main(int argc, char *argv[]) {
