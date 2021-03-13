@@ -4,10 +4,27 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <dirent.h>
+#include <ctype.h>
 
 #define PROC_BASE "/proc"
+#define COMM_LEN 64
 
 // struct definition
+typedef struct proc {
+  pid_t pid;
+  char comm[COMM_LEN + 2];
+  char state;
+  pid_t ppid;
+  struct proc *parent;
+  struct proc *next;
+  struct child *children;
+} PROC;
+
+struct child {
+  PROC *children;
+  struct child *next;
+} CHILD;
+
 struct option options[] = {
   {"show-pids", 0, NULL, 'p'},
   {"numeric-sort", 0, NULL, 'n'},
@@ -30,7 +47,7 @@ int main(int argc, char *argv[]) {
       switch (c) {
         case 'V':
           print_version();
-          break;
+          return 0;
         case 'p':
           printf("\033[31m successfully identify -p --show-pids\033[01m \n");
           break;
@@ -41,7 +58,6 @@ int main(int argc, char *argv[]) {
       }
     }
   }
-  //读取proc所有目录到全局变量上
   read_proc();
 
   assert(!argv[argc]);
@@ -62,6 +78,8 @@ void print_version(){
 
 void read_proc(){
   DIR *dir_ptr;
+  pid_t pid;
+  char *endptr;
   struct dirent *direntp;
   if (!(dir_ptr = opendir(PROC_BASE))) {
     fprintf(stderr, ("Can't open /proc"));
@@ -76,5 +94,11 @@ void read_proc(){
   //   fprintf(fp, "\n");
   // }
   // fclose(fp);
+  while ((direntp = readdir(dir_ptr)) != NULL) {
+    pid = (pid_t) strtol(direntp->d_name,&endptr,10);
+    if(endptr != direntp->d_name && endptr[0] == '\0') {
+
+    }
+  }
   
 }
