@@ -97,9 +97,9 @@ void read_proc(){
   while ((direntp = readdir(dir_ptr)) != NULL) {
     pid = (pid_t) strtol(direntp->d_name,&endptr,10);
     if(endptr != direntp->d_name && endptr[0] == '\0') {
-      PROC* process;
+      PROC* process = (PROC*)malloc(sizeof(PROC));
       process->pid = pid;
-      
+
     }
   }
 }
