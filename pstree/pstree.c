@@ -99,7 +99,6 @@ void read_proc(){
     if(endptr != direntp->d_name && endptr[0] == '\0') {
       PROC* process = (PROC*)malloc(sizeof(PROC));
       process->pid = pid;
-      printf("%d\n",pid);
     }
   }
 }
