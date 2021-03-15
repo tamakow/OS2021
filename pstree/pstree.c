@@ -105,7 +105,7 @@ static void read_proc(){
     pid = (pid_t) strtol(direntp->d_name,&endptr,10);
     if(endptr != direntp->d_name && endptr[0] == '\0') {
       //judge the relationship and add to the root
-      read_state(pid);
+      read_stat(pid);
     }
   }
 }
@@ -120,7 +120,8 @@ static void read_stat (int pid) {
 
    sprintf(path, "%s/%d/stat", PROC_BASE, pid);
    if((fp = fopen(path, 'r')) != NULL) {
-     fscanf(fp, "%d(%.16s)%c%d",&pid,comm,&state,&ppid);
+     fscanf(fp, "%d (%16s) %c %d",&pid,comm,&state,&ppid);
      printf("%s\n",comm);
+     fclose(fp);
    }
 }
