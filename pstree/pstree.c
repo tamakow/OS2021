@@ -5,6 +5,7 @@
 #include <getopt.h>
 #include <dirent.h>
 #include <ctype.h>
+#include <string.h>
 
 #define PROC_BASE "/proc"
 #define COMM_LEN 64
@@ -17,7 +18,7 @@ typedef struct proc {
   pid_t ppid;
   struct proc *parent;
   struct proc *next;
-  struct child *children;
+  struct proc *children;
 } PROC;
 
 struct child {
@@ -35,12 +36,15 @@ struct option options[] = {
 // function definition
 static void usage();
 void print_version();
+static PROC *find_process (pid_t pid);
 static void read_stat(int pid);
 static void read_proc();
 
 // global variable definition
-PROC* list = NULL; // 
-
+/* bugs here */
+/* systemd's state may not be S */
+/* state doesn't matter in this lab*/
+PROC list = {1, "systemd", 'S', 0}; // use a list to record the relation among processes
 
 int main(int argc, char *argv[]) {
   int c;
@@ -91,15 +95,7 @@ static void read_proc(){
     fprintf(stderr, ("Can't open /proc"));
     exit(1);
   }
-  fprintf(stderr, "\033[34mSuccessfully open /proc\033[01m\n");
-  // Test for reading filenames in /proc
-  // FILE* fp;
-  // fp = fopen("1.txt", "w+");
-  // while((direntp = readdir(dir_ptr)) != NULL) {
-  //   fprintf(fp, "%s", direntp->d_name);
-  //   fprintf(fp, "\n");
-  // }
-  // fclose(fp);
+  // fprintf(stderr, "\033[34mSuccessfully open /proc\033[01m\n");
   while ((direntp = readdir(dir_ptr)) != NULL) {
     //read the process information in /proc and attach it to the tree 
     pid = (pid_t) strtol(direntp->d_name,&endptr,10);
@@ -116,12 +112,53 @@ static void read_stat (int pid) {
    char path[64];
    char comm[COMM_LEN + 2];
    char state;
-   int ppid;
+   pid_t ppid;
 
    sprintf(path, "%s/%d/stat", PROC_BASE, pid);
    if((fp = fopen(path, "r")) != NULL) {
      fscanf(fp, "%d (%[^)]) %c %d",&pid,comm,&state,&ppid);
-     printf("%d %s %c %d\n",pid, comm, state, ppid);
+     add_process(pid, comm, state, ppid);
      fclose(fp);
    }
+}
+
+static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
+  PROC* new_proc = (PROC*)malloc(sizeof(PROC));
+  strncpy(new_proc->comm,comm,COMM_LEN+2);
+  new_proc->pid=pid;
+  new_proc->ppid=ppid;
+  new_proc->state=state;
+  new_proc->parent = new_proc->next = NULL;
+  new_proc->children=NULL;
+
+  //first find whether this process has been in the list 
+  PROC *tmp = find_process(pid);
+  if(tmp) return;
+
+  //find new process 's parent
+  PROC *parent = find_process(ppid);
+  //if parent is not in the list, assert
+  //how to guarantee parent added before children ? 
+  assert(!parent);
+
+  
+
+}
+
+static PROC *find_process (pid_t pid) {
+  PROC *walk = &list;
+
+  if (pid == walk->pid) return walk;
+
+  PROC* exist;
+  if (walk->next) {
+    exist = find_process(walk->next->pid);
+    if(exist) return exist;
+  }
+  if(walk->children) {
+    exist = find_process(walk->children->pid);
+    if(exist) return exist;
+  }
+
+  return NULL;
 }
