@@ -147,7 +147,7 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
 
   PROC *walk = parent->child;
   new_proc->next = walk;
-  parent->child = new_proc;//bugs here
+  // parent->child = new_proc;//bugs here
   
 }
 
