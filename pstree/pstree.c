@@ -133,7 +133,6 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   new_proc->parent = new_proc->next = NULL;
   new_proc->child=NULL;
 
-  printf("1\n");
   //first find whether this process has been in the list 
   PROC *tmp = find_process(pid, &list);
   if(tmp) return; 
@@ -144,8 +143,8 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   //how to guarantee parent added before child ? 
   // assert(!parent);
   if(!parent) return;
-  // printf("%s %d\n",new_proc->comm, new_proc->pid);
-  // printf("%s %d\n",parent->comm,parent->pid);
+  printf("%s %d\n",new_proc->comm, new_proc->pid);
+  printf("%s %d\n",parent->comm,parent->pid);
   
   new_proc->parent = parent;
   new_proc->next = parent->child;
