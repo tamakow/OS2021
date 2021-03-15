@@ -150,7 +150,7 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   parent->child = new_proc;
   printf("%s %d\n",parent->child->comm, parent->child->pid);
   if(parent->child) {
-    printf("Child exists\n %d\n",parent->child->pid);
+    printf("Child exists %d\n",parent->child->pid);
   }
   // parent->child = new_proc;//bugs here
   
