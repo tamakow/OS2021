@@ -103,7 +103,6 @@ static void read_proc(){
     if(endptr != direntp->d_name && endptr[0] == '\0') {
       //judge the relationship and add to the root
       read_stat(pid);
-      printf("yes\n");
     }
   }
 }
@@ -119,6 +118,7 @@ static void read_stat (int pid) {
    sprintf(path, "%s/%d/stat", PROC_BASE, pid);
    if((fp = fopen(path, "r")) != NULL) {
      fscanf(fp, "%d (%[^)]) %c %d",&pid,comm,&state,&ppid);
+     printf("%s %d %d\n",comm,pid,ppid);
      add_process(pid, comm, state, ppid);
      fclose(fp);
    }
