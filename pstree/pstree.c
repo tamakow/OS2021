@@ -18,11 +18,11 @@ typedef struct proc {
   pid_t ppid;
   struct proc *parent;
   struct proc *next;
-  struct proc *children;
+  struct proc *child;
 } PROC;
 
 struct child {
-  PROC *children;
+  PROC *child;
   struct child *next;
 } CHILD;
 
@@ -130,7 +130,7 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   new_proc->ppid=ppid;
   new_proc->state=state;
   new_proc->parent = new_proc->next = NULL;
-  new_proc->children=NULL;
+  new_proc->child=NULL;
 
   //first find whether this process has been in the list 
   PROC *tmp = find_process(pid);
@@ -139,15 +139,16 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   //find new process 's parent
   PROC *parent = find_process(ppid);
   //if parent is not in the list, assert
-  //how to guarantee parent added before children ? 
+  //how to guarantee parent added before child ? 
   // assert(!parent);
   if(!parent) return;
-
-  PROC *walk = parent->children;
-  new_proc->next = walk;
-  parent->children = new_proc;
   
   new_proc->parent = parent;
+
+  PROC *walk = parent->child;
+  new_proc->next = walk;
+  parent->child = new_proc;//bugs here
+  
 }
 
 static PROC *find_process (pid_t pid) {
@@ -160,8 +161,8 @@ static PROC *find_process (pid_t pid) {
     exist = find_process(walk->next->pid);
     if(exist) return exist;
   }
-  if(walk->children) {
-    exist = find_process(walk->children->pid);
+  if(walk->child) {
+    exist = find_process(walk->child->pid);
     if(exist) return exist;
   }
 
