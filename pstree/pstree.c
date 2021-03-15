@@ -10,7 +10,7 @@
 #define PROC_BASE "/proc"
 #define COMM_LEN 64
 
-// struct definition
+/* struct definition */
 typedef struct proc {
   pid_t pid;
   char comm[COMM_LEN + 2];
@@ -33,7 +33,7 @@ struct option options[] = {
   {0, 0, 0, 0}
 };
 
-// function definition
+/* function definition */
 static void usage();
 void print_version();
 static PROC *find_process (pid_t pid);
@@ -41,7 +41,7 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid);
 static void read_stat(int pid);
 static void read_proc();
 
-// global variable definition
+/* global variable definition */
 /* bugs here */
 /* systemd's state may not be S */
 /* state doesn't matter in this lab*/
@@ -140,10 +140,14 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   PROC *parent = find_process(ppid);
   //if parent is not in the list, assert
   //how to guarantee parent added before children ? 
-  assert(!parent);
+  // assert(!parent);
+  if(!parent) return;
 
-
-
+  PROC *walk = parent->children;
+  if(walk)  new_proc->next = walk;
+  parent->children = new_proc;
+  
+  new_proc->parent = parent;
 }
 
 static PROC *find_process (pid_t pid) {
