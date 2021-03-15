@@ -40,6 +40,7 @@ static PROC *find_process (pid_t pid, PROC* pre);
 static void add_process (pid_t pid, char* comm, char state, pid_t ppid);
 static void read_stat(int pid);
 static void read_proc();
+static void print_tree(PROC *pre);
 
 /* global variable definition */
 /* bugs here */
@@ -69,7 +70,7 @@ int main(int argc, char *argv[]) {
     }
   }
   read_proc();
-
+  print_tree(&list);
   assert(!argv[argc]);
   return 0;
 }
@@ -124,7 +125,7 @@ static void read_stat (int pid) {
    }
 }
 
-//buggy
+
 static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   PROC* new_proc = (PROC*)malloc(sizeof(PROC));
   strncpy(new_proc->comm,comm,COMM_LEN+2);
@@ -137,7 +138,6 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   //first find whether this process has been in the list 
   PROC *tmp = find_process(pid, &list);
   if(tmp){ return; } 
-  printf("new_proc\n");
 
   //find new process 's parent
   PROC *parent = find_process(ppid, &list);
@@ -145,17 +145,11 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   //how to guarantee parent added before child ? 
   // assert(!parent);
   if(!parent) return;
-  printf("%s %d\n",new_proc->comm, new_proc->pid);
-  printf("%s %d\n",parent->comm,parent->pid);
-  
+
+
   new_proc->parent = parent;
-  if(!parent->child) new_proc->next = parent->child;
+  new_proc->next = parent->child;
   parent->child = new_proc;
-  printf("%s %d\n",parent->child->comm, parent->child->pid);
-  if(parent->child) {
-    printf("Child exists %d\n",parent->child->pid);
-  }
-  // parent->child = new_proc;//bugs here
   
 }
 
@@ -175,4 +169,12 @@ static PROC *find_process (pid_t pid, PROC* pre) {
   }
 
   return NULL;
+}
+
+static void print_tree (PROC* pre) {
+  printf("%s%s",pre->comm, pre->child ? "  " : "\n");
+  if (pre->child) print_tree(pre->child);
+  if (pre->next) {
+    print_tree(pre->next);
+  }
 }
