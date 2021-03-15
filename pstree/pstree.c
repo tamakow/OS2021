@@ -36,7 +36,7 @@ struct option options[] = {
 /* function definition */
 static void usage();
 void print_version();
-static PROC *find_process (pid_t pid);
+static PROC *find_process (pid_t pid, PROC* pre);
 static void add_process (pid_t pid, char* comm, char state, pid_t ppid);
 static void read_stat(int pid);
 static void read_proc();
