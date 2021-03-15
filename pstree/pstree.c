@@ -33,9 +33,14 @@ struct option options[] = {
 };
 
 // function definition
-void usage();
+static void usage();
 void print_version();
-void read_proc();
+static void read_stat(int pid);
+static void read_proc();
+
+// global variable definition
+PROC* list = NULL; // 
+
 
 int main(int argc, char *argv[]) {
   int c;
@@ -65,7 +70,7 @@ int main(int argc, char *argv[]) {
 }
 
 
-void usage(){
+static void usage(){
   printf("\033[31mPlease input valid arguments\033[0m \n"
   "Usage: pstree [-p, --show-pids] [-n, --numeric-sort] [-V, --version]\n");
   exit(1);
@@ -76,7 +81,8 @@ void print_version(){
          "Copyright (C) 2021-2021 Tamakow\n");
 }
 
-void read_proc(){
+static void read_proc(){
+  // read /proc 
   DIR *dir_ptr;
   pid_t pid;
   char *endptr;
@@ -95,10 +101,26 @@ void read_proc(){
   // }
   // fclose(fp);
   while ((direntp = readdir(dir_ptr)) != NULL) {
+    //read the process information in /proc and attach it to the tree 
     pid = (pid_t) strtol(direntp->d_name,&endptr,10);
     if(endptr != direntp->d_name && endptr[0] == '\0') {
-      PROC* process = (PROC*)malloc(sizeof(PROC));
-      process->pid = pid;
+      //judge the relationship and add to the root
+      read_state(pid);
     }
   }
+}
+
+static void read_stat (int pid) {
+   // read /proc/[pid]/stat 
+   FILE* fp;
+   char path[64];
+   char comm[COMM_LEN + 2];
+   char state;
+   int ppid;
+
+   sprintf(path, "%s/%d/stat", PROC_BASE, pid);
+   if((fp = fopen(path, 'r')) != NULL) {
+     fscanf(fp, "%d(%.16s)%c%d",&pid,comm,&state,&ppid);
+     printf("%s\n",comm);
+   }
 }
