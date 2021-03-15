@@ -45,7 +45,7 @@ static void read_proc();
 /* bugs here */
 /* systemd's state may not be S */
 /* state doesn't matter in this lab*/
-PROC list = {1, "systemd", 'S', 0}; // use a list to record the relation among processes
+PROC list = {1, "systemd", 'S', 0, NULL, NULL, NULL}; // use a list to record the relation among processes
 
 int main(int argc, char *argv[]) {
   int c;
@@ -145,6 +145,7 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   
   new_proc->parent = parent;
   new_proc->next = parent->child;
+  if(parent->child)
   parent->child = new_proc;
   printf("%d %d\n",parent->pid, pid);
   if(parent->child) {
