@@ -45,7 +45,7 @@ static void read_proc();
 /* bugs here */
 /* systemd's state may not be S */
 /* state doesn't matter in this lab*/
-PROC list = {1, "systemd", 'S', 0, NULL, NULL, NULL}; // use a list to record the relation among processes
+PROC list = {0, "init", 'S', -1, NULL, NULL, NULL}; // use a list to record the relation among processes
 
 int main(int argc, char *argv[]) {
   int c;
@@ -124,6 +124,7 @@ static void read_stat (int pid) {
    }
 }
 
+//buggy
 static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   PROC* new_proc = (PROC*)malloc(sizeof(PROC));
   strncpy(new_proc->comm,comm,COMM_LEN+2);
