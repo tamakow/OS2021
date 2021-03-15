@@ -121,7 +121,7 @@ static void read_stat (int pid) {
    sprintf(path, "%s/%d/stat", PROC_BASE, pid);
    if((fp = fopen(path, "r")) != NULL) {
      fscanf(fp, "%d (%[^)]) %c %d",&pid,comm,&state,&ppid);
-     printf("%c\n", state);
+     printf("%s %c\n",comm, state);
      fclose(fp);
    }
 }
