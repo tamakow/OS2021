@@ -141,6 +141,7 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   //if parent is not in the list, assert
   //how to guarantee parent added before child ? 
   // assert(!parent);
+  printf("%s %d\n",parent->comm, parent->pid);
   if(!parent) return;
   
   new_proc->parent = parent;
