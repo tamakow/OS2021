@@ -171,9 +171,12 @@ static PROC *find_process (pid_t pid, PROC* pre) {
 }
 
 static void print_tree (PROC* pre) {
-  printf("%s%s",pre->comm, pre->child ? "  " : "\n");
-  if (pre->child) print_tree(pre->child);
-  if (pre->next) {
+  printf("%s\n",pre->comm);
+  if(pre->child) {
+    printf("  ");
+    print_tree(pre->child);
+  }
+  if(pre->next) {
     print_tree(pre->next);
   }
 }
