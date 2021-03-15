@@ -118,7 +118,6 @@ static void read_stat (int pid) {
    sprintf(path, "%s/%d/stat", PROC_BASE, pid);
    if((fp = fopen(path, "r")) != NULL) {
      fscanf(fp, "%d (%[^)]) %c %d",&pid,comm,&state,&ppid);
-     printf("%s %d %d\n",comm,pid,ppid);
      add_process(pid, comm, state, ppid);
      fclose(fp);
    }
@@ -136,17 +135,17 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
 
   printf("1\n");
   //first find whether this process has been in the list 
-  PROC *tmp = find_process(pid);
+  PROC *tmp = find_process(pid, &list);
   if(tmp) return; 
 
   //find new process 's parent
-  PROC *parent = find_process(ppid);
+  PROC *parent = find_process(ppid, &list);
   //if parent is not in the list, assert
   //how to guarantee parent added before child ? 
   // assert(!parent);
   if(!parent) return;
-  printf("%s %d\n",new_proc->comm, new_proc->pid);
-  printf("%s %d\n",parent->comm,parent->pid);
+  // printf("%s %d\n",new_proc->comm, new_proc->pid);
+  // printf("%s %d\n",parent->comm,parent->pid);
   
   new_proc->parent = parent;
   new_proc->next = parent->child;
@@ -159,18 +158,18 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   
 }
 
-static PROC *find_process (pid_t pid) {
-  PROC *walk = &list;
+static PROC *find_process (pid_t pid, PROC* pre) {
+  PROC *walk = pre;
 
   if (pid == walk->pid) return walk;
 
   PROC* exist;
   if (walk->next) {
-    exist = find_process(walk->next->pid);
+    exist = find_process(walk->next->pid,walk->next);
     if(exist) return exist;
   }
   if(walk->child) {
-    exist = find_process(walk->child->pid);
+    exist = find_process(walk->child->pid,walk->child);
     if(exist) return exist;
   }
 
