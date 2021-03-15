@@ -146,6 +146,7 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   new_proc->parent = parent;
 
   new_proc->next = parent->child;
+  if(parent->child) printf("Child exists\n");
   // parent->child = new_proc;//bugs here
   
 }
