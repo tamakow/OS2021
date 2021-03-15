@@ -170,11 +170,15 @@ static PROC *find_process (pid_t pid, PROC* pre) {
   return NULL;
 }
 
+static int Tab = 0;
 static void print_tree (PROC* pre) {
+  for(int i = 0; i < Tab; ++i)
+    printf(" ");
   printf("%s\n",pre->comm);
   if(pre->child) {
-    printf("  ");
+    Tab += 2;
     print_tree(pre->child);
+    Tab -= 2;
   }
   if(pre->next) {
     print_tree(pre->next);
