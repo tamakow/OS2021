@@ -37,6 +37,7 @@ struct option options[] = {
 static void usage();
 void print_version();
 static PROC *find_process (pid_t pid);
+static void add_process (pid_t pid, char* comm, char state, pid_t ppid);
 static void read_stat(int pid);
 static void read_proc();
 
@@ -141,7 +142,7 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   //how to guarantee parent added before children ? 
   assert(!parent);
 
-  
+
 
 }
 
