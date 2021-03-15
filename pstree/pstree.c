@@ -144,11 +144,11 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   if(!parent) return;
   printf("%s %d\n",new_proc->comm, new_proc->pid);
   printf("%s %d\n",parent->comm,parent->pid);
-  assert(parent->child);
-  new_proc->parent = parent;
-  new_proc->next = parent->child;
+  
+  // new_proc->parent = parent;
+  // new_proc->next = parent->child;
   parent->child = new_proc;
-  printf("%d %d\n",parent->pid, pid);
+  printf("%s %d\n",parent->child->comm, parent->child->pid);
   if(parent->child) {
     printf("Child exists\n %d\n",parent->child->pid);
   }
