@@ -166,11 +166,11 @@ static PROC *find_process (pid_t pid, PROC* pre) {
 
   PROC* exist;
   if (walk->next) {
-    exist = find_process(walk->next->pid,walk->next);
+    exist = find_process(pid,walk->next);
     if(exist) return exist;
   }
   if(walk->child) {
-    exist = find_process(walk->child->pid,walk->child);
+    exist = find_process(pid,walk->child);
     if(exist) return exist;
   }
 
