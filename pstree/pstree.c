@@ -136,7 +136,7 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
 
   //first find whether this process has been in the list 
   PROC *tmp = find_process(pid, &list);
-  if(tmp){printf("the tid and comm is %d %d %s\n",pid, tmp->pid,tmp->comm); return; } 
+  if(tmp){ return; } 
   printf("new_proc\n");
 
   //find new process 's parent
@@ -149,7 +149,7 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   printf("%s %d\n",parent->comm,parent->pid);
   
   new_proc->parent = parent;
-  new_proc->next = parent->child;
+  if(!parent->child) new_proc->next = parent->child;
   parent->child = new_proc;
   printf("%s %d\n",parent->child->comm, parent->child->pid);
   if(parent->child) {
