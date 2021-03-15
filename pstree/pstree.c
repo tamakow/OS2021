@@ -103,6 +103,7 @@ static void read_proc(){
     if(endptr != direntp->d_name && endptr[0] == '\0') {
       //judge the relationship and add to the root
       read_stat(pid);
+      printf("yes\n");
     }
   }
 }
@@ -134,7 +135,7 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
 
   //first find whether this process has been in the list 
   PROC *tmp = find_process(pid);
-  if(tmp) return;
+  if(tmp) return;  parent->child = new_proc;
 
   //find new process 's parent
   PROC *parent = find_process(ppid);
