@@ -179,14 +179,28 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
   //find new process 's parent
   PROC *parent = find_process(ppid, &list);
   //if parent is not in the list, should be ignored
-  // assert(!parent);
   if(!parent) return;
 
-
   new_proc->parent = parent;
-  new_proc->next = parent->child;
-  parent->child = new_proc;
   
+  if (numeric_sort) {
+    PROC* walk = parent->child;
+    if(!walk) 
+      parent->child = new_proc;
+    else {
+      if(new_proc->pid < walk->pid){
+        new_proc->next = walk;
+        parent->child = new_proc;
+      } else{
+        while(walk->next && new_proc->pid > walk->pid) walk = walk->next;
+        new_proc->next = walk->next;
+        walk->next = new_proc;
+        }
+    }
+  } else {
+      new_proc->next = parent->child;
+      parent->child = new_proc;
+  }
 }
 
 static PROC *find_process (pid_t pid, PROC* pre) {
