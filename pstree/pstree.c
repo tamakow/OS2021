@@ -223,6 +223,11 @@ static PROC *find_process (pid_t pid, PROC* pre) {
 
 static int Tab = 0;
 static void print_tree (PROC* pre) {
+  char PID[64];
+  if (show_pid) {
+    sprintf(PID, "(%d)", pre->pid);
+    strcat(pre->comm,PID);
+  }
   for(int i = 0; i < Tab; ++i)
     printf(" ");
   printf("%s\n",pre->comm);
