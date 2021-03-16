@@ -121,8 +121,8 @@ static void read_stat (int pid) {
      fscanf(fp, "%d (%[^)]) %c %d",&pid,comm,&state,&ppid);
      if(comm[0] == '(') {
        printf("%s\n",comm);
-       int len = strlen(comm);
-       comm[len] = ')';
+       char str[2] = ")";
+       strcat(comm,str);
        printf("(sd-pam)'s pid is %d %s\n",pid, comm);
      } 
      add_process(pid, comm, state, ppid);
