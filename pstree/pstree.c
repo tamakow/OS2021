@@ -46,7 +46,7 @@ static void print_tree(PROC *pre);
 /* bugs here */
 /* systemd's state may not be S */
 /* state doesn't matter in this lab*/
-PROC list = {0, "init", 'S', -1, NULL, NULL, NULL}; // use a list to record the relation among processes
+PROC list = {1, "systemd", 'S', -1, NULL, NULL, NULL}; // use a list to record the relation among processes
 
 int main(int argc, char *argv[]) {
   int c;
