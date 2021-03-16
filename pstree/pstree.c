@@ -105,27 +105,62 @@ static void read_proc(){
     if(endptr != direntp->d_name && endptr[0] == '\0') {
       read_stat(pid);
     }
-  }  
+  }
+  closedir(dir_ptr);  
 }
 
+/* read process information in /proc/[pid]/stat and child thread information in /proc/[pid]/task/[tid]/stat */
 static void read_stat (int pid) {
-   // read /proc/[pid]/stat 
    FILE* fp;
    char path[64];
    char comm[COMM_LEN + 2];
    char state;
    pid_t ppid;
 
+   // process information
    sprintf(path, "%s/%d/stat", PROC_BASE, pid);
    if((fp = fopen(path, "r")) != NULL) {
      fscanf(fp, "%d (%[^)]) %c %d",&pid,comm,&state,&ppid);
-     if(comm[0] == '(') {
-       char str[2] = ")";
-       strcat(comm,")");
-     } 
+     if(comm[0] == '(') strcat(comm,")");
      add_process(pid, comm, state, ppid);
      fclose(fp);
+   } else { //process died
+      return;
    }
+
+   // child thread information
+   DIR* taskdir;
+   struct dirent *direntp;
+   char task[64];
+   pid_t tid;
+   char* endptr;
+
+   sprintf(task, "%s/%d/task", PROC_BASE, pid);
+   if (!(taskdir = opendir(task))) {
+    printf("Can't open /proc/%d/task",pid);
+    exit(1);
+  }
+  while((direntp = readdir(task)) != NULL) {
+    tid = (pid_t) strtol(direntp->d_name,&endptr,10);
+    if(endptr != direntp->d_name && endptr[0] == '\0') {
+      // KISS principle 
+      FILE* taskfp;
+      char taskpath[64];
+      char taskcomm[COMM_LEN + 2];
+      char taskstate;
+      pid_t ttid;
+
+      sprintf(taskpath, "%s/%d/task/%d/stat", PROC_BASE, pid, tid);
+      if((taskfp = fopen(taskpath, "r")) != NULL) {
+        fscanf(taskfp, "%d (%[^)]) %c %d",&tid,taskcomm,&taskstate,&ttid);
+        sprintf(taskcomm, "{%s}", comm);
+        printf("%s\n",taskcomm);
+        add_process(tid, taskcomm, taskstate, pid);
+        fclose(taskfp);
+      }
+    }
+  }
+  closedir(taskdir);
 }
 
 
