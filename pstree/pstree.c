@@ -125,6 +125,7 @@ static void read_stat (int pid) {
    sprintf(path, "%s/%d/stat", PROC_BASE, pid);
    if((fp = fopen(path, "r")) != NULL) {
      fscanf(fp, "%d (%[^)]) %c %s %s",&pid,comm,&s1,s2,s3);
+     // (sd-pam) pid = 1527
      if(s1 == ')') {
        state = s2[0];
        ppid = atoi(s3);
