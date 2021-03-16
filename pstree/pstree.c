@@ -239,25 +239,25 @@ static int Tab = 0;
 static void print_tree (PROC* pre) {
   if(pre == NULL) return;
   char PID[64];
-  // int flag = 1;
-  // int cnt = 1;
+  int flag = 1;
+  int cnt = 1;
   if (show_pid) {
     sprintf(PID, "(%d)", pre->pid);
     strcat(pre->comm,PID);
-    // flag = 0;
+    flag = 0;
   }
   // just easily merge adjacent processes without child
-  // if(flag && !pre->child){
-  //   while(pre->next && !pre->next->child && strcmp(pre->comm,pre->next->comm) == 0) {
-  //       cnt++;
-  //       pre = pre->next;
-  //   }
-  //   if(cnt > 1) {
-  //     char tmp[64];
-  //     sprintf(tmp,"%d*[%.48s]",cnt,pre->comm);
-  //     strcpy(pre->comm,tmp);
-  //   }
-  // }
+  if(flag && !pre->child){
+    while(pre->next && !pre->next->child && strcmp(pre->comm,pre->next->comm) == 0) {
+        cnt++;
+        pre = pre->next;
+    }
+    if(cnt > 1) {
+      char tmp[64];
+      sprintf(tmp,"%d*[%.48s]",cnt,pre->comm);
+      strcpy(pre->comm,tmp);
+    }
+  }
   for(int i = 0; i < Tab; ++i)
     printf(" ");
   printf("%s\n",pre->comm);
