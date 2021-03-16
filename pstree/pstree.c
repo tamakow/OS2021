@@ -140,7 +140,7 @@ static void read_stat (int pid) {
     printf("Can't open /proc/%d/task",pid);
     exit(1);
   }
-  while((direntp = readdir(task)) != NULL) {
+  while((direntp = readdir(taskdir)) != NULL) {
     tid = (pid_t) strtol(direntp->d_name,&endptr,10);
     if(endptr != direntp->d_name && endptr[0] == '\0') {
       // KISS principle 
