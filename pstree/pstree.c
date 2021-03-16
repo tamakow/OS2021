@@ -222,7 +222,7 @@ static PROC *find_process (pid_t pid, PROC* pre) {
 }
 
 
-
+/* need to be improved */
 static int Tab = 0;
 static void print_tree (PROC* pre) {
   if(pre == NULL) return;
@@ -234,17 +234,18 @@ static void print_tree (PROC* pre) {
     strcat(pre->comm,PID);
     flag = 0;
   }
-  if(flag && !pre->child){
-    while(pre->next && !pre->next->child && strcmp(pre->comm,pre->next->comm) == 0) {
-        cnt++;
-        pre = pre->next;
-    }
-    if(cnt > 1) {
-      char tmp[64];
-      sprintf(tmp,"%d*[%.48s]",cnt,pre->comm);
-      strcpy(pre->comm,tmp);
-    }
-    }
+  // just easily merge adjacent processes without child
+  // if(flag && !pre->child){
+  //   while(pre->next && !pre->next->child && strcmp(pre->comm,pre->next->comm) == 0) {
+  //       cnt++;
+  //       pre = pre->next;
+  //   }
+  //   if(cnt > 1) {
+  //     char tmp[64];
+  //     sprintf(tmp,"%d*[%.48s]",cnt,pre->comm);
+  //     strcpy(pre->comm,tmp);
+  //   }
+  // }
   for(int i = 0; i < Tab; ++i)
     printf(" ");
   printf("%s\n",pre->comm);
