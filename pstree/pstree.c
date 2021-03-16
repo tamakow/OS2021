@@ -133,7 +133,7 @@ static void read_stat (int pid) {
        state = s1;
        ppid = atoi(s2);
      }
-     if(comm[0] == '(') {strcat(comm,")");printf("\033[31m1527 :%c %d\033[0m\n",state,ppid); }
+     if(comm[0] == '(') strcat(comm,")");
      add_process(pid, comm, state, ppid);
      fclose(fp);
    } else { //process died
