@@ -60,10 +60,10 @@ int main(int argc, char *argv[]) {
           print_version();
           return 0;
         case 'p':
-          printf("\033[31m successfully identify -p --show-pids\033[01m \n");
+          printf("\033[31m successfully identify -p --show-pids\033[0m \n");
           break;
         case 'n':
-          printf("\033[31m successfully identify -n --numeric-sort\033[01m \n");
+          printf("\033[31m successfully identify -n --numeric-sort\033[0m \n");
           break;
         default: usage();
       }
