@@ -239,9 +239,11 @@ static void print_tree (PROC* pre) {
         cnt++;
         pre = pre->next;
     }
-    char tmp[64];
-    sprintf(tmp,"%d*[%.48s]",cnt,pre->comm);
-    strcpy(pre->comm,tmp);
+    if(cnt > 1) {
+      char tmp[64];
+      sprintf(tmp,"%d*[%.48s]",cnt,pre->comm);
+      strcpy(pre->comm,tmp);
+    }
     }
   for(int i = 0; i < Tab; ++i)
     printf(" ");
