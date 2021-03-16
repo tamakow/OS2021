@@ -176,9 +176,9 @@ static void print_tree (PROC* pre) {
     printf(" ");
   printf("%s\n",pre->comm);
   if(pre->child) {
-    Tab += 2;
+    Tab += 6;
     print_tree(pre->child);
-    Tab -= 2;
+    Tab -= 6;
   }
   if(pre->next) {
     print_tree(pre->next);
