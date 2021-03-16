@@ -122,7 +122,7 @@ static void read_stat (int pid) {
      if(comm[0] == '(') {
        int len = strlen(comm);
        comm[len] = ')';
-       printf("(sd-pam)'s pid is %d\n",pid);
+       printf("(sd-pam)'s pid is %d %s\n",pid, comm);
      } 
      add_process(pid, comm, state, ppid);
      fclose(fp);
