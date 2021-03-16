@@ -120,6 +120,7 @@ static void read_stat (int pid) {
    if((fp = fopen(path, "r")) != NULL) {
      fscanf(fp, "%d (%[^)]) %c %d",&pid,comm,&state,&ppid);
      if(comm[0] == '(') {
+       printf("%s\n",comm);
        int len = strlen(comm);
        comm[len] = ')';
        printf("(sd-pam)'s pid is %d %s\n",pid, comm);
