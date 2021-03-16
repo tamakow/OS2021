@@ -21,11 +21,6 @@ typedef struct proc {
   struct proc *child;
 } PROC;
 
-struct child {
-  PROC *child;
-  struct child *next;
-} CHILD;
-
 struct option options[] = {
   {"show-pids", 0, NULL, 'p'},
   {"numeric-sort", 0, NULL, 'n'},
@@ -47,6 +42,9 @@ static void print_tree(PROC *pre);
 /* systemd's state may not be S */
 /* state doesn't matter in this lab*/
 PROC list = {1, "systemd", 'S', -1, NULL, NULL, NULL}; // use a list to record the relation among processes
+static int show_pid = 0;
+static int numeric_sort = 0;
+
 
 int main(int argc, char *argv[]) {
   int c;
@@ -60,10 +58,12 @@ int main(int argc, char *argv[]) {
           print_version();
           return 0;
         case 'p':
-          printf("\033[31m successfully identify -p --show-pids\033[0m \n");
+          // printf("\033[31m successfully identify -p --show-pids\033[0m \n");
+          show_pid = 1;
           break;
         case 'n':
-          printf("\033[31m successfully identify -n --numeric-sort\033[0m \n");
+          // printf("\033[31m successfully identify -n --numeric-sort\033[0m \n");
+          numeric_sort = 1;
           break;
         default: usage();
       }
@@ -87,8 +87,9 @@ void print_version(){
          "Copyright (C) 2021-2021 Tamakow\n");
 }
 
-static void read_proc(){
-  // read /proc 
+
+/* read /proc */
+static void read_proc(){ 
   DIR *dir_ptr;
   pid_t pid;
   char *endptr;
@@ -99,13 +100,12 @@ static void read_proc(){
   }
   // fprintf(stderr, "\033[34mSuccessfully open /proc\033[01m\n");
   while ((direntp = readdir(dir_ptr)) != NULL) {
-    //read the process information in /proc and attach it to the tree 
+    /* read the process information in /proc  */ 
     pid = (pid_t) strtol(direntp->d_name,&endptr,10);
     if(endptr != direntp->d_name && endptr[0] == '\0') {
-      //judge the relationship and add to the root
       read_stat(pid);
     }
-  }
+  }  
 }
 
 static void read_stat (int pid) {
@@ -118,7 +118,7 @@ static void read_stat (int pid) {
 
    sprintf(path, "%s/%d/stat", PROC_BASE, pid);
    if((fp = fopen(path, "r")) != NULL) {
-     fscanf(fp, "%d (%[^)]) %c %d",&pid,comm,&state,&ppid);
+     fscanf(fp, "%d (%s) %c %d",&pid,comm,&state,&ppid);
      add_process(pid, comm, state, ppid);
      fclose(fp);
    }
