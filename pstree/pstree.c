@@ -121,7 +121,7 @@ static void read_stat (int pid) {
    sprintf(path, "%s/%d/stat", PROC_BASE, pid);
    if((fp = fopen(path, "r")) != NULL) {
      fscanf(fp, "%d (%[^)]) %c %d",&pid,comm,&state,&ppid);
-     if(comm[0] == '(') {strcat(comm,")");printf("\033[31m1527 :%d\033[0m\n",ppid) }
+     if(comm[0] == '(') {strcat(comm,")");printf("\033[31m1527 :%d\033[0m\n",ppid); }
      add_process(pid, comm, state, ppid);
      fclose(fp);
    } else { //process died
