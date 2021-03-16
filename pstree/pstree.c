@@ -227,12 +227,12 @@ static int Tab = 0;
 static void print_tree (PROC* pre) {
   if(pre == NULL) return;
   char PID[64];
-  int flag = 1;
-  int cnt = 1;
+  // int flag = 1;
+  // int cnt = 1;
   if (show_pid) {
     sprintf(PID, "(%d)", pre->pid);
     strcat(pre->comm,PID);
-    flag = 0;
+    // flag = 0;
   }
   // just easily merge adjacent processes without child
   // if(flag && !pre->child){
