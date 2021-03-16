@@ -116,11 +116,22 @@ static void read_stat (int pid) {
    char comm[COMM_LEN + 2];
    char state;
    pid_t ppid;
+   char s1;
+   char s2[32];
+   char s3[32];
+
 
    // process information
    sprintf(path, "%s/%d/stat", PROC_BASE, pid);
    if((fp = fopen(path, "r")) != NULL) {
-     fscanf(fp, "%d (%[^)]) %c %d",&pid,comm,&state,&ppid);
+     fscanf(fp, "%d (%[^)]) %c %s %s",&pid,comm,&s1,s2,s3);
+     if(s1 == ')') {
+       state = s2[0];
+       ppid = atoi(s3);
+     } else {
+       state = s1;
+       ppid = atoi(s2);
+     }
      if(comm[0] == '(') {strcat(comm,")");printf("\033[31m1527 :%c %d\033[0m\n",state,ppid); }
      add_process(pid, comm, state, ppid);
      fclose(fp);
