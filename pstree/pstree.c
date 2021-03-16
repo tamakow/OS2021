@@ -178,8 +178,7 @@ static void add_process (pid_t pid, char* comm, char state, pid_t ppid) {
 
   //find new process 's parent
   PROC *parent = find_process(ppid, &list);
-  //if parent is not in the list, assert
-  //how to guarantee parent added before child ? 
+  //if parent is not in the list, should be ignored
   // assert(!parent);
   if(!parent) return;
 
