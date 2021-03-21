@@ -175,7 +175,7 @@ static void update_state() {
   if(ball.y + SIDE >= board.y && ball.x  >= board.head  && ball.x  < board.tail) {
     ball.vy = -ball.vy;
     puts(yellow"Nice!\n"close);
-  } else {
+  } else if (ball.y + SIDE >= screen_h) {
     puts(red"GAME OVER!\n"close);
     ball.exist = false;
   }
