@@ -6,6 +6,7 @@
 
 void splash();
 void print_key();
+// static void video_init();
 static inline void puts(const char *s) {
   for (; *s; s++) putch(*s);
 }
