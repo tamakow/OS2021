@@ -11,6 +11,7 @@
 #define COL_WHITE 0xeeeeee
 #define COL_RED   0xdc143c
 #define COL_BLUE  0x191970
+#define COL_Cyan  0x00ffff
 
 
 #define false            0
@@ -29,6 +30,7 @@ static void video_init();
 
 
 static int screen_w, screen_h;
+static uint32_t blank[SIDE * SIDE];
 
 // Operating system is a C program!
 int main(const char *args) {
@@ -76,10 +78,18 @@ static void video_init() {
   //   }
   // }
 
+
   uint32_t pixels[SIDE * SIDE];
-  for (int i = 0; i < SIDE * SIDE; ++ i)
+  for (int i = 0; i < SIDE * SIDE; ++ i) {
     pixels[i] = COL_BLUE;
-  
+    blank[i] = COL_Cyan;
+  }
+  for (int x = 0; x * SIDE <= screen_h; ++ x) {
+    for (int y = 0; y * SIDE <= screen_w; ++ y) {
+      io_write(AM_GPU_FBDRAW, x*SIDE, y*SIDE, blank, SIDE, SIDE, false);
+    }
+  }
+
   for (int y = (screen_w / 4) / SIDE; y * SIDE <= 3 * (screen_w / 4); ++ y) {
     io_write(AM_GPU_FBDRAW, screen_h - SIDE, y * SIDE, pixels, SIDE, SIDE, false);
   }  
