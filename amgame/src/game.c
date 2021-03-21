@@ -123,18 +123,13 @@ static void video_init() {
   board.head = (LEN / 2 - 2) > 0 ? (LEN / 2 - 2) : 0; 
   board.height = screen_h - SIDE;
   board.tail = (board.head + 4) < LEN ? board.head + 4 : 1;
-  for (int x = board.head; x < board.tail; ++ x) {
-    io_write(AM_GPU_FBDRAW, x * SIDE, board.height, Board, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.height), false);
-  } 
+  update_screen();
 }
 
 static void update_screen() {
   //init the screen
-  for (int x = 0; x * SIDE <= screen_w; ++ x) {
-    for (int y = 0; y * SIDE <= screen_h; ++ y) {
-      io_write(AM_GPU_FBDRAW, x * SIDE, y * SIDE, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - y * SIDE), false);
-    }
-  } 
+  for(int x = 0; x * SIDE <= screen_h; ++ x)
+    io_write(AM_GPU_FBDRAW, x * SIDE, board.height, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.height), false);
   //update board
   for (int x = board.head; x < board.tail; ++ x) {
     io_write(AM_GPU_FBDRAW, x * SIDE, board.height, Board, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.height), false);
