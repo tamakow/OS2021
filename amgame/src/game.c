@@ -88,7 +88,7 @@ int main(const char *args) {
 static void video_init() {
   screen_h = io_read(AM_GPU_CONFIG).height;
   screen_w = io_read(AM_GPU_CONFIG).width;
-
+  printf(yellow"%d\n"close,screen_w);
 
   for (int i = 0; i < SIDE * SIDE; ++ i) {
     Board[i] = COL_BLUE;
