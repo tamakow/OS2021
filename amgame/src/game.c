@@ -80,6 +80,7 @@ int main(const char *args) {
     }
     if(frame1 > frame2) {
       update_screen();
+      io_write(AM_GPU_FBDRAW, ball.x * SIDE, ball.y * SIDE, Ball, min(SIDE, screen_w - ball.x * SIDE), min(SIDE, screen_h - ball.y * SIDE), false);
       frame2 = frame1;
     }
   }
@@ -128,6 +129,7 @@ static void video_init() {
 
 static void update_screen() {
   //init the screen
+  // notice we need to init all the screen
   for(int x = 0; x * SIDE <= screen_w; ++ x)
     io_write(AM_GPU_FBDRAW, x * SIDE, board.height, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.height), false);
   //update board
