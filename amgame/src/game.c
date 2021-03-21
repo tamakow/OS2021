@@ -8,7 +8,8 @@
 #define NCHAR           128
 // draw the ball
 #define SIDE             8
-#define LEN (screen_w / 16) / SIDE
+// notice this may cause some problem of float number
+#define LEN (screen_w / 32) / SIDE
 
 #define COL_WHITE  0xeeeeee
 #define COL_RED    0xdc143c
@@ -65,7 +66,7 @@ int main(const char *args) {
           board.x -= LEN;
       }
       if (event.keydown && event.keycode == AM_KEY_D) {
-        if(board.x + board.len < screen_w / SIDE) 
+        if(board.x + board.len < 32 * LEN) 
           board.x += LEN;
       }
     }
