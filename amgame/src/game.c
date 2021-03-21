@@ -22,7 +22,7 @@
 
 
 struct BALL {
-  int x, y, t;
+  int x, y;
   int vx,vy;
   bool exist;
 } ball;
@@ -76,6 +76,9 @@ int main(const char *args) {
           board.head += 1;
           board.tail += 1;
         }
+      }
+      if (event.keydown && event.keycode == AM_KEY_S) {
+        new_ball();
       }
     }
     if(frame1 > frame2) {
@@ -148,15 +151,37 @@ static void update_screen() {
 }
 
 static void new_ball() {
-  ball.t = 0;
-  ball.vx = (screen_w - SIDE + 1) / 45;
-  ball.vy = (screen_h - SIDE + 1) / 45;
+  ball.vx = screen_w / SIDE / 8;
+  ball.vy = screen_h / SIDE / 8;
   ball.x = randint(0, LEN);
   ball.y = 0;
   ball.exist = true;
 }
 
 static void update_state() {
-  if(!ball.exist) new_ball();
+  if(!ball.exist) return;
+  //top
+  if(ball.vy < 0 && ball.y == 0){
+    ball.vy = -ball.vy;
+  }
+  //left
+  if(ball.vx < 0 && ball.x == 0) {
+    ball.vx = -ball.vx;
+  }
+  //right
+  if(ball.vx > 0 && ball.x == screen_w - SIDE) {
+    ball.vx = -ball.vx;
+  }
+  //bottom
+  if(ball.x == screen_h) {
+    puts(red"GAME OVER!\n"close);
+    ball.exist = false;
+  }
+  if(ball.y == board.height && ball.x >= board.head && ball.x < board.tail) {
+    ball.vy = -ball.vy;
+    puts(yellow"Nice!\n"close);
+  }
+  ball.x += ball.vx;
+  ball.y += ball.vy;
 }
 
