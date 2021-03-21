@@ -12,7 +12,7 @@
 #define NCHAR         128
 #define COL_WHITE    0xeeeeee
 #define COL_RED      0xdc143c
-#define COL_BLUE     0x8a2be2
+// #define COL_BLUE     0x191970
 
 void splash();
 void print_key();
