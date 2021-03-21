@@ -18,6 +18,7 @@
 #define red    "\033[1;31m"
 #define yellow "\033[1;33m"
 #define green  "\033[1;32m"
+#define purple "\033[1;35m"
 #define close     "\033[0m"
 
 
@@ -42,6 +43,7 @@ int randint(int l,int r);
 
 
 static int screen_w, screen_h;
+static int score = 0;
 static uint32_t blank[SIDE * SIDE];
 static uint32_t Board[SIDE * SIDE];
 static uint32_t Ball[SIDE * SIDE];
@@ -79,7 +81,10 @@ int main(const char *args) {
         }
       }
       if (event.keydown && event.keycode == AM_KEY_S) {
-        new_ball();
+        if(!ball.exist){
+          new_ball();
+          score = 0;
+        }
       }
     }
     if(frame1 > frame2) {
@@ -174,9 +179,11 @@ static void update_state() {
   }
   if(ball.y + SIDE >= board.y && ball.x  >= board.head  && ball.x  < board.tail && ball.vy > 0) {
     ball.vy = -ball.vy;
+    score ++;
     puts(yellow"Nice!\n"close);
   } else if (ball.y + SIDE >= screen_h) {
     puts(red"GAME OVER!\n"close);
+    printf(purple"Your score is %d\n"close);
     ball.exist = false;
   }
   ball.x += ball.vx;
