@@ -151,8 +151,8 @@ static void update_screen() {
 }
 
 static void new_ball() {
-  ball.vx = screen_w / SIDE / 32;
-  ball.vy = screen_h / SIDE / 32;
+  ball.vx = (screen_w - SIDE + 1) / randint(FPS * 3 / 2, FPS * 2);
+  ball.vy = (screen_h - SIDE + 1) / randint(FPS * 3 / 2, FPS * 2);  
   ball.x = randint(0, LEN);
   ball.y = 0;
   ball.exist = true;
@@ -161,28 +161,28 @@ static void new_ball() {
 static void update_state() {
   if(!ball.exist) return;
   //top
-  if(ball.vy < 0 && ball.y <= 0){
+  if(ball.vy < 0 && ball.y * SIDE <= 0){
     ball.vy = -ball.vy;
   }
   //left
-  if(ball.vx < 0 && ball.x <= 0) {
+  if(ball.vx < 0 && ball.x * SIDE <= 0) {
     ball.vx = -ball.vx;
   }
   //right
-  if(ball.vx > 0 && ball.x >= screen_w - SIDE) {
+  if(ball.vx > 0 && ball.x * SIDE >= screen_w - SIDE) {
     ball.vx = -ball.vx;
   }
   //bottom
-  if(ball.y >= screen_h) {
+  if(ball.y * SIDE >= screen_h) {
     puts(red"GAME OVER!\n"close);
     ball.exist = false;
   }
-  if(ball.y >= board.height && ball.x >= board.head && ball.x < board.tail) {
+  if(ball.y * SIDE >= board.height && ball.x * SIDE >= board.head && ball.x * SIDE < board.tail) {
     ball.vy = -ball.vy;
     puts(yellow"Nice!\n"close);
   }
-  ball.x += ball.vx;
-  ball.y += ball.vy;
+  ball.x += ball.vx/SIDE;
+  ball.y += ball.vy/SIDE;
   
 }
 
