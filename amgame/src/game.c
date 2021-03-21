@@ -114,10 +114,10 @@ static void video_init() {
 
 static void update_board() {
   for (int x = 0; x * SIDE <= screen_w; ++ x) {
-    io_write(AM_GPU_FBDRAW, x * SIDE, board.y, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.y * SIDE), false);
+    io_write(AM_GPU_FBDRAW, x * SIDE, board.y, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.y), false);
   } 
   for (int x = board.head; x < board.tail; ++ x) {
-    io_write(AM_GPU_FBDRAW, x * SIDE, board.y, Board, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.y * SIDE), false);
+    io_write(AM_GPU_FBDRAW, x * SIDE, board.y, Board, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.y), false);
   } 
 }
 
