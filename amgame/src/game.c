@@ -90,7 +90,7 @@ static void video_init() {
     }
   }
 
-  for (int y = (screen_h / 4) / SIDE; y * SIDE <= 3 * (screen_h / 4); ++ y) {
-    io_write(AM_GPU_FBDRAW, screen_h - SIDE, y * SIDE, pixels, SIDE, SIDE, false);
+  for (int x = (screen_w / 4) / SIDE; x * SIDE <= 3 * (screen_w / 4); ++ x) {
+    io_write(AM_GPU_FBDRAW, x * SIDE, screen_h - SIDE, pixels, SIDE, SIDE, false);
   }  
 }
