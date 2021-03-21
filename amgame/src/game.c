@@ -1,11 +1,6 @@
 #include <game.h>
 
 #define FPS              30
-#define CPS               5
-//print GAME OVER
-#define CHAR_W            8
-#define CHAR_H           16
-#define NCHAR           128
 // draw the ball
 #define SIDE             16
 // notice this may cause some problem of float number
