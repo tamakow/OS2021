@@ -8,7 +8,7 @@
 #define NCHAR           128
 // draw the ball
 #define SIDE             16
-#define LEN (screen_w / 32) / SIDE
+#define LEN (screen_w / 8) / SIDE
 
 #define COL_WHITE  0xeeeeee
 #define COL_RED    0xdc143c
@@ -88,7 +88,7 @@ int main(const char *args) {
 static void video_init() {
   screen_h = io_read(AM_GPU_CONFIG).height;
   screen_w = io_read(AM_GPU_CONFIG).width;
-  printf(yellow"%d\n"close,screen_w);
+  // printf(yellow"%d\n"close,screen_w);
 
   for (int i = 0; i < SIDE * SIDE; ++ i) {
     Board[i] = COL_BLUE;
@@ -102,7 +102,7 @@ static void video_init() {
   }
 
   //init the board
-  board.x = 15 * LEN; 
+  board.x = 3 * LEN; 
   board.y = screen_h - SIDE;
   board.len = 2 * LEN;
   update_board(); 
