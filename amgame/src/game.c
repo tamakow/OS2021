@@ -104,7 +104,7 @@ static void video_init() {
   //init the board
   board.x = 3 * LEN; 
   board.y = screen_h - SIDE;
-  board.len = 2 * LEN;
+  board.len =  LEN;
   update_board(); 
 }
 
