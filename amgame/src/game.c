@@ -8,6 +8,8 @@
 #define NCHAR           128
 // draw the ball
 #define SIDE             16
+#define LEN (screen_w / 32) / SIDE
+
 #define COL_WHITE  0xeeeeee
 #define COL_RED    0xdc143c
 #define COL_BLUE   0x191970
@@ -21,6 +23,7 @@
 #define yellow "\033[1;33m"
 #define green  "\033[1;32m"
 #define close     "\033[0m"
+
 
 struct BALL {
   int x, y, v, t;
@@ -80,9 +83,9 @@ static void video_init() {
   }
 
   //draw the board
-  board.x = 3 * (screen_w / 8) / SIDE;
+  board.x = 12 * LEN;
   board.y = screen_h - SIDE;
-  board.len = 2 * (screen_w / 8) / SIDE;
+  board.len = 8 * LEN;
   for (int x = board.x; x <= board.x + board.len; ++ x) {
     io_write(AM_GPU_FBDRAW, x * SIDE, board.y, pixels, SIDE, SIDE, false);
   }  
