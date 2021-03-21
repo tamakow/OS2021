@@ -145,7 +145,7 @@ static void update_screen() {
 static void new_ball() {
   ball.t = 0;
   ball.v = (screen_h - SIDE + 1) / randint(FPS, FPS * 2);
-  ball.x = randint (0, screen_w - SIDE);
+  ball.x = 0;//randint (0, screen_w - SIDE);
   ball.y = 0;
   ball.exist = true;
 }
