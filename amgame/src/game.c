@@ -151,9 +151,9 @@ static void update_screen() {
 }
 
 static void new_ball() {
-  ball.vx = SIDE;
-  ball.vy = SIDE;
-  ball.x = 0;
+  ball.vx = randint(0, SIDE);
+  ball.vy = randint(0, SIDE);
+  ball.x = randint(0, screen_w - SIDE);
   ball.y = 0;
   ball.exist = true;
 }
@@ -161,18 +161,18 @@ static void new_ball() {
 static void update_state() {
   if(!ball.exist) return;
   //top
-  if(ball.vy < 0 && ball.y == 0){
+  if(ball.vy < 0 && ball.y <= 0){
     ball.vy = -ball.vy;
   }
   //left
-  if(ball.vx < 0 && ball.x == 0) {
+  if(ball.vx < 0 && ball.x <= 0) {
     ball.vx = -ball.vx;
   }
   //right
-  if(ball.vx > 0 && ball.x == screen_w - SIDE) {
+  if(ball.vx > 0 && ball.x >= screen_w - SIDE) {
     ball.vx = -ball.vx;
   }
-  if(ball.y + SIDE >= board.y && ball.x  >= board.head  && ball.x  < board.tail) {
+  if(ball.y + SIDE >= board.y && ball.x  >= board.head  && ball.x  < board.tail && ball.vy > 0) {
     ball.vy = -ball.vy;
     puts(yellow"Nice!\n"close);
   } else if (ball.y + SIDE >= screen_h) {
