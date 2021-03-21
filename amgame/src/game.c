@@ -7,8 +7,8 @@
 #define CHAR_H           16
 #define NCHAR           128
 // draw the ball
-#define SIDE             16
-#define LEN (screen_w / 8) / SIDE
+#define SIDE             8
+#define LEN (screen_w / 16) / SIDE
 
 #define COL_WHITE  0xeeeeee
 #define COL_RED    0xdc143c
