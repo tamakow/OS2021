@@ -137,10 +137,7 @@ static void video_init() {
 }
 
 static void update_screen() {
-  //init the screen
   // notice we need to init all the screen
-  // for(int x = 0; x * SIDE <= screen_w; ++ x)
-  //   io_write(AM_GPU_FBDRAW, x * SIDE, board.height, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.height), false);
   for (int x = 0; x < screen_w; x += SIDE) {
     for (int y = 0; y <= screen_h; y += SIDE) {
       io_write(AM_GPU_FBDRAW, x, y, blank, min(SIDE, screen_w - x), min(SIDE, screen_h - y), false);
@@ -184,6 +181,7 @@ static void update_state() {
   } else if (ball.y + SIDE >= screen_h) {
     puts(red"GAME OVER!\n"close);
     printf(purple"Your score is %d\n"close, score);
+    puts(green"Press 'S' to create a new ball\n"close);
     ball.exist = false;
   }
   ball.x += ball.vx;
