@@ -22,7 +22,8 @@
 
 
 struct BALL {
-  int x, y, v, t;
+  int x, y, t;
+  int vx,vy;
   bool exist;
 } ball;
 
@@ -33,7 +34,7 @@ struct BOARD {
 
 static void video_init();
 static void update_screen();
-// static void update_state();
+static void update_state();
 static void new_ball();
 static void ball_init();
 static int min(int a,int b);
@@ -50,17 +51,16 @@ int main(const char *args) {
   ioe_init();
   video_init();
   ball_init();
-  new_ball();
 
   puts(red"'ESC' to exit this game\n"close);
   puts(green"Please press 'A' or 'D' to move the board\n"close);
 
   int frame1 = 0, frame2 = 0;
   while (1) {
-    frame1 = io_read(AM_TIMER_UPTIME).us/ (1000000 / FPS);
-    // for (; frame1 < frame; ++frame1) {
-    //   update_state();
-    // }
+    int frame = io_read(AM_TIMER_UPTIME).us/ (1000000 / FPS);
+    for (; frame1 < frame; ++frame1) {
+      update_state();
+    }
     while(1){
       AM_INPUT_KEYBRD_T event = io_read(AM_INPUT_KEYBRD);
       if (event.keycode == AM_KEY_NONE) break;
@@ -131,8 +131,13 @@ static void video_init() {
 static void update_screen() {
   //init the screen
   // notice we need to init all the screen
-  for(int x = 0; x * SIDE <= screen_w; ++ x)
-    io_write(AM_GPU_FBDRAW, x * SIDE, board.height, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.height), false);
+  // for(int x = 0; x * SIDE <= screen_w; ++ x)
+  //   io_write(AM_GPU_FBDRAW, x * SIDE, board.height, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.height), false);
+  for (int x = 0; x * SIDE <= screen_w; ++ x) {
+    for (int y = 0; y * SIDE <= screen_h; ++ y) {
+      io_write(AM_GPU_FBDRAW, x*SIDE, y*SIDE, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - y * SIDE), false);
+    }
+  }
   //update board
   for (int x = board.head; x < board.tail; ++ x) {
     io_write(AM_GPU_FBDRAW, x * SIDE, board.height, Board, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.height), false);
@@ -144,13 +149,14 @@ static void update_screen() {
 
 static void new_ball() {
   ball.t = 0;
-  ball.v = (screen_h - SIDE + 1) / randint(FPS, FPS * 2);
+  ball.vx = (screen_w - SIDE + 1) / 45;
+  ball.vy = (screen_h - SIDE + 1) / 45;
   ball.x = randint(0, LEN);
   ball.y = 0;
   ball.exist = true;
 }
 
-// static void update_state() {
-//   if(!ball.exist) new_ball();
-// }
+static void update_state() {
+  if(!ball.exist) new_ball();
+}
 
