@@ -60,8 +60,14 @@ int main(const char *args) {
       AM_INPUT_KEYBRD_T event = io_read(AM_INPUT_KEYBRD);
       if (event.keycode == AM_KEY_NONE) break;
       if (event.keydown && event.keycode == AM_KEY_ESCAPE) halt(0);
-      if (event.keydown && event.keycode == AM_KEY_A) board.x -= LEN;
-      if (event.keydown && event.keycode == AM_KEY_D) board.x += LEN;
+      if (event.keydown && event.keycode == AM_KEY_A) {
+        if(board.x * SIDE > 0)
+          board.x -= LEN;
+      }
+      if (event.keydown && event.keycode == AM_KEY_D) {
+        if(board.x * SIDE <= screen_w) 
+          board.x += LEN;
+      }
     }
     if(frame1 > frame2) {
       update_board();
