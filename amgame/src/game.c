@@ -7,8 +7,9 @@
 #define CHAR_H           16
 #define NCHAR           128
 // draw the ball
-#define SIDE             4
+#define SIDE             16
 // notice this may cause some problem of float number
+#define LEN screen_w / SIDE
 
 #define COL_WHITE  0xeeeeee
 #define COL_RED    0xdc143c
@@ -44,7 +45,6 @@ static void update_board();
 static int screen_w, screen_h;
 static uint32_t blank[SIDE * SIDE];
 static uint32_t Board[SIDE * SIDE];
-static int LEN; 
 
 // Operating system is a C program!
 int main(const char *args) {
@@ -63,11 +63,11 @@ int main(const char *args) {
       if (event.keydown && event.keycode == AM_KEY_ESCAPE) halt(0);
       if (event.keydown && event.keycode == AM_KEY_A) {
         if(board.x > 0)
-          board.x -= LEN;
+          board.x -= 1;
       }
       if (event.keydown && event.keycode == AM_KEY_D) {
         if(board.x + board.len < LEN) 
-          board.x += LEN;
+          board.x += 1;
       }
     }
     if(frame1 > frame2) {
@@ -89,7 +89,6 @@ int main(const char *args) {
 static void video_init() {
   screen_h = io_read(AM_GPU_CONFIG).height;
   screen_w = io_read(AM_GPU_CONFIG).width;
-  LEN  = (screen_w / 32) / SIDE;
 
   for (int i = 0; i < SIDE * SIDE; ++ i) {
     Board[i] = COL_BLUE;
@@ -103,9 +102,9 @@ static void video_init() {
   }
 
   //init the board
-  board.x = LEN * 3; 
+  board.x = 0; 
   board.y = screen_h - SIDE;
-  board.len =  LEN;
+  board.len =  1;
   update_board(); 
 }
 
