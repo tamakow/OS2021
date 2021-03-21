@@ -16,7 +16,17 @@
 #define false            0
 #define true             1
 
+
+struct character {
+  int x, y, v, t;
+} ball;
+
+
 static void video_init();
+// static void new_ball();
+// static int min(int a,int b);
+// static int randint(int l,int r);
+
 
 static int screen_w, screen_h;
 
@@ -25,11 +35,13 @@ int main(const char *args) {
   ioe_init();
   video_init();
 
-  puts("mainargs = \"");
-  puts(args); // make run mainargs=xxx
-  puts("\"\n");
+  // puts("mainargs = \"");
+  // puts(args); // make run mainargs=xxx
+  // puts("\"\n");
 
   // splash();
+
+  puts("'ESC' to exit this game\n");
 
   puts("Press any key to see its key code...\n");
   while (1) {
@@ -38,20 +50,37 @@ int main(const char *args) {
   return 0;
 }
 
+// static int min(int a, int b) {
+//   return (a > b)? b : a; 
+// }
+
+// static randint(int l, int r) {
+//   return l + (rand() & 0x7fffffff) % (r - l + 1);
+// }
+
 static void video_init() {
   screen_h = io_read(AM_GPU_CONFIG).height;
   screen_w = io_read(AM_GPU_CONFIG).width;
 
+  //draw a screen of balls 
+  // uint32_t pixels[SIDE * SIDE];
+  // for (int x = 0; x < SIDE; ++ x) {
+  //   for (int y = 0; y < SIDE; ++ y) {
+  //     if (((x - SIDE/2)*(x - SIDE/2) + (y - SIDE/2)*(y - SIDE/2)) <= SIDE*SIDE/4)
+  //       pixels[x*SIDE + y] = COL_WHITE;
+  //   }
+  // }
+  // for (int x = 0; x * SIDE <= screen_h; ++ x) {
+  //   for (int y = 0; y * SIDE <= screen_w; ++ y) {
+  //     io_write(AM_GPU_FBDRAW, x*SIDE, y*SIDE, pixels, SIDE, SIDE, false);
+  //   }
+  // }
+
   uint32_t pixels[SIDE * SIDE];
-  for (int x = 0; x < SIDE; ++ x) {
-    for (int y = 0; y < SIDE; ++ y) {
-      if (((x - SIDE/2)*(x - SIDE/2) + (y - SIDE/2)*(y - SIDE/2)) <= SIDE*SIDE/4)
-        pixels[x*SIDE + y] = COL_WHITE;
-    }
-  }
-  for (int x = 0; x * SIDE <= screen_h; ++ x) {
-    for (int y = 0; y * SIDE <= screen_w; ++ y) {
-      io_write(AM_GPU_FBDRAW, x*SIDE, y*SIDE, pixels, SIDE, SIDE, false);
-    }
-  }
+  for (int i = 0; i < SIDE * SIDE; ++ i)
+    pixels[i] = COL_BLUE;
+  
+  for (int y = (screen_w / 4) / SIDE; y * SIDE <= 3 * (screen_w / 4); ++ y) {
+    io_write(AM_GPU_FBDRAW, screen_h - SIDE, y * SIDE, pixels, SIDE, SIDE, false);
+  }  
 }
