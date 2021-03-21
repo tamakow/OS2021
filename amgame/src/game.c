@@ -17,6 +17,8 @@
 #define false            0
 #define true             1
 
+#define red "\033[1;31m"
+#define close "\033[0m"
 
 struct character {
   int x, y, v, t;
@@ -43,7 +45,7 @@ int main(const char *args) {
 
   // splash();
 
-  puts("\033[31m'ESC' to exit this game\033[0m \n");
+  puts(red"'ESC' to exit this game\n"close);
   puts("Please press 'A' or 'D' to move the board");
 
 
