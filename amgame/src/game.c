@@ -1,6 +1,6 @@
 #include <game.h>
 
-#define FPS              30
+#define FPS               4
 // draw the ball
 #define SIDE             16
 // notice this may cause some problem of float number
