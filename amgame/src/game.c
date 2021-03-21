@@ -9,7 +9,6 @@
 // draw the ball
 #define SIDE             8
 // notice this may cause some problem of float number
-#define LEN (screen_w / SIDE) / 32
 
 #define COL_WHITE  0xeeeeee
 #define COL_RED    0xdc143c
@@ -45,6 +44,7 @@ static void update_board();
 static int screen_w, screen_h;
 static uint32_t blank[SIDE * SIDE];
 static uint32_t Board[SIDE * SIDE];
+static int LEN; 
 
 // Operating system is a C program!
 int main(const char *args) {
@@ -89,8 +89,7 @@ int main(const char *args) {
 static void video_init() {
   screen_h = io_read(AM_GPU_CONFIG).height;
   screen_w = io_read(AM_GPU_CONFIG).width;
-  // printf(yellow"%d\n"close,screen_w);
-
+  LEN  = (screen_w / 32) / SIDE;
   for (int i = 0; i < SIDE * SIDE; ++ i) {
     Board[i] = COL_BLUE;
     blank[i] = COL_Cyan;
