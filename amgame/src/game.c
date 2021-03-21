@@ -65,7 +65,7 @@ int main(const char *args) {
           board.x -= LEN;
       }
       if (event.keydown && event.keycode == AM_KEY_D) {
-        if(board.x * SIDE <= screen_w) 
+        if((board.x + board.len) * SIDE < screen_w) 
           board.x += LEN;
       }
     }
