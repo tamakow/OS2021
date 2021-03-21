@@ -38,7 +38,7 @@ struct BOARD {
 
 static void video_init();
 static void update_screen();
-static void update_state();
+// static void update_state();
 static void new_ball();
 static void ball_init();
 static int min(int a,int b);
@@ -55,6 +55,7 @@ int main(const char *args) {
   ioe_init();
   video_init();
   ball_init();
+  new_ball();
 
   puts(red"'ESC' to exit this game\n"close);
   puts(green"Please press 'A' or 'D' to move the board\n"close);
@@ -63,9 +64,10 @@ int main(const char *args) {
   while (1) {
     int frame = io_read(AM_TIMER_UPTIME).us/ (1000000 / FPS);
 
-    for (; frame1 < frame; ++frame1) {
-      update_state();
-    }
+    frame1 = frame;
+    // for (; frame1 < frame; ++frame1) {
+    //   update_state();
+    // }
     while(1){
       AM_INPUT_KEYBRD_T event = io_read(AM_INPUT_KEYBRD);
       if (event.keycode == AM_KEY_NONE) break;
@@ -156,7 +158,7 @@ static void new_ball() {
   ball.exist = true;
 }
 
-static void update_state() {
-  if(!ball.exist) new_ball();
-}
+// static void update_state() {
+//   if(!ball.exist) new_ball();
+// }
 
