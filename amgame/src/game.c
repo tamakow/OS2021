@@ -47,7 +47,6 @@ static void video_init() {
     for (int y = 0; y < SIDE; ++ y) {
       if (((x - SIDE/2)*(x - SIDE/2) + (y - SIDE/2)*(y - SIDE/2)) <= SIDE*SIDE/4)
         pixels[x*SIDE + y] = COL_WHITE;
-      else pixels[x*SIDE+y] = COL_RED;
     }
   }
   for (int x = 0; x * SIDE <= screen_h; ++ x) {
