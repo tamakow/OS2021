@@ -1,6 +1,6 @@
 #include <game.h>
 
-#define FPS              30
+#define FPS              8
 // draw the ball
 #define SIDE             16
 // notice this may cause some problem of float number
@@ -151,8 +151,8 @@ static void update_screen() {
 }
 
 static void new_ball() {
-  ball.vx = (screen_w - SIDE + 1) / randint(FPS * 3 / 2, FPS * 2);
-  ball.vy = (screen_h - SIDE + 1) / randint(FPS * 3 / 2, FPS * 2);  
+  ball.vx = screen_h / FPS;
+  ball.vy = screen_w / FPS;
   ball.x = randint(0, LEN);
   ball.y = 0;
   ball.exist = true;
@@ -161,23 +161,23 @@ static void new_ball() {
 static void update_state() {
   if(!ball.exist) return;
   //top
-  if(ball.vy < 0 && ball.y * SIDE <= 0){
+  if(ball.vy < 0 && ball.y * SIDE == 0){
     ball.vy = -ball.vy;
   }
   //left
-  if(ball.vx < 0 && ball.x * SIDE <= 0) {
+  if(ball.vx < 0 && ball.x * SIDE == 0) {
     ball.vx = -ball.vx;
   }
   //right
-  if(ball.vx > 0 && ball.x * SIDE >= screen_w - SIDE) {
+  if(ball.vx > 0 && ball.x * SIDE == screen_w - SIDE) {
     ball.vx = -ball.vx;
   }
   //bottom
-  if(ball.y * SIDE >= screen_h) {
+  if(ball.y * SIDE == screen_h) {
     puts(red"GAME OVER!\n"close);
     ball.exist = false;
   }
-  if(ball.y * SIDE >= board.height && ball.x * SIDE >= board.head && ball.x * SIDE < board.tail) {
+  if(ball.y * SIDE == board.height && ball.x * SIDE >= board.head && ball.x * SIDE < board.tail) {
     ball.vy = -ball.vy;
     puts(yellow"Nice!\n"close);
   }
