@@ -128,7 +128,7 @@ static void video_init() {
 
 static void update_screen() {
   //init the screen
-  for(int x = 0; x * SIDE <= screen_h; ++ x)
+  for(int x = 0; x * SIDE <= screen_w; ++ x)
     io_write(AM_GPU_FBDRAW, x * SIDE, board.height, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.height), false);
   //update board
   for (int x = board.head; x < board.tail; ++ x) {
