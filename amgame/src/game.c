@@ -1,5 +1,6 @@
 #include <game.h>
 
+
 #define FPS            30
 #define CPS             5
 //print GAME OVER
@@ -8,8 +9,7 @@
 #define NCHAR         128
 #define COL_WHITE    0xeeeeee
 #define COL_RED      0xdc143c
-#define COL_BLUE     0x8a2be2
-
+#define COL_BLUE     0x191970
 
 // Operating system is a C program!
 int main(const char *args) {
