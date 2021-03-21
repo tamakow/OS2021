@@ -172,14 +172,14 @@ static void update_state() {
   if(ball.vx > 0 && ball.x * SIDE == screen_w - SIDE) {
     ball.vx = -ball.vx;
   }
-  //bottom
-  if(ball.y * SIDE == screen_h) {
-    puts(red"GAME OVER!\n"close);
-    ball.exist = false;
-  }
   if(ball.y * SIDE >= board.height && ball.x  >= board.head  && ball.x  < board.tail) {
     ball.vy = -ball.vy;
     puts(yellow"Nice!\n"close);
+  }
+  //bottom
+  else {
+    puts(red"GAME OVER!\n"close);
+    ball.exist = false;
   }
   ball.x += ball.vx/SIDE;
   ball.y += ball.vy/SIDE;
