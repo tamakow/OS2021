@@ -151,9 +151,9 @@ static void update_screen() {
 }
 
 static void new_ball() {
-  ball.vx = screen_h / FPS;
-  ball.vy = screen_w / FPS;
-  ball.x = randint(0, LEN);
+  ball.vx = SIDE;
+  ball.vy = SIDE;
+  ball.x = 0;
   ball.y = 0;
   ball.exist = true;
 }
