@@ -35,6 +35,7 @@ struct BOARD {
 } board;
 
 static void video_init();
+static void update_board();
 // static void new_ball();
 // static int min(int a,int b);
 // static int randint(int l,int r);
@@ -42,6 +43,7 @@ static void video_init();
 
 static int screen_w, screen_h;
 static uint32_t blank[SIDE * SIDE];
+static uint32_t Board[SIDE * SIDE];
 
 // Operating system is a C program!
 int main(const char *args) {
@@ -51,9 +53,20 @@ int main(const char *args) {
   puts(red"'ESC' to exit this game\n"close);
   puts(green"Please press 'A' or 'D' to move the board\n"close);
 
-  
+  int frame1 = 0, frame2 = 0;
   while (1) {
-    print_key();
+    frame1 = io_read(AM_TIMER_UPTIME).us/ (1000000 / FPS);
+    while(1){
+      AM_INPUT_KEYBRD_T event = io_read(AM_INPUT_KEYBRD);
+      if (event.keycode == AM_KEY_NONE) break;
+      if (event.keydown && event.keycode == AM_KEY_ESCAPE) halt(0);
+      if (event.keydown && event.keycode == AM_KEY_A) board.x -= LEN;
+      if (event.keydown && event.keycode == AM_KEY_D) board.x -= LEN;
+    }
+    if(frame1 > frame2) {
+      update_board();
+      frame2 = frame1;
+    }
   }
   return 0;
 }
@@ -70,9 +83,8 @@ static void video_init() {
   screen_h = io_read(AM_GPU_CONFIG).height;
   screen_w = io_read(AM_GPU_CONFIG).width;
 
-  uint32_t pixels[SIDE * SIDE];
   for (int i = 0; i < SIDE * SIDE; ++ i) {
-    pixels[i] = COL_BLUE;
+    Board[i] = COL_BLUE;
     blank[i] = COL_Cyan;
   }
   //draw the backgroud
@@ -82,13 +94,17 @@ static void video_init() {
     }
   }
 
-  //draw the board
-  board.x = 12 * LEN;
+  //init the board
+  board.x = 12 * LEN; 
   board.y = screen_h - SIDE;
   board.len = 8 * LEN;
+  update_board(); 
+}
+
+static void update_board() {
   for (int x = board.x; x <= board.x + board.len; ++ x) {
-    io_write(AM_GPU_FBDRAW, x * SIDE, board.y, pixels, SIDE, SIDE, false);
-  }  
+    io_write(AM_GPU_FBDRAW, x * SIDE, board.y, Board, SIDE, SIDE, false);
+  } 
 }
 
 
