@@ -14,4 +14,7 @@ void print_key() {
     puts(key_names[event.keycode]);
     puts("\n");
   }
+  if(event.keycode == AM_KEY_ESCAPE && event.keydown) {
+    halt(0);
+  }
 }
