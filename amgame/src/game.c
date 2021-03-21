@@ -53,8 +53,8 @@ int main(const char *args) {
   ball_init();
 
   puts(red"'ESC' to exit this game\n"close);
-  puts(green"Please press 'A' or 'D' to move the board\n"close);
-  puts(green"press 'S' to create a new ball\n"close);
+  puts(green"Press 'A' or 'D' to move the board\n"close);
+  puts(green"Press 'S' to create a new ball\n"close);
 
   int frame1 = 0, frame2 = 0;
   while (1) {
@@ -127,7 +127,7 @@ static void video_init() {
   //init the board
   board.head = 0; 
   board.y = screen_h - SIDE;
-  board.tail = 2 * SIDE;
+  board.tail = 8 * SIDE;
   update_screen();
 }
 
