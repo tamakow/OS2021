@@ -31,8 +31,8 @@ struct BALL {
 } ball;
 
 struct BOARD {
-  int x, y;
-  int len;
+  int y;
+  int head,tail;
 } board;
 
 static void video_init();
@@ -62,12 +62,16 @@ int main(const char *args) {
       if (event.keycode == AM_KEY_NONE) break;
       if (event.keydown && event.keycode == AM_KEY_ESCAPE) halt(0);
       if (event.keydown && event.keycode == AM_KEY_A) {
-        if(board.x > 0)
-          board.x -= 1;
+        if(board.head > 0) {
+          board.head -= 1;
+          board.tail -= 1;
+        }
       }
       if (event.keydown && event.keycode == AM_KEY_D) {
-        if(board.x + board.len < LEN) 
-          board.x += 1;
+        if(board.tail < LEN){ 
+          board.head += 1;
+          board.tail += 1;
+        }
       }
     }
     if(frame1 > frame2) {
@@ -97,23 +101,23 @@ static void video_init() {
   //draw the backgroud
   for (int x = 0; x * SIDE <= screen_w; ++ x) {
     for (int y = 0; y * SIDE <= screen_h; ++ y) {
-      io_write(AM_GPU_FBDRAW, x*SIDE, y*SIDE, blank, SIDE, SIDE, false);
+      io_write(AM_GPU_FBDRAW, x*SIDE, y*SIDE, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - y * SIDE), false);
     }
   }
 
   //init the board
-  board.x = 0; 
+  board.head = 0; 
   board.y = screen_h - SIDE;
-  board.len =  1;
+  board.tail = 2;
   update_board(); 
 }
 
 static void update_board() {
   for (int x = 0; x * SIDE <= screen_w; ++ x) {
-    io_write(AM_GPU_FBDRAW, x * SIDE, board.y, blank, SIDE, SIDE, false);
+    io_write(AM_GPU_FBDRAW, x * SIDE, board.y, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.y * SIDE), false);
   } 
-  for (int x = board.x; x * SIDE <= (board.x + board.len) * SIDE; ++ x) {
-    io_write(AM_GPU_FBDRAW, min(screen_w,x * SIDE), board.y, Board, SIDE, SIDE, false);
+  for (int x = board.head; x < board.tail; ++ x) {
+    io_write(AM_GPU_FBDRAW, x * SIDE, board.y, Board, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.y * SIDE), false);
   } 
 }
 
