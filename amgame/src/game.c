@@ -38,7 +38,7 @@ struct BOARD {
 static void video_init();
 static void update_board();
 // static void new_ball();
-// static int min(int a,int b);
+static int min(int a,int b);
 // static int randint(int l,int r);
 
 
@@ -78,9 +78,9 @@ int main(const char *args) {
   return 0;
 }
 
-// static int min(int a, int b) {
-//   return (a > b)? b : a; 
-// }
+static int min(int a, int b) {
+  return (a > b)? b : a; 
+}
 
 // static randint(int l, int r) {
 //   return l + (rand() & 0x7fffffff) % (r - l + 1);
@@ -113,7 +113,7 @@ static void update_board() {
     io_write(AM_GPU_FBDRAW, x * SIDE, board.y, blank, SIDE, SIDE, false);
   } 
   for (int x = board.x; x * SIDE <= (board.x + board.len) * SIDE; ++ x) {
-    io_write(AM_GPU_FBDRAW, x * SIDE, board.y, Board, SIDE, SIDE, false);
+    io_write(AM_GPU_FBDRAW, min(screen_w,x * SIDE), board.y, Board, SIDE, SIDE, false);
   } 
 }
 
