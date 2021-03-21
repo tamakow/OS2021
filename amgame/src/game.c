@@ -84,8 +84,8 @@ static void video_init() {
     pixels[i] = COL_BLUE;
     blank[i] = COL_Cyan;
   }
-  for (int x = 0; x * SIDE <= screen_h; ++ x) {
-    for (int y = 0; y * SIDE <= screen_w; ++ y) {
+  for (int x = 0; x * SIDE <= screen_w; ++ x) {
+    for (int y = 0; y * SIDE <= screen_h; ++ y) {
       io_write(AM_GPU_FBDRAW, x*SIDE, y*SIDE, blank, SIDE, SIDE, false);
     }
   }
