@@ -34,10 +34,10 @@ struct BOARD {
 static void video_init();
 static void update_screen();
 // static void update_state();
-// static void new_ball();
+static void new_ball();
 static void ball_init();
 static int min(int a,int b);
-// static int randint(int l,int r);
+static int randint(int l,int r);
 
 
 static int screen_w, screen_h;
@@ -50,6 +50,7 @@ int main(const char *args) {
   ioe_init();
   video_init();
   ball_init();
+  new_ball();
 
   puts(red"'ESC' to exit this game\n"close);
   puts(green"Please press 'A' or 'D' to move the board\n"close);
@@ -89,9 +90,9 @@ static int min(int a, int b) {
   return (a > b)? b : a; 
 }
 
-// static int randint(int l, int r) {
-//   return l + (rand() & 0x7fffffff) % (r - l + 1);
-// }
+static int randint(int l, int r) {
+  return l + (rand() & 0x7fffffff) % (r - l + 1);
+}
 
 static void ball_init(){
   ball.exist = false;
@@ -143,13 +144,13 @@ static void update_screen() {
     io_write(AM_GPU_FBDRAW, ball.x * SIDE, ball.y * SIDE, Ball, min(SIDE, screen_w - ball.x * SIDE), min(SIDE, screen_h - ball.y * SIDE), false);
 }
 
-// static void new_ball() {
-//   ball.t = 0;
-//   ball.v = (screen_h - SIDE + 1) / randint(FPS, FPS * 2);
-//   ball.x = randint (0, screen_w - SIDE);
-//   ball.y = 0;
-//   ball.exist = true;
-// }
+static void new_ball() {
+  ball.t = 0;
+  ball.v = (screen_h - SIDE + 1) / randint(FPS, FPS * 2);
+  ball.x = randint (0, screen_w - SIDE);
+  ball.y = 0;
+  ball.exist = true;
+}
 
 // static void update_state() {
 //   if(!ball.exist) new_ball();
