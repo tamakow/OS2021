@@ -100,7 +100,8 @@ static void ball_init(){
   for (int x = 0; x < SIDE; ++ x) {
     for (int y = 0; y < SIDE; ++ y) {
       if (((x - SIDE/2)*(x - SIDE/2) + (y - SIDE/2)*(y - SIDE/2)) <= SIDE*SIDE/4)
-        Ball[x * SIDE + y] = COL_RED;
+        Ball[x * SIDE + y] = COL_BLUE;
+      else Ball[x * SIDE + y] = COL_BLUE;
     }
   }
 }
@@ -144,8 +145,8 @@ static void update_screen() {
 static void new_ball() {
   ball.t = 0;
   ball.v = (screen_h - SIDE + 1) / randint(FPS, FPS * 2);
-  ball.x = randint (0, screen_w - SIDE);
-  ball.y = SIDE;
+  ball.x = 0;//randint (0, screen_w - SIDE);
+  ball.y = 0;
   ball.exist = true;
 }
 
