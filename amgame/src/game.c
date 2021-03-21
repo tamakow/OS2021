@@ -43,7 +43,9 @@ int main(const char *args) {
 
   // splash();
 
-  puts("'ESC' to exit this game\n");
+  puts("\033[31m'ESC' to exit this game\033[0m \n");
+  puts("Please press 'A' or 'D' to move the board");
+
 
   puts("Press any key to see its key code...\n");
   while (1) {
