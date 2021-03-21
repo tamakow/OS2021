@@ -66,7 +66,7 @@ int main(const char *args) {
           board.x -= LEN;
       }
       if (event.keydown && event.keycode == AM_KEY_D) {
-        if(board.x + board.len < 32 * LEN) 
+        if(board.x + board.len < LEN * 32) 
           board.x += LEN;
       }
     }
