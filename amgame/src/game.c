@@ -61,7 +61,7 @@ int main(const char *args) {
       if (event.keycode == AM_KEY_NONE) break;
       if (event.keydown && event.keycode == AM_KEY_ESCAPE) halt(0);
       if (event.keydown && event.keycode == AM_KEY_A) board.x -= LEN;
-      if (event.keydown && event.keycode == AM_KEY_D) board.x -= LEN;
+      if (event.keydown && event.keycode == AM_KEY_D) board.x += LEN;
     }
     if(frame1 > frame2) {
       update_board();
@@ -102,6 +102,9 @@ static void video_init() {
 }
 
 static void update_board() {
+  for (int x = 0; x * SIDE <= screen_w; ++ x) {
+    io_write(AM_GPU_FBDRAW, x * SIDE, board.y, blank, SIDE, SIDE, false);
+  } 
   for (int x = board.x; x <= board.x + board.len; ++ x) {
     io_write(AM_GPU_FBDRAW, x * SIDE, board.y, Board, SIDE, SIDE, false);
   } 
