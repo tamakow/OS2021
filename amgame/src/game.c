@@ -61,11 +61,11 @@ int main(const char *args) {
       if (event.keycode == AM_KEY_NONE) break;
       if (event.keydown && event.keycode == AM_KEY_ESCAPE) halt(0);
       if (event.keydown && event.keycode == AM_KEY_A) {
-        if(board.x * SIDE > 0)
+        if(board.x> 0)
           board.x -= LEN;
       }
       if (event.keydown && event.keycode == AM_KEY_D) {
-        if((board.x + board.len) * SIDE < screen_w) 
+        if(board.x + board.len< screen_w / SIDE) 
           board.x += LEN;
       }
     }
