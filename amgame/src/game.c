@@ -28,7 +28,7 @@ struct BALL {
 } ball;
 
 struct BOARD {
-  int height;
+  int y;
   int head,tail;
 } board;
 
@@ -54,6 +54,7 @@ int main(const char *args) {
 
   puts(red"'ESC' to exit this game\n"close);
   puts(green"Please press 'A' or 'D' to move the board\n"close);
+  puts(green"press 'S' to create a new ball\n"close);
 
   int frame1 = 0, frame2 = 0;
   while (1) {
@@ -67,14 +68,14 @@ int main(const char *args) {
       if (event.keydown && event.keycode == AM_KEY_ESCAPE) halt(0);
       if (event.keydown && event.keycode == AM_KEY_A) {
         if(board.head > 0) {
-          board.head -= 1;
-          board.tail -= 1;
+          board.head -= SIDE;
+          board.tail -= SIDE;
         }
       }
       if (event.keydown && event.keycode == AM_KEY_D) {
-        if(board.tail < LEN){ 
-          board.head += 1;
-          board.tail += 1;
+        if(board.tail < screen_w){ 
+          board.head += SIDE;
+          board.tail += SIDE;
         }
       }
       if (event.keydown && event.keycode == AM_KEY_S) {
@@ -83,7 +84,6 @@ int main(const char *args) {
     }
     if(frame1 > frame2) {
       update_screen();
-      io_write(AM_GPU_FBDRAW, ball.x * SIDE, ball.y * SIDE, Ball, min(SIDE, screen_w - ball.x * SIDE), min(SIDE, screen_h - ball.y * SIDE), false);
       frame2 = frame1;
     }
   }
@@ -118,16 +118,16 @@ static void video_init() {
     blank[i] = COL_Cyan;
   }
   //draw the backgroud
-  for (int x = 0; x * SIDE <= screen_w; ++ x) {
-    for (int y = 0; y * SIDE <= screen_h; ++ y) {
-      io_write(AM_GPU_FBDRAW, x*SIDE, y*SIDE, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - y * SIDE), false);
+  for (int x = 0; x < screen_w; x += SIDE) {
+    for (int y = 0; y < screen_h; y += SIDE) {
+      io_write(AM_GPU_FBDRAW, x, y, blank, min(SIDE, screen_w - x), min(SIDE, screen_h - y), false);
     }
   }
 
   //init the board
-  board.head = 0;//(LEN / 2 - 2) > 0 ? (LEN / 2 - 2) : 0; 
-  board.height = screen_h - SIDE;
-  board.tail = LEN -1;//(board.head + 4) < LEN ? board.head + 4 : 1;
+  board.head = 0; 
+  board.y = screen_h - SIDE;
+  board.tail = 2 * SIDE;
   update_screen();
 }
 
@@ -136,18 +136,18 @@ static void update_screen() {
   // notice we need to init all the screen
   // for(int x = 0; x * SIDE <= screen_w; ++ x)
   //   io_write(AM_GPU_FBDRAW, x * SIDE, board.height, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.height), false);
-  for (int x = 0; x * SIDE <= screen_w; ++ x) {
-    for (int y = 0; y * SIDE <= screen_h; ++ y) {
-      io_write(AM_GPU_FBDRAW, x*SIDE, y*SIDE, blank, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - y * SIDE), false);
+  for (int x = 0; x < screen_w; x += SIDE) {
+    for (int y = 0; y <= screen_h; y += SIDE) {
+      io_write(AM_GPU_FBDRAW, x, y, blank, min(SIDE, screen_w - x), min(SIDE, screen_h - y), false);
     }
   }
   //update board
-  for (int x = board.head; x < board.tail; ++ x) {
-    io_write(AM_GPU_FBDRAW, x * SIDE, board.height, Board, min(SIDE, screen_w - x * SIDE), min(SIDE, screen_h - board.height), false);
+  for (int x = board.head; x < board.tail; x += SIDE) {
+    io_write(AM_GPU_FBDRAW, x, board.y, Board, min(SIDE, screen_w - x), min(SIDE, screen_h - board.y), false);
   } 
   //update ball
   if(ball.exist)
-    io_write(AM_GPU_FBDRAW, ball.x * SIDE, ball.y * SIDE, Ball, min(SIDE, screen_w - ball.x * SIDE), min(SIDE, screen_h - ball.y * SIDE), false);
+    io_write(AM_GPU_FBDRAW, ball.x, ball.y, Ball, min(SIDE, screen_w - ball.x), min(SIDE, screen_h - ball.y), false);
 }
 
 static void new_ball() {
@@ -161,28 +161,26 @@ static void new_ball() {
 static void update_state() {
   if(!ball.exist) return;
   //top
-  if(ball.vy < 0 && ball.y * SIDE == 0){
+  if(ball.vy < 0 && ball.y == 0){
     ball.vy = -ball.vy;
   }
   //left
-  if(ball.vx < 0 && ball.x * SIDE == 0) {
+  if(ball.vx < 0 && ball.x == 0) {
     ball.vx = -ball.vx;
   }
   //right
-  if(ball.vx > 0 && ball.x * SIDE == screen_w - SIDE) {
+  if(ball.vx > 0 && ball.x == screen_w - SIDE) {
     ball.vx = -ball.vx;
   }
-  if(ball.y * SIDE >= board.height && ball.x  >= board.head  && ball.x  < board.tail) {
+  if(ball.y + SIDE >= board.y && ball.x  >= board.head  && ball.x  < board.tail) {
     ball.vy = -ball.vy;
     puts(yellow"Nice!\n"close);
-  }
-  //bottom
-  else {
+  } else {
     puts(red"GAME OVER!\n"close);
     ball.exist = false;
   }
-  ball.x += ball.vx/SIDE;
-  ball.y += ball.vy/SIDE;
+  ball.x += ball.vx;
+  ball.y += ball.vy;
   
 }
 
