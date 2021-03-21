@@ -7,7 +7,7 @@
 #define CHAR_H           16
 #define NCHAR           128
 // draw the ball
-#define SIDE             8
+#define SIDE             4
 // notice this may cause some problem of float number
 
 #define COL_WHITE  0xeeeeee
@@ -90,6 +90,7 @@ static void video_init() {
   screen_h = io_read(AM_GPU_CONFIG).height;
   screen_w = io_read(AM_GPU_CONFIG).width;
   LEN  = (screen_w / 32) / SIDE;
+
   for (int i = 0; i < SIDE * SIDE; ++ i) {
     Board[i] = COL_BLUE;
     blank[i] = COL_Cyan;
@@ -112,7 +113,7 @@ static void update_board() {
   for (int x = 0; x * SIDE <= screen_w; ++ x) {
     io_write(AM_GPU_FBDRAW, x * SIDE, board.y, blank, SIDE, SIDE, false);
   } 
-  for (int x = board.x; x <= board.x + board.len; ++ x) {
+  for (int x = board.x; x * SIDE <= (board.x + board.len) * SIDE; ++ x) {
     io_write(AM_GPU_FBDRAW, x * SIDE, board.y, Board, SIDE, SIDE, false);
   } 
 }
