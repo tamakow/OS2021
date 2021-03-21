@@ -1,24 +1,26 @@
 #include <game.h>
 
-#define FPS             30
-#define CPS              5
+#define FPS              30
+#define CPS               5
 //print GAME OVER
-#define CHAR_W           8
-#define CHAR_H          16
-#define NCHAR          128
+#define CHAR_W            8
+#define CHAR_H           16
+#define NCHAR           128
 // draw the ball
-#define SIDE            16
-#define COL_WHITE 0xeeeeee
-#define COL_RED   0xdc143c
-#define COL_BLUE  0x191970
-#define COL_Cyan  0x00ffff
+#define SIDE             16
+#define COL_WHITE  0xeeeeee
+#define COL_RED    0xdc143c
+#define COL_BLUE   0x191970
+#define COL_Cyan   0x00ffff
 
 
-#define false            0
-#define true             1
+#define false             0
+#define true              1
 
-#define red "\033[1;31m"
-#define close "\033[0m"
+#define red    "\033[1;31m"
+#define yellow "\033[1;33m"
+#define green  "\033[1;32m"
+#define close     "\033[0m"
 
 struct character {
   int x, y, v, t;
@@ -46,7 +48,7 @@ int main(const char *args) {
   // splash();
 
   puts(red"'ESC' to exit this game\n"close);
-  puts("Please press 'A' or 'D' to move the board");
+  puts(green"Please press 'A' or 'D' to move the board\n"close);
 
 
   puts("Press any key to see its key code...\n");
