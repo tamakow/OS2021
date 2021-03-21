@@ -183,7 +183,7 @@ static void update_state() {
     puts(yellow"Nice!\n"close);
   } else if (ball.y + SIDE >= screen_h) {
     puts(red"GAME OVER!\n"close);
-    printf(purple"Your score is %d\n"close);
+    printf(purple"Your score is %d\n"close, score);
     ball.exist = false;
   }
   ball.x += ball.vx;
