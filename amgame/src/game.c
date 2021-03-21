@@ -1,6 +1,6 @@
 #include <game.h>
 
-#define FPS               4
+#define FPS              30
 // draw the ball
 #define SIDE             16
 // notice this may cause some problem of float number
@@ -151,8 +151,8 @@ static void update_screen() {
 }
 
 static void new_ball() {
-  ball.vx = screen_w / SIDE / 8;
-  ball.vy = screen_h / SIDE / 8;
+  ball.vx = screen_w / SIDE / 32;
+  ball.vy = screen_h / SIDE / 32;
   ball.x = randint(0, LEN);
   ball.y = 0;
   ball.exist = true;
@@ -161,27 +161,28 @@ static void new_ball() {
 static void update_state() {
   if(!ball.exist) return;
   //top
-  if(ball.vy < 0 && ball.y == 0){
+  if(ball.vy < 0 && ball.y <= 0){
     ball.vy = -ball.vy;
   }
   //left
-  if(ball.vx < 0 && ball.x == 0) {
+  if(ball.vx < 0 && ball.x <= 0) {
     ball.vx = -ball.vx;
   }
   //right
-  if(ball.vx > 0 && ball.x == screen_w - SIDE) {
+  if(ball.vx > 0 && ball.x >= screen_w - SIDE) {
     ball.vx = -ball.vx;
   }
   //bottom
-  if(ball.x == screen_h) {
+  if(ball.y >= screen_h) {
     puts(red"GAME OVER!\n"close);
     ball.exist = false;
   }
-  if(ball.y == board.height && ball.x >= board.head && ball.x < board.tail) {
+  if(ball.y >= board.height && ball.x >= board.head && ball.x < board.tail) {
     ball.vy = -ball.vy;
     puts(yellow"Nice!\n"close);
   }
   ball.x += ball.vx;
   ball.y += ball.vy;
+  
 }
 
