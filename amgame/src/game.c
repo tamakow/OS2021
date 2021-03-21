@@ -9,7 +9,7 @@
 // draw the ball
 #define SIDE             16
 // notice this may cause some problem of float number
-#define LEN screen_w / SIDE
+#define LEN (screen_w / SIDE)
 
 #define COL_WHITE  0xeeeeee
 #define COL_RED    0xdc143c
