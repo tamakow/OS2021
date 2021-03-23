@@ -166,8 +166,9 @@ static void read_stat (int pid) {
 
       sprintf(taskpath, "%s/%d/task/%d/stat", PROC_BASE, pid, tid);
       if((taskfp = fopen(taskpath, "r")) != NULL) {
-        fscanf(taskfp, "%d (%[^)]) %c %d",&tid,taskcomm,&taskstate,&ttid);
-        sprintf(taskcomm, "{%.60s}", comm);
+        fscanf(taskfp, "%d (%s %c %d",&tid,taskcomm,&taskstate,&ttid);
+        taskcomm[strlen(taskcomm) - 1] = '\0';
+        sprintf(taskcomm, "{%.60s}", taskcomm);
         add_process(tid, taskcomm, taskstate, pid);
         fclose(taskfp);
       }
