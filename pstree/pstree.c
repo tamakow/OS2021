@@ -116,7 +116,7 @@ static void read_stat (int pid) {
    char comm[COMM_LEN + 2];
    char state;
    pid_t ppid;
-   char s1;
+  //  char s1;
   //  char s2[32];
   //  char s3[32];
 
@@ -134,7 +134,7 @@ static void read_stat (int pid) {
     //    ppid = atoi(s2);
     //  }
     //  if(comm[0] == '(') strcat(comm,")");
-     fscanf(fp, "%d (%s %c %d",&pid, comm, &s1, &ppid);
+     fscanf(fp, "%d (%s %c %d",&pid, comm, &state, &ppid);
      comm[strlen(comm) - 1] = '\0';
      add_process(pid, comm, state, ppid);
      fclose(fp);
