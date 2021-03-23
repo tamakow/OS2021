@@ -83,8 +83,8 @@ static void usage(){
 }
 
 void print_version(){
-  printf("pstree 1.0\n"
-         "Copyright (C) 2021-2021 Tamakow\n");
+  fprintf(stderr, _("pstree 1.0\n"));
+  fprintf(stderr, _("Copyright (C) 2021-2021 Tamakow\n"));
 }
 
 
