@@ -168,7 +168,7 @@ static void read_stat (int pid) {
       if((taskfp = fopen(taskpath, "r")) != NULL) {
         fscanf(taskfp, "%d (%s %c %d",&tid,taskcomm,&taskstate,&ttid);
         taskcomm[strlen(taskcomm) - 1] = '\0';
-        sprintf(taskcomm, "{%s}", comm);
+        sprintf(taskcomm, "{%.16s}", comm);
         add_process(tid, taskcomm, taskstate, pid);
         fclose(taskfp);
       }
