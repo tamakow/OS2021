@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
 static void usage(){
   printf("\033[31mPlease input valid arguments\033[0m \n"
   "Usage: pstree [-p, --show-pids] [-n, --numeric-sort] [-V, --version]\n");
-  exit(1);
+  exit(EXIT_FAILURE);
 }
 
 void print_version(){
@@ -96,7 +96,7 @@ static void read_proc(){
   struct dirent *direntp;
   if (!(dir_ptr = opendir(PROC_BASE))) {
     fprintf(stderr, ("Can't open /proc"));
-    exit(1);
+    exit(EXIT_FAILURE);
   }
   // fprintf(stderr, "\033[34mSuccessfully open /proc\033[01m\n");
   while ((direntp = readdir(dir_ptr)) != NULL) {
