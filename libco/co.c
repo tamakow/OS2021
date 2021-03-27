@@ -74,6 +74,7 @@ void free_co(struct co* co) {
     Log("Successfully free list");
     return;
   }
+  Log("s");
   while(walk->next != co) {
     walk = walk->next;
   }
