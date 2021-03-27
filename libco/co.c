@@ -36,7 +36,7 @@ enum co_status {
 };
 
 struct co {
-  char name[32];
+  const char *name;
   void (*func)(void *); // co_start 指定的入口地址和参数
   void *arg;
 
@@ -69,16 +69,17 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   Log("New Coroutine's name is "red"%s"done, name);
 
 
-  struct co *NewCo = (struct co*)malloc(sizeof(struct co));
+  struct co *NewCo = NULL;
+  NewCo = (struct co*)malloc(sizeof(struct co));
 
-  strcpy(NewCo->name, name);
   memset(NewCo->stack, 0 , sizeof(NewCo->stack));
-  NewCo->stackptr = NewCo->stack + sizeof(NewCo->stack);
+  NewCo->stackptr = (void *)((((uintptr_t)NewCo->stack+sizeof(NewCo->stack))>>4)<<4);
   NewCo->func     = func;
   NewCo->arg      = arg;
   NewCo->status   = CO_NEW;
   NewCo->waiter   = NULL;
   NewCo->next     = NULL;
+  NewCo->name     = name;
 
   cnt ++;
   struct co* walk = list;
