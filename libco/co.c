@@ -64,6 +64,25 @@ inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
   );
 }
 
+void free_co(struct co* co) {
+  if(list == NULL) return;
+  struct co *walk = list;
+  if(list == co) {
+    walk = list->next;
+    free(list);
+    list = walk;
+  }
+  while(walk->next) {
+    if(walk->next == co) {
+      struct co* tmp = walk->next->next;
+      free(walk->next);
+      walk->next = tmp;
+      break;
+    }
+    walk = walk->next;
+  }
+}
+
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   Log("New Coroutine's name is "red"%s"done, name);
 
@@ -93,20 +112,15 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   return NewCo;
 }
 
-void co_wait(struct co *co) {
-  if(co->status == CO_DEAD) {
-    Log("free %s",co->name);
-    free_co(co);
-    cnt--;
-    co->waiter->status = CO_RUNNING;
-    return;
-  }
-  Log("Waiting Coroutine "red"%s"done, co->name);
-  co->waiter = current;
-  current->status = CO_WAITING;
-  // must run co and free it after it finishes
-  co_yield();
+struct co* RandomChooseCo () {
+  struct co* ret = list;
+
+  while(ret->status != CO_NEW && ret->status != CO_RUNNING)
+    ret = ret->next;
+
+  return ret;
 }
+
 
 //buggy
 void co_yield() {
@@ -126,6 +140,21 @@ void co_yield() {
     current = tmp;
     return;
   }
+}
+
+void co_wait(struct co *co) {
+  if(co->status == CO_DEAD) {
+    Log("free %s",co->name);
+    free_co(co);
+    cnt--;
+    co->waiter->status = CO_RUNNING;
+    return;
+  }
+  Log("Waiting Coroutine "red"%s"done, co->name);
+  co->waiter = current;
+  current->status = CO_WAITING;
+  // must run co and free it after it finishes
+  co_yield();
 }
 
 
@@ -159,23 +188,4 @@ void entry(struct co* co) {
   co->status = CO_DEAD;
   if(co->waiter) co->waiter->status = CO_RUNNING;
   co_yield();
-}
-
-void free_co(struct co* co) {
-  if(list == NULL) return;
-  struct co *walk = list;
-  if(list == co) {
-    walk = list->next;
-    free(list);
-    list = walk;
-  }
-  while(walk->next) {
-    if(walk->next == co) {
-      struct co* tmp = walk->next->next;
-      free(walk->next);
-      walk->next = tmp;
-      break;
-    }
-    walk = walk->next;
-  }
 }
