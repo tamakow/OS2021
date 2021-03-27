@@ -100,6 +100,7 @@ void co_wait(struct co *co) {
   co_yield();
   Log("Coroutine %s is finished!", co->name);
   free_co(co);
+  cnt--;
   current->waiter = NULL;
   current->status = CO_RUNNING;
 }
@@ -111,7 +112,8 @@ void co_yield() {
     current = RandomChooseCo();
     Log("current co is %s %d",current->name,current->status);
     if(current->status == CO_NEW) {
-      stack_switch_call(&current->stack[STACK_SIZE], entry, (uintptr_t) current);
+      current->status = CO_RUNNING;
+      stack_switch_call(&current->stack[STACK_SIZE], current->func, (uintptr_t) current->arg);
     }else {
       longjmp(current->context, 1);
     }
@@ -157,18 +159,18 @@ struct co* RandomChooseCo () {
   return ret;
 }
 
-static void *entry(struct co* co) {
-  Log("Now in %s 's entry",co->name);
-  co->status = CO_RUNNING;
-  co->func(co->arg);
+// static void *entry(struct co* co) {
+//   Log("Now in %s 's entry",co->name);
+//   co->status = CO_RUNNING;
+//   co->func(co->arg);
   
-  //finished
-  co->status = CO_DEAD;
-  cnt--;
+//   //finished
+//   co->status = CO_DEAD;
+//   cnt--;
 
-  // co_yield();
-  return (void *)0;
-}
+//   // co_yield();
+//   return (void *)0;
+// }
 
 void free_co(struct co* co) {
   if(list == NULL) return;
