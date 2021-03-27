@@ -4,11 +4,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 
-
-#define           KB         *(1 << 10)
-#define   STACK_SIZE         (4 KB)
+#define          KiB         *(1 << 10)
+#define   STACK_SIZE         (64 KiB)
 
 
 #define          red         "\033[1;31m"
@@ -50,13 +50,16 @@ struct co {
 
 struct co* current = NULL;
 struct co* list = NULL; // use a list to store coroutines
+static int cnt = 0;
+struct co* WaitCo  = NULL; //NULL means randomly choose the next running co, while op = 1 means in the co_wait stat
 
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   Log("New Coroutine's name is "red"%s"done, name);
 
+
   struct co *NewCo = (struct co*)malloc(sizeof(struct co));
-  
+
   strcpy(NewCo->name, name);
   memset(NewCo->stack, 0 , sizeof(NewCo->stack));
   NewCo->func   = func;
@@ -65,6 +68,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   NewCo->waiter = NULL;
   NewCo->next   = NULL;
 
+  cnt ++;
   struct co* walk = list;
   if(walk) {
     while(walk->next) {
@@ -79,11 +83,28 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 
 void co_wait(struct co *co) {
   Log("Waiting Coroutine "red"%s"done, co->name);
-
-  
+  current->waiter = co;
+  current->status = CO_WAITING;
+  WaitCo = co;
+  // must run co and free it after it finishes
+  co_yield();
+  current->waiter = NULL;
+  current->status = CO_RUNNING;
 }
 
 void co_yield() {
+  int val = setjmp(current->context);
+  if(val == 0) {
+    current = RandomChooseCo();
+    if(current == CO_NEW) {
+      stack_switch_call(&current->stack[STACK_SIZE],entry, (uintptr_t) current);
+    }else {
+      longjmp(current->context, 1);
+    }
+  }else {
+    current->status = CO_RUNNING;
+    return;
+  }
 }
 
 static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
@@ -104,5 +125,62 @@ void __attribute__((constructor)) before_main() {
   list->next   = NULL;
   list->status = CO_RUNNING;
   memset(list->stack, 0, sizeof(list->stack));
+  cnt ++;
   current = list;
+  srand((unsigned int)time(NULL));
+}
+
+struct co* RandomChooseCo () {
+  struct co* ret = list;
+  if(!WaitCo) {
+    int rd = rand() % cnt;
+    while(rd--) {
+      ret = ret->next;
+    }
+  } else {
+    while(ret != WaitCo) {
+      ret = ret->next;
+    }
+    WaitCo = NULL;
+  }
+  
+  // element in the list can't be CO_DEAD but ret->waiter may be finished thus its status becomes CO_DEAD
+  while(ret->status == CO_WAITING) {
+    if(ret->waiter == NULL || ret->waiter->status == CO_DEAD) break;
+    else ret = ret->waiter;
+  }
+
+  return ret;
+}
+
+void *entry(struct co* co) {
+  co->status = CO_RUNNING;
+  co->func(co->arg);
+  
+  //finished
+  co->status = CO_DEAD;
+  cnt--;
+
+  free_co(co);
+  co_yield();
+  return (void *)0;
+}
+
+void free_co(struct co* co) {
+  if(list == NULL) return;
+  struct co *walk = list;
+  if(list == co) {
+    walk = list->next;
+    free(list);
+    list = walk;
+  }
+  while(walk->next) {
+    if(walk->next == co) {
+      struct co* tmp = walk->next->next;
+      free(walk->next);
+      walk->next = tmp;
+      break;
+    }
+    walk = walk->next;
+  }
 }
