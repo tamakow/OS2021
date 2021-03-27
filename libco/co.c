@@ -99,6 +99,7 @@ void co_wait(struct co *co) {
   // must run co and free it after it finishes
   co_yield();
   Log("Coroutine %s is finished!", co->name);
+  free_co(co);
   current->waiter = NULL;
   current->status = CO_RUNNING;
 }
@@ -165,8 +166,7 @@ static void *entry(struct co* co) {
   co->status = CO_DEAD;
   cnt--;
 
-  free_co(co);
-  co_yield();
+  // co_yield();
   return (void *)0;
 }
 
