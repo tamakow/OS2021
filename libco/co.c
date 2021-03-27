@@ -137,29 +137,28 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 void co_yield() {
   Log("Now in co_yield");
   int val = setjmp(current->context);
-  struct co* tmp = current;
   if(val == 0) {
     current = RandomChooseCo();
     Log("current co is %s %d",current->name,current->status);
     if(current->status == CO_NEW) {
       Log("current hasn't run yet");
-      stack_switch_call(current->stackptr, Entry, (uintptr_t)current);
+      // stack_switch_call(current->stackptr, Entry, (uintptr_t)current);
+      #if __x86_64__
+        asm volatile("mov %0, %%rsp": : "b"((uintptr_t)current->stackptr));
+        Entry(current);
+      #else
+        stack_switch_call(current->stackptr, Entry, (uintptr_t)current);
+      #endif
     }else {
       longjmp(current->context, 1);
     }
   }else {
-    current = tmp;
     return;
   }
 }
 
 void co_wait(struct co *co) {
   Log("Waiting Coroutine "red"%s"done, co->name);
-  co->waiter = current;
-  current->status = CO_WAITING;
-  // must run co and free it after it finishes
-  while(co->status != CO_DEAD)
-    co_yield();
   if(co->status == CO_DEAD) {
     Log("free %s",co->name);
     free_co(co);
@@ -167,6 +166,10 @@ void co_wait(struct co *co) {
     co->waiter->status = CO_RUNNING;
     return;
   }
+  co->waiter = current;
+  current->status = CO_WAITING;
+  // must run co and free it after it finishes
+  co_yield();
 }
 
 
