@@ -148,8 +148,8 @@ void co_yield() {
         asm volatile("mov %0, %%rsp": : "b"((uintptr_t)current->stackptr));
         Entry(current);
       #else
-        asm volatile("mov %0, %%esp": : "b"((uintptr_t)current->stackptr));
-        Entry(current);
+      stack_switch_call(current->stackptr, Entry, (uintptr_t)current);
+      #endif
     }else {
       longjmp(current->context, 0);
     }
