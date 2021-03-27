@@ -134,7 +134,7 @@ void co_yield() {
 // main is also a coroutine
 void __attribute__((constructor)) before_main() {
   list = (struct co*)malloc(sizeof(struct co));
-  strcpy(list->name, "main");
+  list->name   = "main";
   list->next   = NULL;
   list->status = CO_RUNNING;
   memset(list->stack, 0, sizeof(list->stack));
