@@ -6,6 +6,17 @@
 #include <string.h>
 
 
+
+#define           KB         *(1 << 10)
+#define   STACK_SIZE         (4 KB)
+
+
+#define          red         "\033[1;31m"
+#define       yellow         "\033[1;33m"
+#define        green         "\033[1;32m"
+#define       purple         "\033[1;35m"
+#define        done          "\033[0m"
+
 #define  LIBCO_DEBUG 
 
 #ifdef   LIBCO_DEBUG 
@@ -15,11 +26,6 @@
 #else
 #define Log(format, ...)
 #endif
-
-
-#define           KB         *(1 << 10)
-#define   STACK_SIZE         (4 KB)
-
 
 
 enum co_status {
@@ -47,7 +53,7 @@ struct co* list = NULL; // use a list to store coroutines
 
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
-  Log("New Coroutine's name is %s", name);
+  Log("New Coroutine's name is "red"%s"done, name);
 
   struct co *NewCo = (struct co*)malloc(sizeof(struct co));
   
@@ -72,7 +78,9 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 }
 
 void co_wait(struct co *co) {
+  Log("Waiting Coroutine "red"%s"done, co->name);
 
+  
 }
 
 void co_yield() {
