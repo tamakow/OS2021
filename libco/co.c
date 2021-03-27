@@ -68,7 +68,6 @@ void free_co(struct co* co) {
   if(list == NULL) return;
   struct co *walk = list;
   if(list == co) {
-    Log("s");
     walk = list->next;
     free(list);
     list = walk;
@@ -76,15 +75,9 @@ void free_co(struct co* co) {
     return;
   }
   while(walk->next != co) {
-    if(walk->next == co) {
-      struct co* tmp = walk->next->next;
-      free(walk->next);
-      walk->next = tmp;
-      Log("Successfully free a node");
-      break;
-    }
     walk = walk->next;
   }
+  walk->next = co->next;
 }
 
 struct co* RandomChooseCo () {
