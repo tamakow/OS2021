@@ -158,6 +158,5 @@ void __attribute__((constructor)) before_main() {
   memset(list->stack, 0, sizeof(list->stack));
   cnt = 1;
   current = list;
-  srand((unsigned int)time(NULL));
 }
 
