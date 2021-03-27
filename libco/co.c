@@ -83,6 +83,26 @@ void free_co(struct co* co) {
   }
 }
 
+struct co* RandomChooseCo () {
+  struct co* ret = list;
+
+  while(ret->status != CO_NEW && ret->status != CO_RUNNING)
+    ret = ret->next;
+
+  return ret;
+}
+
+void entry(struct co* co) {
+  Log("Now in %s 's entry",current->name);
+  co->status = CO_RUNNING;
+  co->func(co->arg);
+  
+  //finished
+  co->status = CO_DEAD;
+  if(co->waiter) co->waiter->status = CO_RUNNING;
+  co_yield();
+}
+
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   Log("New Coroutine's name is "red"%s"done, name);
 
@@ -110,15 +130,6 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
     list = NewCo;
   }
   return NewCo;
-}
-
-struct co* RandomChooseCo () {
-  struct co* ret = list;
-
-  while(ret->status != CO_NEW && ret->status != CO_RUNNING)
-    ret = ret->next;
-
-  return ret;
 }
 
 
@@ -170,22 +181,3 @@ void __attribute__((constructor)) before_main() {
   srand((unsigned int)time(NULL));
 }
 
-struct co* RandomChooseCo () {
-  struct co* ret = list;
-
-  while(ret->status != CO_NEW && ret->status != CO_RUNNING)
-    ret = ret->next;
-
-  return ret;
-}
-
-void entry(struct co* co) {
-  Log("Now in %s 's entry",current->name);
-  co->status = CO_RUNNING;
-  co->func(co->arg);
-  
-  //finished
-  co->status = CO_DEAD;
-  if(co->waiter) co->waiter->status = CO_RUNNING;
-  co_yield();
-}
