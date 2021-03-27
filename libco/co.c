@@ -71,8 +71,9 @@ void free_co(struct co* co) {
     walk = list->next;
     free(list);
     list = walk;
+    return;
   }
-  while(walk->next) {
+  while(walk->next != co) {
     if(walk->next == co) {
       struct co* tmp = walk->next->next;
       free(walk->next);
@@ -145,10 +146,10 @@ void co_yield() {
       // stack_switch_call(current->stackptr, Entry, (uintptr_t)current);
       #if __x86_64__
         asm volatile("mov %0, %%rsp": : "b"((uintptr_t)current->stackptr));
+        Entry(current);
       #else
         asm volatile("mov %0, %%esp": : "b"((uintptr_t)current->stackptr));
-      #endif
-      Entry(current);
+        Entry(current);
     }else {
       longjmp(current->context, 0);
     }
