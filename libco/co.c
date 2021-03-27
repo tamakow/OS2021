@@ -165,7 +165,7 @@ struct co* RandomChooseCo () {
   return ret;
 }
 
-void entry() {
+void *entry() {
   Log("Now in %s 's entry",current->name);
   current->status = CO_RUNNING;
   current->func(current->arg);
