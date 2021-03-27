@@ -52,7 +52,6 @@ struct co {
 struct co* current = NULL;
 struct co* list = NULL; // use a list to store coroutines
 static int cnt = 0;
-struct co* WaitCo  = NULL; //NULL means randomly choose the next running co, while op = 1 means in the co_wait stat
 
 
 inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
@@ -99,33 +98,32 @@ void co_wait(struct co *co) {
     Log("free %s",co->name);
     free_co(co);
     cnt--;
+    co->waiter->status = CO_RUNNING;
     return;
   }
   Log("Waiting Coroutine "red"%s"done, co->name);
-  current->waiter = co;
+  co->waiter = current;
   current->status = CO_WAITING;
-  WaitCo = co;
   // must run co and free it after it finishes
   co_yield();
-  current->waiter = NULL;
-  // current->status = CO_RUNNING;
 }
 
+//buggy
 void co_yield() {
   Log("Now in co_yield");
   int val = setjmp(current->context);
+  struct co* tmp = current;
   if(val == 0) {
     current = RandomChooseCo();
     Log("current co is %s %d",current->name,current->status);
     if(current->status == CO_NEW) {
       Log("current hasn't run yet");
-      current->status = CO_RUNNING;
-      stack_switch_call(current->stackptr, entry, (uintptr_t)NULL);
+      stack_switch_call(current->stackptr, entry, (uintptr_t)current);
     }else {
       longjmp(current->context, 1);
     }
   }else {
-    current->status = CO_RUNNING;
+    current = tmp;
     return;
   }
 }
@@ -145,37 +143,22 @@ void __attribute__((constructor)) before_main() {
 
 struct co* RandomChooseCo () {
   struct co* ret = list;
-  if(!WaitCo) {
-    int rd = rand() % cnt;
-    while(rd--) {
-      ret = ret->next;
-    }
-  } else {
-    while(ret != WaitCo) {
-      ret = ret->next;
-    }
-    WaitCo = NULL;
-  }
-  
-  // element in the list can't be CO_DEAD but ret->waiter may be finished thus its status becomes CO_DEAD
-  while(ret->status == CO_WAITING) {
-    if(ret->waiter == NULL || ret->waiter->status == CO_DEAD) break;
-    else ret = ret->waiter;
-  }
+
+  while(ret->status != CO_NEW && ret->status != CO_RUNNING)
+    ret = ret->next;
 
   return ret;
 }
 
-void *entry() {
+void entry(struct co* co) {
   Log("Now in %s 's entry",current->name);
-  current->status = CO_RUNNING;
-  current->func(current->arg);
+  co->status = CO_RUNNING;
+  co->func(co->arg);
   
   //finished
-  current->status = CO_DEAD;
-
+  co->status = CO_DEAD;
+  if(co->waiter) co->waiter->status = CO_RUNNING;
   co_yield();
-  return 0;
 }
 
 void free_co(struct co* co) {
