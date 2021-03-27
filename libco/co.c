@@ -112,11 +112,11 @@ void co_yield() {
     current = CircularChooseCo();
     if(current->status == CO_NEW) {
       #if __x86_64__
-        // asm volatile("mov %0, %%rsp": : "b"((uintptr_t)current->stackptr));
-        asm volatile("movq %0, %%rsp; movq (%2), %%rdi; callq *%1" : : "b"((uintptr_t)current->stackptr),     "d"(Entry), "a"(&current));
+        asm volatile("mov %0, %%rsp": : "b"((uintptr_t)current->stackptr));
+        // asm volatile("movq %0, %%rsp; movq (%2), %%rdi; callq *%1" : : "b"((uintptr_t)current->stackptr),     "d"(Entry), "a"(&current));
       #else
-        asm volatile("mov %0, %%esp": : "b"((uintptr_t)current->stackptr));
-        Entry(current);
+        asm volatile("movl %0, %%esp; movl (%2), 4(%0); callq *%1" : : "b"((uintptr_t)current->stackptr - 8), "d"(Entry), "a"(&current));
+        // asm volatile("mov %0, %%esp": : "b"((uintptr_t)current->stackptr));
       #endif
       // Entry(current);
     }else {
