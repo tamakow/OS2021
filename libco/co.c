@@ -60,7 +60,6 @@ void free_co(struct co* co) {
     if(walk == list) walk = NULL;
     free(list);
     list = walk;
-    Log("Successfully free list");
     return;
   }
   while(walk->next != list && walk->next != co) {
@@ -81,15 +80,12 @@ void Entry(struct co* co) {
   co->status = CO_RUNNING;
   co->func(co->arg);
   
-  //finished
   co->status = CO_DEAD;
   if(co->waiter) co->waiter->status = CO_RUNNING;
   co_yield();
 }
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
-  Log("New Coroutine's name is "red"%s"done, name);
-
   struct co *NewCo = NULL;
   NewCo = (struct co*)malloc(sizeof(struct co));
 
@@ -111,13 +107,10 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 }
 
 void co_yield() {
-  Log("Now in co_yield");
   int val = setjmp(current->context);
   if(val == 0) {
     current = CircularChooseCo();
-    Log("current co is %s %d",current->name,current->status);
     if(current->status == CO_NEW) {
-      Log("current hasn't run yet");
       #if __x86_64__
         asm volatile("mov %0, %%rsp": : "b"((uintptr_t)current->stackptr));
       #else
@@ -133,9 +126,7 @@ void co_yield() {
 }
 
 void co_wait(struct co *co) {
-  Log("Waiting Coroutine "red"%s"done, co->name);
   if(co->status == CO_DEAD) {
-    Log("free %s",co->name);
     free_co(co);
     return;
   }
