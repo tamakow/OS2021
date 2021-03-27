@@ -71,6 +71,7 @@ void free_co(struct co* co) {
     walk = list->next;
     free(list);
     list = walk;
+    Log("Successfully free list");
     return;
   }
   while(walk->next != co) {
@@ -78,6 +79,7 @@ void free_co(struct co* co) {
       struct co* tmp = walk->next->next;
       free(walk->next);
       walk->next = tmp;
+      Log("Successfully free a node");
       break;
     }
     walk = walk->next;
