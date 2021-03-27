@@ -52,6 +52,7 @@ struct co {
 struct co* current = NULL;
 struct co* list = NULL; // use a list to store coroutines
 int cnt = 0;
+struct co* WaitCo = NULL;
 
 
 // inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
@@ -81,6 +82,7 @@ void free_co(struct co* co) {
 }
 
 struct co* RandomChooseCo () {
+  if(WaitCo) return WaitCo;
   int rd;
   struct co* ret;
   label:
@@ -100,6 +102,7 @@ void Entry(struct co* co) {
   co->func(co->arg);
   
   //finished
+  WaitCo = NULL;
   co->status = CO_DEAD;
   if(co->waiter) co->waiter->status = CO_RUNNING;
   co_yield();
@@ -167,6 +170,7 @@ void co_wait(struct co *co) {
   }
   co->waiter = current;
   current->status = CO_WAITING;
+  WaitCo = co;
   // must run co and free it after it finishes
   co_yield();
 }
