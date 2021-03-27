@@ -98,14 +98,17 @@ void co_wait(struct co *co) {
   WaitCo = co;
   // must run co and free it after it finishes
   co_yield();
+  Log("Coroutine %s is finished!", co->name);
   current->waiter = NULL;
   current->status = CO_RUNNING;
 }
 
 void co_yield() {
+  Log("Now in co_yield");
   int val = setjmp(current->context);
   if(val == 0) {
     current = RandomChooseCo();
+    Log("current co is %s",current->name);
     if(current->status == CO_NEW) {
       stack_switch_call(&current->stack[STACK_SIZE],entry, (uintptr_t) current);
     }else {
