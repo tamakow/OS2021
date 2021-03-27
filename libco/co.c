@@ -82,17 +82,21 @@ void free_co(struct co* co) {
 }
 
 struct co* RandomChooseCo () {
-  if(WaitCo) return WaitCo;
-  int rd;
-  struct co* ret;
-  label:
-  rd = rand() % cnt;
-  ret = list;
+  // if(WaitCo) return WaitCo;
+  // int rd;
+  // struct co* ret;
+  // label:
+  // rd = rand() % cnt;
+  // ret = list;
 
-  while(rd--) ret = ret->next;
+  // while(rd--) ret = ret->next;
 
-  if(ret->status != CO_RUNNING && ret->status != CO_NEW) 
-    goto label;
+  // if(ret->status != CO_RUNNING && ret->status != CO_NEW) 
+  //   goto label;
+  
+  struct co* ret = current->next;
+  while(ret && ret->status != CO_NEW && ret->status != CO_RUNNING)
+    ret = ret->next;
   return ret;
 }
 
