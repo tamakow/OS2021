@@ -78,7 +78,6 @@ void free_co(struct co* co) {
     walk = walk->next;
   }
   walk->next = co->next;
-Log("s");
 }
 
 struct co* RandomChooseCo () {
@@ -161,7 +160,7 @@ void co_wait(struct co *co) {
     Log("free %s",co->name);
     free_co(co);
     cnt--;
-    co->waiter->status = CO_RUNNING;
+    // co->waiter->status = CO_RUNNING;
     return;
   }
   co->waiter = current;
