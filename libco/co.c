@@ -174,6 +174,7 @@ void *entry() {
   current->status = CO_DEAD;
 
   co_yield();
+  return 0;
 }
 
 void free_co(struct co* co) {
