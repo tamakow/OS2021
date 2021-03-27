@@ -74,11 +74,11 @@ void free_co(struct co* co) {
     Log("Successfully free list");
     return;
   }
-  Log("s");
   while(walk->next && walk->next != co) {
     walk = walk->next;
   }
   walk->next = co->next;
+Log("s");
 }
 
 struct co* RandomChooseCo () {
