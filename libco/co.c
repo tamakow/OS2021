@@ -54,15 +54,15 @@ struct co* list = NULL; // use a list to store coroutines
 int cnt = 0;
 
 
-inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
-  asm volatile (
-#if __x86_64__
-    "movq %0, %%rsp; movq %2, %%rdi; jmp *%1" : : "b"((uintptr_t)sp),     "d"(entry), "a"(arg)
-#else
-    "movl %0, %%esp; movl %2, 4(%0); jmp *%1" : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg)
-#endif
-  );
-}
+// inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
+//   asm volatile (
+// #if __x86_64__
+//     "movq %0, %%rsp; movq %2, %%rdi; jmp *%1" : : "b"((uintptr_t)sp),     "d"(entry), "a"(arg)
+// #else
+//     "movl %0, %%esp; movl %2, 4(%0); jmp *%1" : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg)
+// #endif
+//   );
+// }
 
 void free_co(struct co* co) {
   if(list == NULL) return;
@@ -122,9 +122,10 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 
   cnt ++;
   struct co* walk = list;
-  while(walk->next) {
-      walk = walk->next;
-  }
+  // while(walk->next) {
+  //     walk = walk->next;
+  // }
+  NewCo->next = walk->next;
   walk->next = NewCo;
   return NewCo;
 }
