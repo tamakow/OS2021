@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 
 
 #define          KiB         *(1 << 10)
@@ -52,18 +51,7 @@ struct co {
 struct co* current = NULL;
 struct co* list = NULL; // use a list to store coroutines
 int cnt = 0;
-struct co* WaitCo = NULL;
 
-
-// inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
-//   asm volatile (
-// #if __x86_64__
-//     "movq %0, %%rsp; movq %2, %%rdi; jmp *%1" : : "b"((uintptr_t)sp),     "d"(entry), "a"(arg)
-// #else
-//     "movl %0, %%esp; movl %2, 4(%0); jmp *%1" : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg)
-// #endif
-//   );
-// }
 
 void free_co(struct co* co) {
   if(list == NULL) return;
@@ -82,19 +70,7 @@ void free_co(struct co* co) {
   walk->next = co->next;
 }
 
-struct co* RandomChooseCo () {
-  // if(WaitCo) return WaitCo;
-  // int rd;
-  // struct co* ret;
-  // label:
-  // rd = rand() % cnt;
-  // ret = list;
-
-  // while(rd--) ret = ret->next;
-
-  // if(ret->status != CO_RUNNING && ret->status != CO_NEW) 
-  //   goto label;
-
+struct co* CircularChooseCo () {
   struct co* ret = current->next;
   while(ret->status != CO_RUNNING && ret->status != CO_NEW)
     ret = ret->next;
@@ -132,23 +108,18 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   while(walk->next!=list) {
       walk = walk->next;
   }
-  // NewCo->next = walk->next;
   walk->next = NewCo;
   return NewCo;
 }
 
-
-//buggy
 void co_yield() {
   Log("Now in co_yield");
   int val = setjmp(current->context);
   if(val == 0) {
-    current = RandomChooseCo();
-    WaitCo = NULL;
+    current = CircularChooseCo();
     Log("current co is %s %d",current->name,current->status);
     if(current->status == CO_NEW) {
       Log("current hasn't run yet");
-      // stack_switch_call(current->stackptr, Entry, (uintptr_t)current);
       #if __x86_64__
         asm volatile("mov %0, %%rsp": : "b"((uintptr_t)current->stackptr));
       #else
@@ -169,16 +140,12 @@ void co_wait(struct co *co) {
     Log("free %s",co->name);
     free_co(co);
     cnt--;
-    // co->waiter->status = CO_RUNNING;
     return;
   }
   co->waiter = current;
   current->status = CO_WAITING;
-  WaitCo = co;
-  // must run co and free it after it finishes
   co_yield();
 }
-
 
 // main is also a coroutine
 void __attribute__((constructor)) before_main() {
