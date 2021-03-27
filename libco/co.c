@@ -45,6 +45,7 @@ struct co {
   struct co *    next;
   jmp_buf        context; // 寄存器现场 (setjmp.h)
   uint8_t        stack[STACK_SIZE]; // 协程的堆栈
+  uintptr_t      stackptr;
 };
 
 
@@ -72,11 +73,12 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 
   strcpy(NewCo->name, name);
   memset(NewCo->stack, 0 , sizeof(NewCo->stack));
-  NewCo->func   = func;
-  NewCo->arg    = arg;
-  NewCo->status = CO_NEW;
-  NewCo->waiter = NULL;
-  NewCo->next   = NULL;
+  NewCo->stackptr = NewCo->stack + sizeof(NewCo->stack);
+  NewCo->func     = func;
+  NewCo->arg      = arg;
+  NewCo->status   = CO_NEW;
+  NewCo->waiter   = NULL;
+  NewCo->next     = NULL;
 
   cnt ++;
   struct co* walk = list;
@@ -117,7 +119,7 @@ void co_yield() {
     if(current->status == CO_NEW) {
       Log("current hasn't run yet");
       current->status = CO_RUNNING;
-      stack_switch_call(&current->stack[STACK_SIZE], current->func, (uintptr_t) current->arg);
+      stack_switch_call(current->stackptr, current->func, (uintptr_t) current->arg);
     }else {
       longjmp(current->context, 1);
     }
