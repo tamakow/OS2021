@@ -177,6 +177,7 @@ void __attribute__((constructor)) before_main() {
   list->next   = NULL;
   list->waiter = NULL;
   list->status = CO_RUNNING;
+  list->stackptr = (void *)((((uintptr_t)list->stack+sizeof(list->stack))>>4)<<4);
   memset(list->stack, 0, sizeof(list->stack));
   cnt = 1;
   current = list;
