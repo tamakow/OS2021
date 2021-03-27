@@ -84,9 +84,11 @@ void free_co(struct co* co) {
 }
 
 struct co* RandomChooseCo () {
+  int rd;
+  struct co* ret;
   label:
-  int rd = rand() % cnt;
-  struct co* ret = list;
+  rd = rand() % cnt;
+  ret = list;
 
   while(rd--) ret = ret->next;
 
