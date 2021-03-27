@@ -75,7 +75,7 @@ void free_co(struct co* co) {
     return;
   }
   Log("s");
-  while(walk->next != co) {
+  while(walk->next && walk->next != co) {
     walk = walk->next;
   }
   walk->next = co->next;
