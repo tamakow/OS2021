@@ -119,7 +119,7 @@ void co_yield() {
     if(current->status == CO_NEW) {
       Log("current hasn't run yet");
       current->status = CO_RUNNING;
-      stack_switch_call(current->stackptr, current->func, (uintptr_t) current->arg);
+      stack_switch_call(current->stackptr, entry, (uintptr_t) current);
     }else {
       longjmp(current->context, 1);
     }
