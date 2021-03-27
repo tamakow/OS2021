@@ -108,7 +108,7 @@ void co_yield() {
   int val = setjmp(current->context);
   if(val == 0) {
     current = RandomChooseCo();
-    Log("current co is %s",current->name);
+    Log("current co is %s %d",current->name,current->status);
     if(current->status == CO_NEW) {
       stack_switch_call(&current->stack[STACK_SIZE],entry, (uintptr_t) current);
     }else {
