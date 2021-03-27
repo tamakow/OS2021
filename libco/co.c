@@ -119,7 +119,7 @@ void co_yield() {
     if(current->status == CO_NEW) {
       Log("current hasn't run yet");
       current->status = CO_RUNNING;
-      stack_switch_call(current->stackptr, entry, (uintptr_t) current);
+      stack_switch_call(current->stackptr, entry, NULL);
     }else {
       longjmp(current->context, 1);
     }
@@ -165,17 +165,16 @@ struct co* RandomChooseCo () {
   return ret;
 }
 
-void *entry(struct co* co) {
-  Log("Now in %s 's entry",co->name);
-  co->status = CO_RUNNING;
-  co->func(co->arg);
+void *entry() {
+  Log("Now in %s 's entry",current->name);
+  current->status = CO_RUNNING;
+  current->func(current->arg);
   
   //finished
-  co->status = CO_DEAD;
-  cnt--;
+  current->status = CO_DEAD;
 
-  // co_yield();
-  return (void *)0;
+  co_yield();
+  return 0;
 }
 
 void free_co(struct co* co) {
