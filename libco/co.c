@@ -94,7 +94,7 @@ struct co* RandomChooseCo () {
   // if(ret->status != CO_RUNNING && ret->status != CO_NEW) 
   //   goto label;
   
-  struct co* ret = current->next;
+  struct co* ret = list->next;
   while(ret && ret->status != CO_NEW && ret->status != CO_RUNNING)
     ret = ret->next;
   return ret;
