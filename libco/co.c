@@ -67,6 +67,7 @@ inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
 void free_co(struct co* co) {
   Log("S");
   if(list == NULL) return;
+  Log("b");
   struct co *walk = list;
   if(list == co) {
     walk = list->next;
