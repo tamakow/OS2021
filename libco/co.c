@@ -17,7 +17,7 @@
 #define       purple         "\033[1;35m"
 #define        done          "\033[0m"
 
-#define  LIBCO_DEBUG 
+// #define  LIBCO_DEBUG 
 
 #ifdef   LIBCO_DEBUG 
 #define Log(format, ...) \
