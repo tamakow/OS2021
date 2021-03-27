@@ -102,7 +102,6 @@ void Entry(struct co* co) {
   co->func(co->arg);
   
   //finished
-  WaitCo = NULL;
   co->status = CO_DEAD;
   if(co->waiter) co->waiter->status = CO_RUNNING;
   co_yield();
@@ -140,6 +139,7 @@ void co_yield() {
   int val = setjmp(current->context);
   if(val == 0) {
     current = RandomChooseCo();
+    WaitCo = NULL;
     Log("current co is %s %d",current->name,current->status);
     if(current->status == CO_NEW) {
       Log("current hasn't run yet");
