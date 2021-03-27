@@ -92,17 +92,20 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 }
 
 void co_wait(struct co *co) {
+  if(co->status == CO_DEAD) {
+    Log("free %s",co->name);
+    free_co(co);
+    cnt--;
+    return;
+  }
   Log("Waiting Coroutine "red"%s"done, co->name);
   current->waiter = co;
   current->status = CO_WAITING;
   WaitCo = co;
   // must run co and free it after it finishes
   co_yield();
-  Log("Coroutine %s is finished!", co->name);
-  free_co(co);
-  cnt--;
   current->waiter = NULL;
-  current->status = CO_RUNNING;
+  // current->status = CO_RUNNING;
 }
 
 void co_yield() {
@@ -160,18 +163,18 @@ struct co* RandomChooseCo () {
   return ret;
 }
 
-// static void *entry(struct co* co) {
-//   Log("Now in %s 's entry",co->name);
-//   co->status = CO_RUNNING;
-//   co->func(co->arg);
+void *entry(struct co* co) {
+  Log("Now in %s 's entry",co->name);
+  co->status = CO_RUNNING;
+  co->func(co->arg);
   
-//   //finished
-//   co->status = CO_DEAD;
-//   cnt--;
+  //finished
+  co->status = CO_DEAD;
+  cnt--;
 
-//   // co_yield();
-//   return (void *)0;
-// }
+  // co_yield();
+  return (void *)0;
+}
 
 void free_co(struct co* co) {
   if(list == NULL) return;
