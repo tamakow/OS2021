@@ -92,7 +92,7 @@ struct co* RandomChooseCo () {
   return ret;
 }
 
-void entry(struct co* co) {
+void Entry(struct co* co) {
   Log("Now in %s 's entry",current->name);
   co->status = CO_RUNNING;
   co->func(co->arg);
@@ -143,7 +143,7 @@ void co_yield() {
     Log("current co is %s %d",current->name,current->status);
     if(current->status == CO_NEW) {
       Log("current hasn't run yet");
-      stack_switch_call(current->stackptr, entry, (uintptr_t)current);
+      stack_switch_call(current->stackptr, Entry, (uintptr_t)current);
     }else {
       longjmp(current->context, 1);
     }
