@@ -54,6 +54,16 @@ static int cnt = 0;
 struct co* WaitCo  = NULL; //NULL means randomly choose the next running co, while op = 1 means in the co_wait stat
 
 
+inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
+  asm volatile (
+#if __x86_64__
+    "movq %0, %%rsp; movq %2, %%rdi; jmp *%1" : : "b"((uintptr_t)sp),     "d"(entry), "a"(arg)
+#else
+    "movl %0, %%esp; movl %2, 4(%0); jmp *%1" : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg)
+#endif
+  );
+}
+
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   Log("New Coroutine's name is "red"%s"done, name);
 
@@ -96,7 +106,7 @@ void co_yield() {
   int val = setjmp(current->context);
   if(val == 0) {
     current = RandomChooseCo();
-    if(current == CO_NEW) {
+    if(current->status == CO_NEW) {
       stack_switch_call(&current->stack[STACK_SIZE],entry, (uintptr_t) current);
     }else {
       longjmp(current->context, 1);
@@ -105,16 +115,6 @@ void co_yield() {
     current->status = CO_RUNNING;
     return;
   }
-}
-
-static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
-  asm volatile (
-#if __x86_64__
-    "movq %0, %%rsp; movq %2, %%rdi; jmp *%1" : : "b"((uintptr_t)sp),     "d"(entry), "a"(arg)
-#else
-    "movl %0, %%esp; movl %2, 4(%0); jmp *%1" : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg)
-#endif
-  );
 }
 
 
