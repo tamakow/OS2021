@@ -127,7 +127,7 @@ void co_yield() {
       #endif
       Entry(current);
     }else {
-      longjmp(current->context, 0);
+      longjmp(current->context, 1);
     }
   }else {
     return;
