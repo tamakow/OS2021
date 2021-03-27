@@ -82,7 +82,7 @@ void free_co(struct co* co) {
 }
 
 struct co* RandomChooseCo () {
-  if(WaitCo) return WaitCo;
+  // if(WaitCo) return WaitCo;
   // int rd;
   // struct co* ret;
   // label:
