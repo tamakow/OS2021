@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 
 
 #define          KiB         *(1 << 10)
@@ -178,6 +177,5 @@ void __attribute__((constructor)) before_main() {
   memset(list->stack, 0, sizeof(list->stack));
   cnt ++;
   current = list;
-  srand((unsigned int)time(NULL));
 }
 
