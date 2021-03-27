@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 
 #define          KiB         *(1 << 10)
@@ -16,7 +17,7 @@
 #define       purple         "\033[1;35m"
 #define        done          "\033[0m"
 
-// #define  LIBCO_DEBUG 
+#define  LIBCO_DEBUG 
 
 #ifdef   LIBCO_DEBUG 
 #define Log(format, ...) \
@@ -50,7 +51,7 @@ struct co {
 
 struct co* current = NULL;
 struct co* list = NULL; // use a list to store coroutines
-static int cnt = 0;
+int cnt = 0;
 
 
 inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
@@ -83,11 +84,14 @@ void free_co(struct co* co) {
 }
 
 struct co* RandomChooseCo () {
+  label:
+  int rd = rand() % cnt;
   struct co* ret = list;
 
-  while(ret->status != CO_NEW && ret->status != CO_RUNNING)
-    ret = ret->next;
+  while(rd--) ret = ret->next;
 
+  if(ret->status != CO_RUNNING && ret->status != CO_NEW) 
+    goto label;
   return ret;
 }
 
@@ -105,7 +109,6 @@ void Entry(struct co* co) {
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   Log("New Coroutine's name is "red"%s"done, name);
 
-
   struct co *NewCo = NULL;
   NewCo = (struct co*)malloc(sizeof(struct co));
 
@@ -120,14 +123,10 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 
   cnt ++;
   struct co* walk = list;
-  if(walk) {
-    while(walk->next) {
+  while(walk->next) {
       walk = walk->next;
-    }
-    walk->next = NewCo;
-  }else {
-    list = NewCo;
   }
+  walk->next = NewCo;
   return NewCo;
 }
 
@@ -153,6 +152,12 @@ void co_yield() {
 }
 
 void co_wait(struct co *co) {
+  Log("Waiting Coroutine "red"%s"done, co->name);
+  co->waiter = current;
+  current->status = CO_WAITING;
+  // must run co and free it after it finishes
+  while(co->status != CO_DEAD)
+    co_yield();
   if(co->status == CO_DEAD) {
     Log("free %s",co->name);
     free_co(co);
@@ -160,11 +165,6 @@ void co_wait(struct co *co) {
     co->waiter->status = CO_RUNNING;
     return;
   }
-  Log("Waiting Coroutine "red"%s"done, co->name);
-  co->waiter = current;
-  current->status = CO_WAITING;
-  // must run co and free it after it finishes
-  co_yield();
 }
 
 
@@ -173,9 +173,11 @@ void __attribute__((constructor)) before_main() {
   list = (struct co*)malloc(sizeof(struct co));
   list->name   = "main";
   list->next   = NULL;
+  list->waiter = NULL;
   list->status = CO_RUNNING;
   memset(list->stack, 0, sizeof(list->stack));
-  cnt ++;
+  cnt = 1;
   current = list;
+  srand((unsigned int)time(NULL));
 }
 
