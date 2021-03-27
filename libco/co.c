@@ -70,12 +70,13 @@ void free_co(struct co* co) {
   struct co *walk = list;
   if(list == co) {
     walk = list->next;
+    if(walk == list) walk = NULL;
     free(list);
     list = walk;
     Log("Successfully free list");
     return;
   }
-  while(walk->next && walk->next != co) {
+  while(walk->next != list && walk->next != co) {
     walk = walk->next;
   }
   walk->next = co->next;
@@ -123,17 +124,16 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   NewCo->arg      = arg;
   NewCo->status   = CO_NEW;
   NewCo->waiter   = NULL;
-  NewCo->next     = NULL;
+  NewCo->next     = list;
   NewCo->name     = name;
 
   cnt ++;
   struct co* walk = list;
-  while(walk->next) {
+  while(walk->next!=list) {
       walk = walk->next;
   }
   // NewCo->next = walk->next;
   walk->next = NewCo;
-  NewCo->next = list;
   return NewCo;
 }
 
@@ -184,7 +184,7 @@ void co_wait(struct co *co) {
 void __attribute__((constructor)) before_main() {
   list = (struct co*)malloc(sizeof(struct co));
   list->name   = "main";
-  list->next   = NULL;
+  list->next   = list;
   list->waiter = NULL;
   list->status = CO_RUNNING;
   list->stackptr = (void *)((((uintptr_t)list->stack+sizeof(list->stack))>>4)<<4);
