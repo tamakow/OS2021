@@ -54,15 +54,15 @@ struct co* list = NULL; // use a list to store coroutines
 int cnt = 0;
 
 
-inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
-  asm volatile (
-#if __x86_64__
-    "movq %0, %%rsp; movq %2, %%rdi; jmp *%1" : : "b"((uintptr_t)sp),     "d"(entry), "a"(arg)
-#else
-    "movl %0, %%esp; movl %2, 4(%0); jmp *%1" : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg)
-#endif
-  );
-}
+// inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
+//   asm volatile (
+// #if __x86_64__
+//     "movq %0, %%rsp; movq %2, %%rdi; jmp *%1" : : "b"((uintptr_t)sp),     "d"(entry), "a"(arg)
+// #else
+//     "movl %0, %%esp; movl %2, 4(%0); jmp *%1" : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg)
+// #endif
+//   );
+// }
 
 void free_co(struct co* co) {
   if(list == NULL) return;
@@ -147,8 +147,8 @@ void co_yield() {
         asm volatile("mov %0, %%rsp": : "b"((uintptr_t)current->stackptr));
         Entry(current);
       #else
-        stack_switch_call(current->stackptr, Entry, (uintptr_t)current);
-      #endif
+        asm volatile("mov %0, %%esp": : "b"((uintptr_t)current->stackptr));
+        Entry(current);
     }else {
       longjmp(current->context, 0);
     }
