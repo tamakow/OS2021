@@ -117,7 +117,7 @@ void co_yield() {
       #else
         asm volatile("mov %0, %%esp": : "b"((uintptr_t)current->stackptr));
       #endif
-      // Entry(current);
+      Entry(current);
     }else {
       longjmp(current->context, 1);
     }
