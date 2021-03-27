@@ -50,7 +50,6 @@ struct co {
 
 struct co* current = NULL;
 struct co* list = NULL; // use a list to store coroutines
-int cnt = 0;
 
 
 void free_co(struct co* co) {
@@ -103,7 +102,6 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   NewCo->next     = list;
   NewCo->name     = name;
 
-  cnt ++;
   struct co* walk = list;
   while(walk->next!=list) {
       walk = walk->next;
@@ -139,7 +137,6 @@ void co_wait(struct co *co) {
   if(co->status == CO_DEAD) {
     Log("free %s",co->name);
     free_co(co);
-    cnt--;
     return;
   }
   co->waiter = current;
@@ -156,7 +153,6 @@ void __attribute__((constructor)) before_main() {
   list->status = CO_RUNNING;
   list->stackptr = (void *)((((uintptr_t)list->stack+sizeof(list->stack))>>4)<<4);
   memset(list->stack, 0, sizeof(list->stack));
-  cnt = 1;
   current = list;
 }
 
