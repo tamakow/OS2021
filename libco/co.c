@@ -82,12 +82,12 @@ void free_co(struct co* co) {
 }
 
 struct co* RandomChooseCo () {
-  // if(WaitCo) return WaitCo;
+  if(WaitCo) return WaitCo;
   // int rd;
   struct co* ret;
   // label:
   // rd = rand() % cnt;
-  ret = list;
+  ret = list->next;
 
   while(ret->next){
     if(ret->status != CO_RUNNING && ret->status != CO_NEW) 
