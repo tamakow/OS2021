@@ -112,6 +112,7 @@ void co_yield() {
     current = RandomChooseCo();
     Log("current co is %s %d",current->name,current->status);
     if(current->status == CO_NEW) {
+      Log("current hasn't run yet");
       current->status = CO_RUNNING;
       stack_switch_call(&current->stack[STACK_SIZE], current->func, (uintptr_t) current->arg);
     }else {
