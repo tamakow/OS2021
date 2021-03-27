@@ -116,7 +116,7 @@ void co_yield() {
         asm volatile("movq %0, %%rsp; movq (%2), %%rdi; callq *%1" : : "b"((uintptr_t)current->stackptr),     "d"(Entry), "a"(&current));
       #else
         // asm volatile("mov %0, %%esp": : "b"((uintptr_t)current->stackptr));
-        asm volatile("movl %0, %%esp; pushl %2; calll *%1" : : "b"((uintptr_t)current->stackptr - 8), "d"(Entry), "a"(&current));
+        asm volatile("movl %0, %%esp; pushl (%2); calll *%1" : : "b"((uintptr_t)current->stackptr - 8), "d"(Entry), "a"(&current));
       #endif
       Entry(current);
     }else {
