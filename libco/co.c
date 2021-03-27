@@ -17,7 +17,7 @@
 #define       purple         "\033[1;35m"
 #define        done          "\033[0m"
 
-#define  LIBCO_DEBUG 
+// #define  LIBCO_DEBUG 
 
 #ifdef   LIBCO_DEBUG 
 #define Log(format, ...) \
@@ -150,7 +150,7 @@ void co_yield() {
         stack_switch_call(current->stackptr, Entry, (uintptr_t)current);
       #endif
     }else {
-      longjmp(current->context, 1);
+      longjmp(current->context, 0);
     }
   }else {
     return;
