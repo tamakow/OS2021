@@ -45,7 +45,7 @@ struct co {
   struct co *    next;
   jmp_buf        context; // 寄存器现场 (setjmp.h)
   uint8_t        stack[STACK_SIZE]; // 协程的堆栈
-  uintptr_t      stackptr;
+  uintptr_t *     stackptr;
 };
 
 
