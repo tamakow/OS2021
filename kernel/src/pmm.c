@@ -15,7 +15,6 @@ static void *kalloc(size_t size) {
   while((1<<i) < size) i++;
   while((uintptr_t)head % (1<<i) != 0) head++;
   tmp = size;
-  printf("lalalal\n");
   release(&lk);
   return head;
 }
