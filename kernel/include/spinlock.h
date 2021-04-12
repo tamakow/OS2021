@@ -6,3 +6,6 @@ struct spinlock {
     int cpu;
 };
 
+void initlock(struct spinlock *, char*);
+void acquire(struct spinlock *);
+void pushcli();
