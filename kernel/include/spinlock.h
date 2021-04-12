@@ -1,5 +1,9 @@
 #include <stdbool.h>
 
+/*
+    from xv6
+*/
+
 struct spinlock {
     bool locked;
     char *name;
@@ -8,5 +12,7 @@ struct spinlock {
 
 void initlock(struct spinlock *, char*);
 void acquire(struct spinlock *);
+void release(struct spinlock *);
+bool holding(struct spinlock *);
 void pushcli();
 void popcli();
