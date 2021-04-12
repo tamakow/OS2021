@@ -10,6 +10,7 @@ static void *kalloc(size_t size) {
   if(tmp > 0)
     head = head + tmp;
   if((uintptr_t)head > (uintptr_t)heap.end) return NULL;
+  head++;
   tmp = 0;
   size_t i = 1;
   while(i < size) i<<=1;
