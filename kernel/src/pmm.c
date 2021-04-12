@@ -13,6 +13,7 @@ static void *kalloc(size_t size) {
   tmp = 0;
   int i = 0;
   while((1<<i) < size) i++;
+  printf("page is %d\n",(1<<i));
   while((uintptr_t)head % (1<<i) != 0) head++;
   tmp = size;
   printf("head is %p\n",head);
