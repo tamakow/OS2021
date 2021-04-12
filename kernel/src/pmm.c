@@ -7,18 +7,18 @@ static size_t tmp = 0;
 struct spinlock lk;
 static void *kalloc(size_t size) {
   acquire(&lk);
-  // if(tmp > 0)
-  //   head = head + tmp;
-  // if((uintptr_t)head > (uintptr_t)heap.end) return NULL;
+  if(tmp > 0)
+    head = head + tmp;
+  if((uintptr_t)head > (uintptr_t)heap.end) return NULL;
   tmp = 0;
   size_t i = 1;
   while(i < size) i<<=1;
   printf("page is %d\n head is %d\n",i,(size_t)head);
-  size_t j = (size_t)head;
-  printf("j = %p\n",j);
+  size_t j = ((size_t)head / i + 1)* i;
+  printf("j = %d\n",j);
   while((uintptr_t)head < j) head++;
   tmp = size;
-  printf("head is %p\n",head);
+  printf("head is %d\n",(size_t)head);
   release(&lk);
   return head;
 }
