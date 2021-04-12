@@ -15,7 +15,7 @@ static void *kalloc(size_t size) {
   while(i < size) i<<=1;
   while((size_t)head % i != 0) head++;
   tmp = size;
-  printf("head is %x\n",head);
+  printf("head is %d\n",(size_t)head);
   release(&lk);
   return head;
 }
