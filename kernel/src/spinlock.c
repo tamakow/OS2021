@@ -42,7 +42,7 @@ void pushcli() {
     iset(0); //cli();
     if(ncli[cpu_current()] == 0)
         intena[cpu_current()] = eflags & FL_IF;
-    intena[cpu_current()] += 1;
+    ncli[cpu_current()] += 1;
 }
 
 void popcli() {
