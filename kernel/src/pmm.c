@@ -10,13 +10,12 @@ static void *kalloc(size_t size) {
   if(tmp > 0)
     head = head + tmp;
   if((uintptr_t)head > (uintptr_t)heap.end) return NULL;
-  head++;
   tmp = 0;
   size_t i = 1;
   while(i < size) i<<=1;
   while((size_t)head % i != 0) head++;
+  head = (void *)(((size_t)head / i + 1) * i); 
   tmp = size;
-  printf("head is %d\n",(size_t)head);
   release(&lk);
   return head;
 }
