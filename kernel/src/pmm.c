@@ -11,10 +11,10 @@ static void *kalloc(size_t size) {
     head = head + tmp;
   if((uintptr_t)head > (uintptr_t)heap.end) return NULL;
   tmp = 0;
-  int i = 0;
-  while((1<<i) < size) i++;
+  size_t i = 1;
+  while(i < size) i<<=1;
   printf("page is %d\n",(1<<i));
-  uintptr_t j = ((uintptr_t)head / (1<<i) + 1)* (1<<i);
+  size_t j = ((size_t)head / i + 1)* i;
   printf("j = %d\n",j);
   while((uintptr_t)head < j) head++;
   tmp = size;
