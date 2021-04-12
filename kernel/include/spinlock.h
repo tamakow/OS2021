@@ -9,3 +9,4 @@ struct spinlock {
 void initlock(struct spinlock *, char*);
 void acquire(struct spinlock *);
 void pushcli();
+void popcli();

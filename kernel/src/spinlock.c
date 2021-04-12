@@ -23,3 +23,9 @@ void pushcli() {
     intena[cpu_current()] += 1;
 }
 
+void popcli() {
+    if(ienabled()) panic("popcli - interruptible");
+    if(--ncli[cpu_current()] < 0) panic("popcli");
+    if(ncli[cpu_current()] == 0 && intena[cpu_current()])
+        iset(1);
+}
