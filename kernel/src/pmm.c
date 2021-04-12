@@ -13,6 +13,7 @@ static void *kalloc(size_t size) {
   while((1<<i) < size) i++;
   while((uintptr_t)head % (1<<i) != 0) head++;
   tmp = size;
+  printf("successfully alloc !\n");
   return head;
 }
 
