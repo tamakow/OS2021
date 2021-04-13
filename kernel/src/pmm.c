@@ -16,7 +16,7 @@ static void *kalloc(size_t size) {
   tmp = 0;
   size_t i = 1;
   while(i < size) i<<=1;
-  while((size_t)head % i != 0) head++;
+  // while((size_t)head % i != 0) head++;
   head = (void *)(((size_t)head / i + 1) * i); 
   tmp = size;
   release(&lk);
