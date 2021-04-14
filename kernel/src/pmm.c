@@ -1,17 +1,27 @@
 #include <common.h>
 #include <spinlock.h>
 
-//first just try one lock and kalloc
+
+
+// just try one lock 
 static void *head;
 struct spinlock lk;
+
+
+
 static void *kalloc(size_t size) {
-  if((uintptr_t)head + size > (uintptr_t)heap.end) return NULL;
   acquire(&lk);
+
   size_t i = 1;
   while(i < size) i<<=1;
-  head = (void *)(((size_t)head / i + 1) * i) + size; 
+  
+  head = (void *)(((size_t)head / i + 1) * i); 
+  void *ret = head;
+  head += size;
+
   release(&lk);
-  return head - size;
+  if((uintptr_t)head > (uintptr_t)heap.end) return NULL;
+  return ret;
 }
 
 static void kfree(void *ptr) {
