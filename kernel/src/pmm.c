@@ -5,14 +5,10 @@
 static void *head;
 struct spinlock lk;
 static void *kalloc(size_t size) {
+  if((uintptr_t)head > (uintptr_t)heap.end) return NULL;
   acquire(&lk);
-  if((uintptr_t)head > (uintptr_t)heap.end){ 
-    release(&lk);
-    return NULL;
-  }
   size_t i = 1;
   while(i < size) i<<=1;
-  // while((size_t)head % i != 0) head++;
   head = (void *)(((size_t)head / i + 1) * i) + size; 
   release(&lk);
   return head - size;
