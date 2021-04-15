@@ -1,3 +1,6 @@
+#ifndef __SPINLOCK_H__
+#define __SPINLOCK_H__
+
 #include <stdbool.h>
 
 /*
@@ -16,3 +19,5 @@ void release(struct spinlock *);
 bool holding(struct spinlock *);
 void pushcli();
 void popcli();
+
+#endif 

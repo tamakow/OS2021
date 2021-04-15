@@ -1,12 +1,11 @@
 #include <common.h>
 #include <spinlock.h>
-
+#include <slab.h>
 
 
 // just try one lock 
 static void *head;
-struct spinlock lk;
-
+static struct spinlock lk;
 
 
 static void *kalloc(size_t size) {
