@@ -92,11 +92,15 @@ static void *kalloc(size_t size) {
   uint64_t block = 0;
   for(int i = 0; i < 64; ++i) {
     if(now->bitmap[i] != UINT64_MAX) {
+      uint64_t tmp = 1;
       for(int j = 0; j < 64; ++j) {
-        if(now->bitmap[i] & (1ULL << j)) continue;
-        // acquire(&now->lock);
-        now->bitmap[i] |= (1ULL<<j);
-        // release(&now->lock);
+        if(now->bitmap[i] & tmp){ 
+          tmp <<= 1;
+          continue;
+        }
+        acquire(&now->lock);
+        now->bitmap[i] |= tmp;
+        release(&now->lock);
         block = i * 64 + j;
         break;
       }
@@ -116,9 +120,9 @@ static void kfree(void *ptr) {
   struct slab* sb = (struct slab *)slab_head;
   uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
   uint64_t row = block / 64, col = block % 64;
-  // acquire(&sb->lock);
+  acquire(&sb->lock);
   sb->bitmap[row] ^= (1ULL << col);
-  // release(&sb->lock);
+  release(&sb->lock);
   insert_slab_to_head(sb);
 }
 

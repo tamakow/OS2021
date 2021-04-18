@@ -27,10 +27,15 @@ bool full_slab(struct slab* sb) {
     int block = -1;
     for (int i = 0; i < 64; ++i) {
         if (sb->bitmap[i] != UINT64_MAX) {
-            block = i * 64;
-            int cnt = 0;
-            while (cnt < 64 && (sb->bitmap[i] & (1ULL << cnt))) cnt++;
-            block += cnt;
+            uint64_t tmp = 1;
+            for(int j = 0; j < 64; ++j) {
+                if(sb->bitmap[i] & tmp){ 
+                    tmp <<= 1;
+                    continue;
+                }
+                block = i * 64 + j;
+                break;
+            }
             break;
         }
     }
