@@ -52,9 +52,9 @@ void insert_slab_to_head (struct slab* sb) {
 static void *kalloc(size_t size) {
   //大内存分配
   if(size > PAGE_SIZE) {
-    acquire(&big_alloc_lock);
     size_t bsize = 1;
     while(bsize < size) bsize <<= 1;
+    acquire(&big_alloc_lock);
     tail -= bsize; 
     tail = (void*)(((size_t)tail / bsize) * bsize);
     void *ret = tail; 
@@ -101,7 +101,7 @@ static void *kalloc(size_t size) {
         acquire(&now->lock);
         now->bitmap[i] |= (1ULL<<j);
         release(&now->lock);
-        block = i*64 + j;
+        block = i * 64 + j;
         break;
       }
       break;
