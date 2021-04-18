@@ -9,6 +9,18 @@ static struct spinlock big_alloc_lock;
 void *head;
 void *tail;
 
+static inline void * alloc_mem (size_t size) {
+    acquire(&global_lock);
+    void *ret;
+    if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)tail) ret = NULL;
+    else {
+       ret = head;
+       head += SLAB_SIZE;
+    }
+    release(&global_lock);
+    return ret;
+}
+
 static void *kalloc(size_t size) {
   //大内存分配
   if(size > PAGE_SIZE) {
@@ -31,14 +43,8 @@ static void *kalloc(size_t size) {
   int item_size = 1 << item_id;
   struct slab *now;
   if(cache_chain[cpu][item_id] == NULL){
-     acquire(&global_lock);
-    if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)tail){
-       release(&global_lock);
-       return NULL;
-    }
-    cache_chain[cpu][item_id] = (struct slab*) head;
-    head += SLAB_SIZE;
-    release(&global_lock);
+    cache_chain[cpu][item_id] = (struct slab*) alloc_mem(SLAB_SIZE);
+    if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
     new_slab(cache_chain[cpu][item_id], cpu, item_size);
     now = cache_chain[cpu][item_id];
   } else{
@@ -50,14 +56,8 @@ static void *kalloc(size_t size) {
       now = now->next;
     }
     if(now == NULL) {
-       acquire(&global_lock);
-      if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)tail){
-        release(&global_lock);
-        return NULL;
-      }
-      now = (struct slab*) head;
-      head += SLAB_SIZE;
-      release(&global_lock);
+      now = (struct slab*) alloc_mem(SLAB_SIZE);
+      if(now == NULL) return NULL;
       new_slab(now, cpu, item_size);
       walk->next = now;
     }
