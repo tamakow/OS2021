@@ -50,7 +50,7 @@ bool full_slab(struct slab* sb) {
 static void *kalloc(size_t size) {
   //大内存分配
   if(size > PAGE_SIZE) {
-    acquire(&big_alloc_lock);
+    acquire(&global_lock);
     size_t bsize = 1;
     while(bsize < size) bsize <<= 1;
     void *ret = tail; 
@@ -61,7 +61,7 @@ static void *kalloc(size_t size) {
       return NULL;
     }
     tail = ret;
-    release(&big_alloc_lock);
+    release(&global_lock);
     return tail;
   }
 
