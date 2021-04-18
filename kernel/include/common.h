@@ -4,7 +4,7 @@
 #include <../../abstract-machine/am/src/x86/x86.h>
 
 
-#define
-#define TEST
+#define DEBUG
+//#define TEST
 
 #include <debug.h>
