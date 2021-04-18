@@ -4,9 +4,9 @@
 #include <am.h>
 #include <../../abstract-machine/am/src/x86/x86.h>
 
+#define TEST
 
 #define MiB       *(1 << 20)
-#define HEAP_SIZE 128 * MiB
-#define TEST
+#define HEAP_SIZE 128  MiB
 
 #endif
