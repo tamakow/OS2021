@@ -25,7 +25,6 @@ static void *kalloc(size_t size) {
     return ret;
   }
 
-  // cache
   int cpu = cpu_current();
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
