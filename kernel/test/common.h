@@ -3,7 +3,8 @@
 
 #include <am.h>
 #include <../../abstract-machine/am/src/x86/x86.h>
-
+#include <klib.h>
+#include <klib-macros.h>
 //#define TEST
 
 #define MiB       *(1 << 20)
