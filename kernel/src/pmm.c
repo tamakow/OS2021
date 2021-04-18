@@ -64,7 +64,6 @@ static void *kalloc(size_t size) {
   }
 
   // cache
-//  acquire(&global_lock);
   int cpu = cpu_current();
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
@@ -84,6 +83,7 @@ static void *kalloc(size_t size) {
   } else{
     now = cache_chain[cpu][item_id];
     struct slab *walk = NULL;
+    // TOO SLOW!!!
     while(now && full_slab(now)) {
       walk = now;
       now = now->next;
@@ -101,7 +101,6 @@ static void *kalloc(size_t size) {
       walk->next = now;
     }
   }
-//  release(&global_lock);
   if(now == NULL) return NULL;
   //成功找到slab
   uint64_t block = 0;
