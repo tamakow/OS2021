@@ -100,8 +100,8 @@ static void *kalloc(size_t size) {
         if(now->bitmap[i] & (1ULL << j)) continue;
         acquire(&now->lock);
         now->bitmap[i] |= (1ULL<<j);
-        block = i*64 + j;
         release(&now->lock);
+        block = i*64 + j;
         break;
       }
       break;
