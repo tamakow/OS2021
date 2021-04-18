@@ -22,19 +22,19 @@ void slab_init() {
 
 void new_slab(struct slab * sb, int cpu, int item_size) {
     assert(sb != NULL);
-    sb->cpu           = cpu;
-    sb->item_size     = item_size;
-    sb->max_item_nr   = SLAB_SIZE / sb->item_size;
+    sb->cpu = cpu;
+    sb->item_size = item_size;
+    sb->max_item_nr = SLAB_SIZE / sb->item_size;
     memset(sb->bitmap, 0, sizeof(sb->bitmap));
-    sb->next          = NULL;
+    sb->next = NULL;
 }
 
 //判断该slab是否已满，满了返回true，否则返回false
 bool full_slab(struct slab* sb) {
     assert(sb != NULL);
     int block = -1;
-    for(int i = 0; i < 64; ++i) {
-        if(sb->bitmap[i] != UINT64_MAX) {
+    for (int i = 0; i < 64; ++i) {
+        if (sb->bitmap[i] != UINT64_MAX) {
             block = i * 64;
             int cnt = 0;
             while (cnt < 64 && (sb->bitmap[i] & (1ULL << cnt))) cnt++;
@@ -42,8 +42,8 @@ bool full_slab(struct slab* sb) {
             break;
         }
     }
-    if(block == -1) return true; // 没有必要，因为一定会有不合理的位置空出
-    if(block < sb->max_item_nr) return false;
+    if (block == -1) return true; // 没有必要，因为一定会有不合理的位置空出
+    if (block < sb->max_item_nr) return false;
     return true;
 }
 
@@ -133,6 +133,7 @@ static void kfree(void *ptr) {
   release(&lk);
 }
 
+#ifndef TEST
 static void pmm_init() {
   initlock(&global_lock,"GlobalLock");
   initlock(&lk,"lk");
@@ -143,6 +144,21 @@ static void pmm_init() {
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
 }
+#else
+static void pmm_init() {
+  initlock(&global_lock,"GlobalLock");
+  initlock(&lk,"lk");
+  initlock(&big_alloc_lock,"big_lock");
+  slab_init();
+
+  char *ptr  = malloc(HEAP_SIZE);
+  heap.start = ptr;
+  heap.end   = ptr + HEAP_SIZE;
+  head = heap.start;
+  tail = heap.end;
+  printf("Got %d MiB heap: [%p, %p)\n", HEAP_SIZE >> 20, heap.start, heap.end);
+}
+#endif
 
 MODULE_DEF(pmm) = {
   .init  = pmm_init,
