@@ -6,7 +6,7 @@
 //第二次尝试，先只用slab试试，大内存分配先不管（）,好，大内存分配直接炸了
 static struct spinlock global_lock;
 static struct spinlock big_alloc_lock;
-static struct spinlock list_lock[MAX_CPU + 1][NR_ITEM_SIZE + 1];
+// static struct spinlock list_lock[MAX_CPU + 1][NR_ITEM_SIZE + 1];
 void *head;
 void *tail;
 
@@ -28,7 +28,7 @@ void insert_slab_to_head (struct slab* sb) {
     int id  = 1;
     while(id <= NR_ITEM_SIZE && (1 << id) != sb->item_size) id++;
     assert((1 << id) == sb->item_size);
-    acquire(&list_lock[cpu][id]);
+    // acquire(&list_lock[cpu][id]);
     //如果在链表的话，先从链表中删除
     sb->prev->next = sb->next;
     sb->next->prev = sb->prev;
@@ -36,7 +36,7 @@ void insert_slab_to_head (struct slab* sb) {
     struct slab* listhead = cache_chain[cpu][id];
     if(listhead == NULL){
       print(FONT_RED, "Why your cache_chain[%d][%d] is NULL!!!!!!(insert_slab_to_head)", cpu, id);
-      release(&list_lock[cpu][id]);
+      // release(&list_lock[cpu][id]);
       assert(0);
     }
     sb->next = listhead;
@@ -44,9 +44,8 @@ void insert_slab_to_head (struct slab* sb) {
     listhead->prev->next = sb;
     listhead->prev = sb;
     //然后把表头向前移动一位
-    // cache_chain[cpu][id] = cache_chain[cpu][id]->prev; 
     cache_chain[cpu][id] = sb;
-    release(&list_lock[cpu][id]);
+    // release(&list_lock[cpu][id]);
 }
 
 
@@ -131,11 +130,11 @@ static void kfree(void *ptr) {
 static void pmm_init() {
   initlock(&global_lock,"GlobalLock");
   initlock(&big_alloc_lock,"big_lock");
-  for(int i = 0; i <= MAX_CPU; ++i) {
-    for(int j = 0; j <= NR_ITEM_SIZE; ++j) {
-        initlock(&list_lock[i][j], "listlock");
-    }
-  }
+  // for(int i = 0; i <= MAX_CPU; ++i) {
+  //   for(int j = 0; j <= NR_ITEM_SIZE; ++j) {
+  //       initlock(&list_lock[i][j], "listlock");
+  //   }
+  // }
   slab_init();
   head = heap.start;
   tail = heap.end;
