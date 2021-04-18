@@ -3,10 +3,12 @@
 #include <slab.h>
 
 
-//第二次尝试，先只用slab试试，大内存分配先不管（）
+//第二次尝试，先只用slab试试，大内存分配先不管（）,好，大内存分配直接炸了
 static struct spinlock global_lock;
 static struct spinlock lk; 
+static struct spinlock big_alloc_lock;
 void *head;
+void *tail;
 
 struct slab* cache_chain[MAX_CPU + 1][NR_ITEM_SIZE + 1];
 
@@ -46,14 +48,25 @@ bool full_slab(struct slab* sb) {
 }
 
 static void *kalloc(size_t size) {
-  if(size > PAGE_SIZE) return NULL; //拒绝大内存分配
+  //大内存分配
+  if(size > PAGE_SIZE) {
+    acquire(&big_alloc_lock);
+    size_t bsize = 1;
+    while(bsize < size) bsize <<= 1; 
+    tail -= bsize; 
+    tail = (void*)(((size_t)tail / bsize) * bsize);
+    release(&big_alloc_lock);
+    return tail;
+  }
+
+  // cache
   int cpu = cpu_current();
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
   struct slab *now;
   if(cache_chain[cpu][item_id] == NULL){
     acquire(&global_lock);
-    if(head + SLAB_SIZE  > heap.end){
+    if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)tail){
        release(&global_lock);
        return NULL;
     }
@@ -71,7 +84,7 @@ static void *kalloc(size_t size) {
     }
     if(now == NULL) {
       acquire(&global_lock);
-      if(head + SLAB_SIZE  > heap.end){
+      if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)tail){
         release(&global_lock);
         return NULL;
       }
@@ -104,6 +117,7 @@ static void *kalloc(size_t size) {
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
+  if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
   uintptr_t slab_head = ((uintptr_t) ptr / SLAB_SIZE) *SLAB_SIZE;
   struct slab* sb = (struct slab *)slab_head;
   uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
@@ -116,8 +130,10 @@ static void kfree(void *ptr) {
 static void pmm_init() {
   initlock(&global_lock,"GlobalLock");
   initlock(&lk,"lk");
+  initlock(&big_alloc_lock,"big_lock");
   slab_init();
   head = heap.start;
+  tail = heap.end;
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
 }
