@@ -34,7 +34,7 @@ bool full_slab(struct slab* sb) {
         }
     }
     if (block == -1) return true; // 没有必要，因为一定会有不合理的位置空出
-    if (block < sb->max_item_nr) return false;
+    if (block < sb->max_item_nr - 1) return false;
     return true;
 }
 

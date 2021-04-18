@@ -21,6 +21,54 @@ static inline void * alloc_mem (size_t size) {
     return ret;
 }
 
+// tail 即为cache_chain[cpu][item_id]->prev
+// void insert_slab_to_tail (struct slab* sb) {
+//     int cpu = sb->cpu;
+//     int id  = 1;
+//     while(id <= NR_ITEM_SIZE && (1 << id) != sb->item_size) id++;
+//     assert((1 << id) == sb->item_size);
+//     //先从链表中删除
+//     sb->prev->next = sb->next;
+//     sb->next->prev = sb->prev;
+//     //再加在表头之前
+//     struct slab* listhead = cache_chain[cpu][id];
+//     if(listhead == NULL){
+//       print(FONT_RED, "Why your cache_chain[%d][%d] is NULL!!!!!!(insert_slab_to_tail)", cpu, id);
+//       assert(0);
+//     }
+//     sb->next = listhead;
+//     sb->prev = listhead->prev;
+//     listhead->prev->next = sb;
+//     listhead->prev = sb;
+// }
+
+
+
+// head 即为 cache_chain[cpu][item_id]，保证head不为NULL
+void insert_slab_to_head (struct slab* sb) {
+    int cpu = sb->cpu;
+    int id  = 1;
+    while(id <= NR_ITEM_SIZE && (1 << id) != sb->item_size) id++;
+    assert((1 << id) == sb->item_size);
+    //如果在链表的话，先从链表中删除
+    sb->prev->next = sb->next;
+    sb->next->prev = sb->prev;
+    //再加在表头之前
+    struct slab* listhead = cache_chain[cpu][id];
+    if(listhead == NULL){
+      print(FONT_RED, "Why your cache_chain[%d][%d] is NULL!!!!!!(insert_slab_to_head)", cpu, id);
+      assert(0);
+    }
+    sb->next = listhead;
+    sb->prev = listhead->prev;
+    listhead->prev->next = sb;
+    listhead->prev = sb;
+    //然后把表头向前移动一位
+    // cache_chain[cpu][id] = cache_chain[cpu][id]->prev; 
+    cache_chain[cpu][id] = sb;
+}
+
+
 static void *kalloc(size_t size) {
   //大内存分配
   if(size > PAGE_SIZE) {
@@ -47,20 +95,19 @@ static void *kalloc(size_t size) {
     if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
     new_slab(cache_chain[cpu][item_id], cpu, item_size);
     now = cache_chain[cpu][item_id];
+    // init circular list
+    now->next = now;
+    now->prev = now;
   } else{
+    if(full_slab(cache_chain[cpu][item_id])) {
+      //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
+      struct slab* sb = (struct slab*) alloc_mem(SLAB_SIZE);
+      if(sb == NULL) return NULL;
+      new_slab(sb, cpu, item_size);
+      //这里注意，本来不应该用insert的，因为它是一个new的slab，本身不在链表上
+      insert_slab_to_head(sb);
+    }
     now = cache_chain[cpu][item_id];
-    struct slab *walk = NULL;
-    // TOO SLOW!!!
-    while(now && full_slab(now)) {
-      walk = now;
-      now = now->next;
-    }
-    if(now == NULL) {
-      now = (struct slab*) alloc_mem(SLAB_SIZE);
-      if(now == NULL) return NULL;
-      new_slab(now, cpu, item_size);
-      walk->next = now;
-    }
   }
   if(now == NULL) return NULL;
   //成功找到slab
@@ -78,6 +125,9 @@ static void *kalloc(size_t size) {
       break;
     }
   }
+  if(block >= now->max_item_nr - 1) { //已经满了
+    cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next; 
+  }
   return (void*) ((uintptr_t)((uintptr_t)now + block * item_size));
 }
 
@@ -91,6 +141,7 @@ static void kfree(void *ptr) {
   acquire(&sb->lock);
   sb->bitmap[row] ^= (1ULL << col);
   release(&sb->lock);
+  insert_slab_to_head(sb);
 }
 
 #ifndef TEST
