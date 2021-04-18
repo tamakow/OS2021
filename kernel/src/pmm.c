@@ -110,10 +110,10 @@ static void *kalloc(size_t size) {
     if(now->bitmap[i] != UINT64_MAX) {
       for(int j = 0; j < 64; ++j) {
         if(now->bitmap[i] & (1ULL << j)) continue;
-        acquire(&lk); 
+        acquire(&now->lock);
         now->bitmap[i] |= (1ULL<<j);
         block = i*64 + j;
-        release(&lk);
+        release(&now->lock);
         break;
       }
       break;
