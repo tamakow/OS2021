@@ -25,7 +25,7 @@ static void *kalloc(size_t size) {
     cache_chain[cpu][item_id] = (struct slab*) head;
     head += SLAB_SIZE;
     release(&global_lock);
-    new_slab(cache_chain[cpu][item_id], cpu, get_slab_size(item_id));
+    new_slab(cache_chain[cpu][item_id], cpu, (1<<item_id));
     now = cache_chain[cpu][item_id];
   } else{
     now = cache_chain[cpu][item_id];
@@ -43,7 +43,7 @@ static void *kalloc(size_t size) {
       now = (struct slab*) head;
       head += SLAB_SIZE;
       release(&global_lock);
-      new_slab(now, cpu, get_slab_size(item_id));
+      new_slab(now, cpu, (1<<item_id));
       walk->next = now;
     }
   }
@@ -63,10 +63,11 @@ static void *kalloc(size_t size) {
       break;
     }
   }
-  void *ret = (void*) ((uintptr_t)((uintptr_t)now + block * get_slab_size(item_id)));
+  void *ret = (void*) ((uintptr_t)((uintptr_t)now + block * (1<<item_id)));
   return ret;
 }
 
+//只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
   uintptr_t slab_head = ((uintptr_t) ptr / SLAB_SIZE) *SLAB_SIZE;
   struct slab* sb = (struct slab *)slab_head;

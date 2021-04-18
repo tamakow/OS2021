@@ -21,10 +21,6 @@ struct slab {
 
 struct slab* cache_chain[MAX_CPU + 1][NR_ITEM_SIZE + 1];
 
-int get_slab_size(int slab_id) {
-    return (1<<slab_id);
-}
-
 void slab_init() {
     for(int i = 0; i < MAX_CPU + 1; ++ i) {
         for(int j = 0; j < NR_ITEM_SIZE + 1; ++j) {
@@ -50,7 +46,7 @@ bool full_slab(struct slab* sb) {
         if(sb->bitmap[i] != UINT64_MAX) {
             block = i * 64;
             int cnt = 0;
-            while (cnt < 64 && (sb->bitmap[i] & (1 << cnt))) cnt++;
+            while (cnt < 64 && (sb->bitmap[i] & (1ULL << cnt))) cnt++;
             block += cnt;
             break;
         }
