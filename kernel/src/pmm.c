@@ -6,6 +6,8 @@
 //第二次尝试，先只用slab试试，大内存分配先不管（）,好，大内存分配直接炸了
 static struct spinlock global_lock;
 static struct spinlock big_alloc_lock;
+static struct spinlock lk;
+// static struct spinlock list_lock[MAX_CPU + 1][NR_ITEM_SIZE + 1];
 void *head;
 void *tail;
 
@@ -46,6 +48,7 @@ static inline void * alloc_mem (size_t size) {
 
 // head 即为 cache_chain[cpu][item_id]，保证head不为NULL
 void insert_slab_to_head (struct slab* sb) {
+    acquire(&lk);
     int cpu = sb->cpu;
     int id  = 1;
     while(id <= NR_ITEM_SIZE && (1 << id) != sb->item_size) id++;
@@ -56,6 +59,7 @@ void insert_slab_to_head (struct slab* sb) {
     //再加在表头之前
     struct slab* listhead = cache_chain[cpu][id];
     if(listhead == NULL){
+      release(&lk);
       print(FONT_RED, "Why your cache_chain[%d][%d] is NULL!!!!!!(insert_slab_to_head)", cpu, id);
       assert(0);
     }
@@ -66,6 +70,7 @@ void insert_slab_to_head (struct slab* sb) {
     //然后把表头向前移动一位
     // cache_chain[cpu][id] = cache_chain[cpu][id]->prev; 
     cache_chain[cpu][id] = sb;
+    release(&lk);
 }
 
 
@@ -148,6 +153,7 @@ static void kfree(void *ptr) {
 static void pmm_init() {
   initlock(&global_lock,"GlobalLock");
   initlock(&big_alloc_lock,"big_lock");
+  initlock(&lk,"lk");
   slab_init();
   head = heap.start;
   tail = heap.end;
