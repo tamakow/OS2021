@@ -3,7 +3,6 @@
 #include <slab.h>
 
 
-//第二次尝试，先只用slab试试，大内存分配先不管（）,好，大内存分配直接炸了
 static struct spinlock global_lock;
 static struct spinlock big_alloc_lock;
 // static struct spinlock list_lock[MAX_CPU + 1][NR_ITEM_SIZE + 1];
@@ -25,9 +24,7 @@ static inline void * alloc_mem (size_t size) {
 // head 即为 cache_chain[cpu][item_id]，保证head不为NULL
 void insert_slab_to_head (struct slab* sb) {
     int cpu = sb->cpu;
-    int id  = 1;
-    while(id <= NR_ITEM_SIZE && (1 << id) != sb->item_size) id++;
-    assert((1 << id) == sb->item_size);
+    int id  = sb->item_id;
     // acquire(&list_lock[cpu][id]);
     //如果在链表的话，先从链表中删除
     sb->prev->next = sb->next;
@@ -68,12 +65,11 @@ static void *kalloc(size_t size) {
   int cpu = cpu_current();
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
-  int item_size = 1 << item_id;
   struct slab *now;
   if(cache_chain[cpu][item_id] == NULL){
     cache_chain[cpu][item_id] = (struct slab*) alloc_mem(SLAB_SIZE);
     if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
-    new_slab(cache_chain[cpu][item_id], cpu, item_size);
+    new_slab(cache_chain[cpu][item_id], cpu, item_id);
     now = cache_chain[cpu][item_id];
     // init circular list
     now->next = now;
@@ -83,7 +79,7 @@ static void *kalloc(size_t size) {
       //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
       struct slab* sb = (struct slab*) alloc_mem(SLAB_SIZE);
       if(sb == NULL) return NULL;
-      new_slab(sb, cpu, item_size);
+      new_slab(sb, cpu, item_id);
       sb->next = sb;
       sb->prev = sb;
       //这里注意，本来不应该用insert的，因为它是一个new的slab，本身不在链表上
@@ -110,7 +106,7 @@ static void *kalloc(size_t size) {
   if(block >= now->max_item_nr - 1) { //已经满了
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next; 
   }
-  return (void*) ((uintptr_t)((uintptr_t)now + block * item_size));
+  return (void*) ((uintptr_t)((uintptr_t)now + block * now->item_size));
 }
 
 //只是回收了slab中的对象，如果slab整个空了无法回收

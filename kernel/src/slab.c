@@ -9,10 +9,11 @@ void slab_init() {
     }
 }
 
-void new_slab(struct slab * sb, int cpu, int item_size) {
+void new_slab(struct slab * sb, int cpu, int item_id) {
     assert(sb != NULL);
     sb->cpu = cpu;
-    sb->item_size = item_size;
+    sb->item_id = item_id;
+    sb->item_size = (1 << item_id);
     sb->max_item_nr = (SLAB_SIZE - 1 KiB) / sb->item_size;
     memset(sb->bitmap, 0, sizeof(sb->bitmap));
     initlock(&sb->lock,"lock");
