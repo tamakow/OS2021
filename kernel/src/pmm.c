@@ -80,7 +80,7 @@ static void *kalloc(size_t size) {
     }
     cache_chain[cpu][item_id] = (struct slab*) head;
     head += SLAB_SIZE;
-    release(&global_lock);
+    // release(&global_lock);
     new_slab(cache_chain[cpu][item_id], cpu, item_size);
     now = cache_chain[cpu][item_id];
   } else{
@@ -98,7 +98,7 @@ static void *kalloc(size_t size) {
       }
       now = (struct slab*) head;
       head += SLAB_SIZE;
-      release(&global_lock);
+      // release(&global_lock);
       new_slab(now, cpu, item_size);
       walk->next = now;
     }
