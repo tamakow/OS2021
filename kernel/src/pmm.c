@@ -6,8 +6,7 @@
 //第二次尝试，先只用slab试试，大内存分配先不管（）,好，大内存分配直接炸了
 static struct spinlock global_lock;
 static struct spinlock big_alloc_lock;
-static struct spinlock lk;
-// static struct spinlock list_lock[MAX_CPU + 1][NR_ITEM_SIZE + 1];
+static struct spinlock list_lock[MAX_CPU + 1][NR_ITEM_SIZE + 1];
 void *head;
 void *tail;
 
@@ -23,44 +22,21 @@ static inline void * alloc_mem (size_t size) {
     return ret;
 }
 
-// tail 即为cache_chain[cpu][item_id]->prev
-// void insert_slab_to_tail (struct slab* sb) {
-//     int cpu = sb->cpu;
-//     int id  = 1;
-//     while(id <= NR_ITEM_SIZE && (1 << id) != sb->item_size) id++;
-//     assert((1 << id) == sb->item_size);
-//     //先从链表中删除
-//     sb->prev->next = sb->next;
-//     sb->next->prev = sb->prev;
-//     //再加在表头之前
-//     struct slab* listhead = cache_chain[cpu][id];
-//     if(listhead == NULL){
-//       print(FONT_RED, "Why your cache_chain[%d][%d] is NULL!!!!!!(insert_slab_to_tail)", cpu, id);
-//       assert(0);
-//     }
-//     sb->next = listhead;
-//     sb->prev = listhead->prev;
-//     listhead->prev->next = sb;
-//     listhead->prev = sb;
-// }
-
-
-
 // head 即为 cache_chain[cpu][item_id]，保证head不为NULL
 void insert_slab_to_head (struct slab* sb) {
-    acquire(&lk);
     int cpu = sb->cpu;
     int id  = 1;
     while(id <= NR_ITEM_SIZE && (1 << id) != sb->item_size) id++;
     assert((1 << id) == sb->item_size);
+    acquire(&list_lock[cpu][id]);
     //如果在链表的话，先从链表中删除
     sb->prev->next = sb->next;
     sb->next->prev = sb->prev;
     //再加在表头之前
     struct slab* listhead = cache_chain[cpu][id];
     if(listhead == NULL){
-      release(&lk);
       print(FONT_RED, "Why your cache_chain[%d][%d] is NULL!!!!!!(insert_slab_to_head)", cpu, id);
+      release(&list_lock[cpu][id]);
       assert(0);
     }
     sb->next = listhead;
@@ -70,7 +46,7 @@ void insert_slab_to_head (struct slab* sb) {
     //然后把表头向前移动一位
     // cache_chain[cpu][id] = cache_chain[cpu][id]->prev; 
     cache_chain[cpu][id] = sb;
-    release(&lk);
+    release(&list_lock[cpu][id]);
 }
 
 
@@ -109,6 +85,8 @@ static void *kalloc(size_t size) {
       struct slab* sb = (struct slab*) alloc_mem(SLAB_SIZE);
       if(sb == NULL) return NULL;
       new_slab(sb, cpu, item_size);
+      sb->next = sb;
+      sb->prev = sb;
       //这里注意，本来不应该用insert的，因为它是一个new的slab，本身不在链表上
       insert_slab_to_head(sb);
     }
@@ -153,7 +131,11 @@ static void kfree(void *ptr) {
 static void pmm_init() {
   initlock(&global_lock,"GlobalLock");
   initlock(&big_alloc_lock,"big_lock");
-  initlock(&lk,"lk");
+  for(int i = 0; i <= MAX_CPU; ++i) {
+    for(int j = 0; j <= NR_ITEM_SIZE; ++j) {
+        initlock(&list_lock[i][j], "listlock");
+    }
+  }
   slab_init();
   head = heap.start;
   tail = heap.end;
