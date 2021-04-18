@@ -1,6 +1,5 @@
 #include <threads.h>
 #include <common.h>
-#include <>
 
 static void entry(int tid) { pmm->alloc(128); }
 static void goodbye()      { printf("End.\n"); }

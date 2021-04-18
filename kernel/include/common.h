@@ -5,6 +5,6 @@
 
 
 #define DEBUG
-#define TEST
+
 
 #include <debug.h>
