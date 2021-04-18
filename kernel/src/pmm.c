@@ -5,7 +5,6 @@
 
 //第二次尝试，先只用slab试试，大内存分配先不管（）,好，大内存分配直接炸了
 static struct spinlock global_lock;
-static struct spinlock lk; 
 static struct spinlock big_alloc_lock;
 void *head;
 void *tail;
@@ -79,7 +78,7 @@ static void *kalloc(size_t size) {
     }
     cache_chain[cpu][item_id] = (struct slab*) head;
     head += SLAB_SIZE;
-     release(&global_lock);
+    release(&global_lock);
     new_slab(cache_chain[cpu][item_id], cpu, item_size);
     now = cache_chain[cpu][item_id];
   } else{
@@ -97,7 +96,7 @@ static void *kalloc(size_t size) {
       }
       now = (struct slab*) head;
       head += SLAB_SIZE;
-       release(&global_lock);
+      release(&global_lock);
       new_slab(now, cpu, item_size);
       walk->next = now;
     }
@@ -129,15 +128,14 @@ static void kfree(void *ptr) {
   struct slab* sb = (struct slab *)slab_head;
   uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
   uint64_t row = block / 64, col = block % 64;
-  acquire(&lk);
+  acquire(&sb->lock);
   sb->bitmap[row] ^= (1ULL << col);
-  release(&lk);
+  release(&sb->lock);
 }
 
 #ifndef TEST
 static void pmm_init() {
   initlock(&global_lock,"GlobalLock");
-  initlock(&lk,"lk");
   initlock(&big_alloc_lock,"big_lock");
   slab_init();
   head = heap.start;
