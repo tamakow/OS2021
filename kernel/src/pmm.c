@@ -24,7 +24,7 @@ void new_slab(struct slab * sb, int cpu, int item_size) {
     assert(sb != NULL);
     sb->cpu = cpu;
     sb->item_size = item_size;
-    sb->max_item_nr = SLAB_SIZE / sb->item_size;
+    sb->max_item_nr = (SLAB_SIZE - 1 KiB) / sb->item_size;
     memset(sb->bitmap, 0, sizeof(sb->bitmap));
     sb->next = NULL;
 }
@@ -124,7 +124,7 @@ static void *kalloc(size_t size) {
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
-  uintptr_t slab_head = ((uintptr_t) ptr / SLAB_SIZE) *SLAB_SIZE;
+  uintptr_t slab_head = ((uintptr_t) ptr / SLAB_SIZE) * SLAB_SIZE;
   struct slab* sb = (struct slab *)slab_head;
   uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
   uint64_t row = block / 64, col = block % 64;
