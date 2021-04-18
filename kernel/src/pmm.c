@@ -26,6 +26,7 @@ void new_slab(struct slab * sb, int cpu, int item_size) {
     sb->item_size = item_size;
     sb->max_item_nr = (SLAB_SIZE - 1 KiB) / sb->item_size;
     memset(sb->bitmap, 0, sizeof(sb->bitmap));
+    initlock(&sb->lock,"lock");
     sb->next = NULL;
 }
 

@@ -13,6 +13,7 @@
 struct slab {
     uint8_t data[SLAB_SIZE - 1 KiB]; // 分配空间，这里给了7kiB
     int cpu;                 // 所属的cpu
+    struct spinlock lock;    // 每个的锁
     int item_size;           // slab 的每个item的大小
     int max_item_nr;         // 最多可以有的 item数量
     uint64_t bitmap[BITMAP_SIZE];
