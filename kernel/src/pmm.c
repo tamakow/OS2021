@@ -70,6 +70,7 @@ static void *kalloc(size_t size) {
   int cpu = cpu_current();
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
+  int item_size = 1 << item_id;
   struct slab *now;
   if(cache_chain[cpu][item_id] == NULL){
     acquire(&global_lock);
@@ -80,7 +81,7 @@ static void *kalloc(size_t size) {
     cache_chain[cpu][item_id] = (struct slab*) head;
     head += SLAB_SIZE;
     release(&global_lock);
-    new_slab(cache_chain[cpu][item_id], cpu, (1<<item_id));
+    new_slab(cache_chain[cpu][item_id], cpu, item_size);
     now = cache_chain[cpu][item_id];
   } else{
     now = cache_chain[cpu][item_id];
@@ -98,7 +99,7 @@ static void *kalloc(size_t size) {
       now = (struct slab*) head;
       head += SLAB_SIZE;
       release(&global_lock);
-      new_slab(now, cpu, (1<<item_id));
+      new_slab(now, cpu, item_size);
       walk->next = now;
     }
   }
@@ -119,8 +120,7 @@ static void *kalloc(size_t size) {
       break;
     }
   }
-  void *ret = (void*) ((uintptr_t)((uintptr_t)now + block * (1<<item_id)));
-  return ret;
+  return (void*) ((uintptr_t)((uintptr_t)now + block * item_size));
 }
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
