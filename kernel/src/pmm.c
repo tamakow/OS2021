@@ -93,10 +93,10 @@ static void *kalloc(size_t size) {
           tmp <<= 1;
           continue;
         }
-        acquire(&now->lock);
+        // acquire(&now->lock);
         now->bitmap[i] |= tmp;
         now->now_item_nr++;
-        release(&now->lock);
+        // release(&now->lock);
         block = i * 32 + j;
         break;
       }
