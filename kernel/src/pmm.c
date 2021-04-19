@@ -99,11 +99,13 @@ static void kfree(void *ptr) {
   struct slab* sb = (struct slab *)slab_head;
   uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
   uint64_t row = block / 64, col = block % 64;
+  Log("the free ptr's cpu is %d, item_id is %d, cache_chain now is %p", sb->cpu, sb->item_id, (void*)cache_chain[sb->cpu][sb->item_id]);
   acquire(&sb->lock);
   sb->bitmap[row] ^= (1ULL << col);
   sb->now_item_nr--;
   release(&sb->lock);
   insert_slab_to_head(sb);
+  Log("Now cache_chain is %p with now_item_nr is %d",(void*)cache_chain[sb->cpu][sb->item_id], sb->now_item_nr);
 }
 
 #ifndef TEST
