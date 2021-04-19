@@ -49,10 +49,10 @@ static void *kalloc(size_t size) {
   if(size > PAGE_SIZE) {
     size_t bsize = pow2(size);
     void *tmp = tail;
-    // acquire(&big_alloc_lock);
+    acquire(&big_alloc_lock);
     tail -= size; 
     tail = (void*)(((size_t)tail / bsize) * bsize);
-    // release(&big_alloc_lock);
+    release(&big_alloc_lock);
     void *ret = tail; 
     if((uintptr_t)tail < (uintptr_t)head) {
       tail = tmp;
@@ -157,7 +157,7 @@ static void pmm_init() {
   slab_init();
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
-  head = heap.start + pmsize / 2;
+  head = heap.end - pmsize / 8;
   tail = heap.end;
   //先给freehead来个一半的堆区再说
   freehead = (struct slab *)heap.start;
