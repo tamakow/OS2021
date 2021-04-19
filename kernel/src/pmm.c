@@ -7,7 +7,7 @@ static struct spinlock global_lock;
 static struct spinlock big_alloc_lock;
 void *head;
 void *tail;
-const int MAX_BIG = 10000;
+const int MAX_BIG = 1000;
 int cnt = 0;
 
 static inline size_t pow2 (size_t size) {
