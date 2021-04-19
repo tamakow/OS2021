@@ -4,7 +4,7 @@
 
 
 static struct spinlock global_lock;
-static struct spinlock big_alloc_lock[MAX_CPU];
+static struct spinlock big_alloc_lock;
 void *head;
 void *tail;
 
@@ -27,23 +27,18 @@ static inline void * alloc_mem (size_t size) {
     return ret;
 }
 
-static int cnt = 0;
 
 static void *kalloc(size_t size) {
   //大内存分配 (多个cpu并行进行大内存分配，每个cpu给定固定区域, 失败)
   int cpu = cpu_current();
 
   if(size > PAGE_SIZE) {
-    if(cpu_count() > 2 && cpu_count() < 8) {
-      if(cnt > 5) return NULL;
-      cnt++;
-    }
     size_t bsize = pow2(size);
     void *tmp = tail;
-    // acquire(&big_alloc_lock[cpu]);
+    acquire(&big_alloc_lock);
     tail -= size; 
     tail = (void*)(((size_t)tail / bsize) * bsize);
-    // release(&big_alloc_lock[cpu]);
+    release(&big_alloc_lock);
     void *ret = tail; 
     if((uintptr_t)tail < (uintptr_t)head) {
       tail = tmp;
@@ -52,8 +47,8 @@ static void *kalloc(size_t size) {
     return ret;
   }
 
-    // cache的最小单位为 8B
-  int item_id = 3;
+    // cache的最小单位为 16B
+  int item_id = 4;
   while(size > (1 << item_id)) item_id++;
   struct slab *now;
   if(cache_chain[cpu][item_id] == NULL){
@@ -122,8 +117,7 @@ static void kfree(void *ptr) {
 #ifndef TEST
 static void pmm_init() {
   initlock(&global_lock,"GlobalLock");
-  for(int i = 0; i < MAX_CPU; ++i)
-    initlock(&big_alloc_lock[i],"big_lock");
+  initlock(&big_alloc_lock,"big_lock");
   slab_init();
   head = heap.start;
   tail = heap.end;
@@ -132,7 +126,7 @@ static void pmm_init() {
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
   //给每个链表先分个十个slab再说 只从8B开始分配
   for(int i = 0; i < cpu_count(); ++i) {
-    for(int j = 3; j < NR_ITEM_SIZE + 1; ++j) {
+    for(int j = 4; j < NR_ITEM_SIZE + 1; ++j) {
         cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE);
         if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
         new_slab(cache_chain[i][j], i, j);
