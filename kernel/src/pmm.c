@@ -30,7 +30,7 @@ static inline void * alloc_mem (size_t size) {
 
 
 static void *kalloc(size_t size) {
-  //大内存分配
+  //大内存分配 (多个cpu并行进行大内存分配，每个cpu给定固定区域)
   int cpu = cpu_current();
   if(size > PAGE_SIZE) {
     size_t bsize = pow2(size);
@@ -106,7 +106,7 @@ static void kfree(void *ptr) {
   uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
   uint64_t row = block / 32, col = block % 32;
   Log("the free ptr's cpu is %d, item_id is %d, cache_chain now is %p", sb->cpu, sb->item_id, (void*)cache_chain[sb->cpu][sb->item_id]);
-  panic_on((sb->bitmap[row] | (1ULL << col)) != sb->bitmap[row], "free wrong!!");
+  panic_on((sb->bitmap[row] | (1ULL << col)) != sb->bitmap[row], "invalid free!!");
   acquire(&sb->lock);
   sb->bitmap[row] ^= (1ULL << col);
   sb->now_item_nr--;
@@ -123,8 +123,9 @@ static void pmm_init() {
   slab_init();
   head = heap.start;
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
+  Log("%d",cpu_count());
   // tail = heap.end;
-  int part = pmsize / 12;
+  uintptr_t part = pmsize / 12;
   for(int i = cpu_count(); i >=0 ; --i) {
     Tail[i] = heap.end - part * (cpu_count() - i);
     Head[i] = Tail[i];
