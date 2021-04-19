@@ -5,7 +5,6 @@
 
 static struct spinlock global_lock;
 static struct spinlock big_alloc_lock;
-// static struct spinlock list_lock[MAX_CPU + 1][NR_ITEM_SIZE + 1];
 void *head;
 void *tail;
 
@@ -85,7 +84,7 @@ static void *kalloc(size_t size) {
     }
   }
     Log("Ready to judge if now is full");
-  if(cache_chain[cpu][item_id]->now_item_nr >= cache_chain[cpu][item_id]->max_item_nr) { //已经满了
+  if(full_slab(cache_chain[cpu][item_id])) { //已经满了
     Log("%p:cache_chain[%d][%d] is full, now->now_item_nr is %d",(void*)cache_chain[cpu][item_id], cpu, item_id,cache_chain[cpu][item_id]->now_item_nr);
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
     Log("%p:Now cache_chain is not full and now->now_item_nr is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->now_item_nr);
@@ -114,11 +113,6 @@ static void kfree(void *ptr) {
 static void pmm_init() {
   initlock(&global_lock,"GlobalLock");
   initlock(&big_alloc_lock,"big_lock");
-  // for(int i = 0; i <= MAX_CPU; ++i) {
-  //   for(int j = 0; j <= NR_ITEM_SIZE; ++j) {
-  //       initlock(&list_lock[i][j], "listlock");
-  //   }
-  // }
   slab_init();
   head = heap.start;
   tail = heap.end;
