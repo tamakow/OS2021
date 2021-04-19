@@ -53,6 +53,7 @@ static void *kalloc(size_t size) {
     new_slab(cache_chain[cpu][item_id], cpu, item_id);
   } else{
     if(full_slab(cache_chain[cpu][item_id])) {
+      print(FONT_RED, "the cache_chain is full, needed to allocate new space");
       //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
       struct slab* sb = (struct slab*) alloc_mem(SLAB_SIZE);
       if(sb == NULL) return NULL;
