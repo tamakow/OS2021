@@ -7,7 +7,7 @@
 #define  SLAB_SIZE      (NR_SLAB_PAGE * PAGE_SIZE)
 #define  BITMAP_SIZE    28
 #define  NR_ITEM_SIZE   12
-#define  NR_INIT_CACHE  10
+#define  NR_INIT_CACHE  1000
 
 //item size 设置为{8, 16,... ,2^12} 共10项，故bitmap的最大size应该设置为不小于 7KiB / 8 = 896B ，这里为了方便，设置为 32 * BITMAP_SIZE(28)
 //每个slab可以配一把自己的锁
