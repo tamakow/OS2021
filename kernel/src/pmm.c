@@ -38,8 +38,8 @@ static void *kalloc(size_t size) {
     acquire(&big_alloc_lock[cpu]);
     Head[cpu] -= size; 
     Head[cpu] = (void*)(((size_t)Head[cpu] / bsize) * bsize);
-    void *ret = Head[cpu]; 
     release(&big_alloc_lock[cpu]);
+    void *ret = Head[cpu]; 
     void *lbound = (cpu == 0)? head : Tail[cpu - 1];
     if((uintptr_t)Head[cpu] < (uintptr_t)lbound) {
       Head[cpu] = tmp;
@@ -125,14 +125,14 @@ static void pmm_init() {
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
   Log("%d",cpu_count());
   // tail = heap.end;
-  uintptr_t part = pmsize / 12;
-  for(int i = cpu_count(); i >=0 ; --i) {
+  uintptr_t part = pmsize / 16;
+  for(int i = cpu_count() - 1; i >=0 ; --i) {
     Tail[i] = heap.end - part * (cpu_count() - i);
     Head[i] = Tail[i];
   }
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
   //给每个链表先分个十个slab再说 只从8B开始分配
-  for(int i = 0; i < cpu_count() + 1; ++i) {
+  for(int i = 0; i < cpu_count(); ++i) {
     for(int j = 3; j < NR_ITEM_SIZE + 1; ++j) {
         cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE);
         if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
