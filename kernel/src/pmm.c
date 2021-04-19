@@ -122,13 +122,14 @@ static void pmm_init() {
         cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE);
         if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
         new_slab(cache_chain[i][j], i, j);
-        // int num = 1;    
-        // while(num <= NR_INIT_CACHE){
-        //   struct slab* now = (struct slab*) alloc_mem(SLAB_SIZE);
-        //   if(now == NULL) return;
-        //   new_slab(cache_chain[i][j],i,j);
-        //   insert_slab_to_head(now); 
-        // }
+        int num = 1;    
+        while(num <= NR_INIT_CACHE){
+          num++;
+          struct slab* now = (struct slab*) alloc_mem(SLAB_SIZE);
+          if(now == NULL) return;
+          new_slab(cache_chain[i][j],i,j);
+          insert_slab_to_head(now); 
+        }
     }
   }
 }
