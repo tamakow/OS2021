@@ -84,7 +84,9 @@ static void *kalloc(size_t size) {
     }
   }
   if(now->now_item_nr >= now->max_item_nr) { //已经满了
-    insert_slab_to_head(cache_chain[cpu][item_id]->next); 
+    Log("cache_chain[%d][%d] is full, now->now_item_nr is %d",cpu, item_id,now->now_item_nr);
+    cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
+    Log("Now cache_chain is not full and now->now_item_nr is %d",cache_chain[cpu][item_id]->now_item_nr);
   }
   return (void*) ((uintptr_t)((uintptr_t)now + block * now->item_size));
 }

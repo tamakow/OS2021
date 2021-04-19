@@ -9,6 +9,12 @@ static void os_run() {
     putch(*s == '*' ? '0' + cpu_current() : *s);
   }
   while (1) ;
+  pmm->alloc(4096);
+  Log("After first allocation");
+  pmm->alloc(4096);
+  Log("After second allocation");
+  pmm->alloc(4096);
+  Log("After all allocation");
 }
 
 MODULE_DEF(os) = {
