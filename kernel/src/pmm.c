@@ -9,6 +9,12 @@ static struct spinlock big_alloc_lock;
 void *head;
 void *tail;
 
+static inline size_t pow2 (size_t size) {
+  size_t ret = 1;
+  while (size > ret) ret <<=1;
+  return ret;
+}
+
 static inline void * alloc_mem (size_t size) {
     acquire(&global_lock);
     void *ret;
@@ -21,36 +27,11 @@ static inline void * alloc_mem (size_t size) {
     return ret;
 }
 
-// head 即为 cache_chain[cpu][item_id]，保证head不为NULL
-void insert_slab_to_head (struct slab* sb) {
-    int cpu = sb->cpu;
-    int id  = sb->item_id;
-    // acquire(&list_lock[cpu][id]);
-    //如果在链表的话，先从链表中删除
-    sb->prev->next = sb->next;
-    sb->next->prev = sb->prev;
-    //再加在表头之前
-    struct slab* listhead = cache_chain[cpu][id];
-    if(listhead == NULL){
-      print(FONT_RED, "Why your cache_chain[%d][%d] is NULL!!!!!!(insert_slab_to_head)", cpu, id);
-      // release(&list_lock[cpu][id]);
-      assert(0);
-    }
-    sb->next = listhead;
-    sb->prev = listhead->prev;
-    listhead->prev->next = sb;
-    listhead->prev = sb;
-    //然后把表头向前移动一位
-    cache_chain[cpu][id] = sb;
-    // release(&list_lock[cpu][id]);
-}
-
 
 static void *kalloc(size_t size) {
   //大内存分配
   if(size > PAGE_SIZE) {
-    size_t bsize = 1;
-    while(bsize < size) bsize <<= 1;
+    size_t bsize = pow2(size);
     acquire(&big_alloc_lock);
     tail -= bsize; 
     tail = (void*)(((size_t)tail / bsize) * bsize);
@@ -71,17 +52,12 @@ static void *kalloc(size_t size) {
     if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
     new_slab(cache_chain[cpu][item_id], cpu, item_id);
     now = cache_chain[cpu][item_id];
-    // init circular list
-    now->next = now;
-    now->prev = now;
   } else{
     if(full_slab(cache_chain[cpu][item_id])) {
       //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
       struct slab* sb = (struct slab*) alloc_mem(SLAB_SIZE);
       if(sb == NULL) return NULL;
       new_slab(sb, cpu, item_id);
-      sb->next = sb;
-      sb->prev = sb;
       //这里注意，本来不应该用insert的，因为它是一个new的slab，本身不在链表上
       insert_slab_to_head(sb);
     }
@@ -140,6 +116,21 @@ static void pmm_init() {
   tail = heap.end;
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
+  //给每个链表先分个十个slab再说
+  for(int i = 0; i < cpu_count() + 1; ++i) {
+    for(int j = 0; j < NR_ITEM_SIZE + 1; ++j) {
+        cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE);
+        if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
+        new_slab(cache_chain[i][j], i, j);
+        int num = 1;    
+        while(num <= NR_INIT_CACHE){
+          struct slab* now = (struct slab*) alloc_mem(SLAB_SIZE);
+          if(now == NULL) return;
+          new_slab(cache_chain[i][j],i,j);
+          insert_slab_to_head(now); 
+        }
+    }
+  }
 }
 #else
 static void pmm_init() {
