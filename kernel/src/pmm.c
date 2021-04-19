@@ -117,21 +117,21 @@ static void pmm_init() {
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
   //给每个链表先分个十个slab再说
-  for(int i = 0; i < cpu_count() + 1; ++i) {
-    for(int j = 0; j < NR_ITEM_SIZE + 1; ++j) {
-        cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE);
-        if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
-        new_slab(cache_chain[i][j], i, j);
-        int num = 1;    
-        while(num <= NR_INIT_CACHE){
-          num++;
-          struct slab* now = (struct slab*) alloc_mem(SLAB_SIZE);
-          if(now == NULL) return;
-          new_slab(cache_chain[i][j],i,j);
-          insert_slab_to_head(now); 
-        }
-    }
-  }
+  // for(int i = 0; i < cpu_count() + 1; ++i) {
+  //   for(int j = 0; j < NR_ITEM_SIZE + 1; ++j) {
+  //       cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE);
+  //       if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
+  //       new_slab(cache_chain[i][j], i, j);
+  //       int num = 1;    
+  //       while(num <= NR_INIT_CACHE){
+  //         num++;
+  //         struct slab* now = (struct slab*) alloc_mem(SLAB_SIZE);
+  //         if(now == NULL) return;
+  //         new_slab(cache_chain[i][j],i,j);
+  //         insert_slab_to_head(now); 
+  //       }
+  //   }
+  // }
 }
 #else
 static void pmm_init() {
