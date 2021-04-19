@@ -9,11 +9,11 @@ void *head;
 void *tail;
 
 
-//cache的最小单位为8B
+//cache的最小单位为8B，但是pow2只给大内存分配，所以问题不大
 static inline size_t pow2 (size_t size) {
   size_t ret = 1;
   while (size > ret) ret <<=1;
-  return (ret > 8) ? ret : 8;
+  return ret;
 }
 
 static inline void * alloc_mem (size_t size) {
@@ -49,8 +49,8 @@ static void *kalloc(size_t size) {
   int cpu = cpu_current();
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
-  // cache的最小单位为 8B
-  item_id = (item_id > 3) ? item_id : 3;
+  // cache的最小单位为 16B
+  item_id = (item_id > 3) ? item_id : 4;
   struct slab *now;
   if(cache_chain[cpu][item_id] == NULL){
     cache_chain[cpu][item_id] = (struct slab*) alloc_mem(SLAB_SIZE);
@@ -126,7 +126,7 @@ static void pmm_init() {
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
   //给每个链表先分个十个slab再说 只从8B开始分配
   for(int i = 0; i < cpu_count() + 1; ++i) {
-    for(int j = 3; j < NR_ITEM_SIZE + 1; ++j) {
+    for(int j = 4; j < NR_ITEM_SIZE + 1; ++j) {
         cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE);
         if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
         new_slab(cache_chain[i][j], i, j);
