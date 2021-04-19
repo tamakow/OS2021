@@ -16,14 +16,26 @@ static inline size_t pow2 (size_t size) {
 }
 
 static inline void * alloc_mem (size_t size, int cpu) {
-    acquire(&global_lock[cpu]);
-    void *ret;
-    if((uintptr_t)head[cpu] + SLAB_SIZE  > (uintptr_t)tail[cpu]) ret = NULL;
-    else {
-       ret = head[cpu];
-       head[cpu] += SLAB_SIZE;
+    void* ret = NULL;
+    if((uintptr_t)head[cpu] + SLAB_SIZE  > (uintptr_t)tail[cpu]){
+      //从别的CPU分配区去偷一波
+      for(int i = 0; i < cpu_count(); ++i) {
+        if(i == cpu) continue;
+        if((uintptr_t)head[i] + SLAB_SIZE  < (uintptr_t)tail[i]){
+          ret = head[i];
+          acquire(&global_lock[i]);
+          head[i] += size;
+          release(&global_lock[i]);
+        }
+      }
     }
-    release(&global_lock[cpu]);
+    else {
+      //自己的够用
+      ret = head[cpu];
+      acquire(&global_lock[cpu]);
+      head[cpu] += size;
+      release(&global_lock[cpu]);
+    }
     return ret;
 }
 
