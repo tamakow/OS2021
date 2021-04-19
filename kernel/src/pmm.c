@@ -125,7 +125,7 @@ static void pmm_init() {
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
   Log("%d",cpu_count());
   // tail = heap.end;
-  uintptr_t part = pmsize / 16;
+  uintptr_t part = pmsize / 12;
   for(int i = cpu_count() - 1; i >=0 ; --i) {
     Tail[i] = heap.end - part * (cpu_count() - i);
     Head[i] = Tail[i];
