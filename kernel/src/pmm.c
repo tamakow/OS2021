@@ -47,7 +47,7 @@ static void *kalloc(size_t size) {
     return ret;
   }
 
-    // cache的最小单位为 128B
+    // cache的最小单位为 8B
   int item_id = 7;
   while(size > (1 << item_id)) item_id++;
   struct slab *now;
@@ -71,9 +71,9 @@ static void *kalloc(size_t size) {
   //成功找到slab
   uint32_t block = 0;
   for(int i = 0; i < BITMAP_SIZE; ++i) {
-    if(now->bitmap[i] != UINT32_MAX) {
-      uint32_t tmp = 1;
-      for(int j = 0; j < 32; ++j) {
+    if(now->bitmap[i] != UINT8_MAX) {
+      uint8_t tmp = 1;
+      for(int j = 0; j < 8; ++j) {
         if(now->bitmap[i] & tmp){ 
           tmp <<= 1;
           continue;
@@ -82,7 +82,7 @@ static void *kalloc(size_t size) {
         now->bitmap[i] |= tmp;
         now->now_item_nr++;
         release(&now->lock);
-        block = i * 32 + j;
+        block = i * 8 + j;
         break;
       }
       break;
@@ -103,7 +103,7 @@ static void kfree(void *ptr) {
   uintptr_t slab_head = ((uintptr_t) ptr / SLAB_SIZE) * SLAB_SIZE;
   struct slab* sb = (struct slab *)slab_head;
   uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
-  uint64_t row = block / 32, col = block % 32;
+  uint64_t row = block / 8, col = block % 8;
   Log("the free ptr's cpu is %d, item_id is %d, cache_chain now is %p", sb->cpu, sb->item_id, (void*)cache_chain[sb->cpu][sb->item_id]);
   panic_on((sb->bitmap[row] | (1ULL << col)) != sb->bitmap[row], "invalid free!!");
   acquire(&sb->lock);

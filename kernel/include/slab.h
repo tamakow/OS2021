@@ -5,7 +5,7 @@
 #define  PAGE_SIZE      (4 KiB)
 #define  NR_SLAB_PAGE   2
 #define  SLAB_SIZE      (NR_SLAB_PAGE * PAGE_SIZE)
-#define  BITMAP_SIZE    28
+#define  BITMAP_SIZE    7
 #define  NR_ITEM_SIZE   12
 #define  NR_INIT_CACHE  10
 
@@ -20,7 +20,7 @@ struct slab {
     int item_id;             // 2^item_id = item_size
     int max_item_nr;         // 最多可以有的 item数量
     int now_item_nr;        // 现在有的item数量
-    uint32_t bitmap[BITMAP_SIZE];
+    uint8_t bitmap[BITMAP_SIZE];
     struct slab *next;
     struct slab *prev;
 };
