@@ -35,7 +35,7 @@ static void *kalloc(size_t size) {
 
   if(size > PAGE_SIZE) {
     if(cpu_count() >= 2 && cpu_count() < 8) {
-      if(num > 100) return NULL;
+      if(num > 10) return NULL;
       num++;
     }
     size_t bsize = pow2(size);
