@@ -3,7 +3,7 @@
 #include <slab.h>
 
 
-static struct spinlock global_lock[MAX_CPU];
+static struct spinlock global_lock;
 static struct spinlock big_alloc_lock[MAX_CPU];
 void *head;
 void *tail;
@@ -16,14 +16,14 @@ static inline size_t pow2 (size_t size) {
 }
 
 static inline void * alloc_mem (size_t size) {
-    acquire(&global_lock[cpu_current()]);
+    acquire(&global_lock);
     void *ret;
     if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)tail) ret = NULL;
     else {
        ret = head;
        head += SLAB_SIZE;
     }
-    release(&global_lock[cpu_current()]);
+    release(&global_lock);
     return ret;
 }
 
@@ -40,10 +40,10 @@ static void *kalloc(size_t size) {
     }
     size_t bsize = pow2(size);
     void *tmp = tail;
-    acquire(&big_alloc_lock[cpu]);
+    // acquire(&big_alloc_lock[cpu]);
     tail -= size; 
     tail = (void*)(((size_t)tail / bsize) * bsize);
-    release(&big_alloc_lock[cpu]);
+    // release(&big_alloc_lock[cpu]);
     void *ret = tail; 
     if((uintptr_t)tail < (uintptr_t)head) {
       tail = tmp;
@@ -121,10 +121,9 @@ static void kfree(void *ptr) {
 
 #ifndef TEST
 static void pmm_init() {
-  for(int i = 0; i < MAX_CPU; ++i){
-      initlock(&global_lock[i],"GlobalLock");
+  initlock(&global_lock,"GlobalLock");
+  for(int i = 0; i < MAX_CPU; ++i)
     initlock(&big_alloc_lock[i],"big_lock");
-  }
   slab_init();
   head = heap.start;
   tail = heap.end;
