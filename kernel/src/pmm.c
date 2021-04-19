@@ -44,10 +44,10 @@ static void *kalloc(size_t size) {
     }
     size_t bsize = pow2(size);
     void *tmp = tail;
-    acquire(&big_alloc_lock);
+    // acquire(&big_alloc_lock);
     tail -= size; 
     tail = (void*)(((size_t)tail / bsize) * bsize);
-    release(&big_alloc_lock);
+    // release(&big_alloc_lock);
     void *ret = tail; 
     if((uintptr_t)tail < (uintptr_t)head) {
       tail = tmp;
