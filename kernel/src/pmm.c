@@ -3,10 +3,11 @@
 #include <slab.h>
 
 
-static struct spinlock global_lock[MAX_CPU];
-static struct spinlock big_alloc_lock[MAX_CPU];
-void *head[MAX_CPU];
-void *tail[MAX_CPU];
+static struct spinlock global_lock;
+static struct spinlock big_alloc_lock;
+void *head;
+void *tail;
+
 
 //cache的最小单位为8B，但是pow2只给大内存分配，所以问题不大
 static inline size_t pow2 (size_t size) {
@@ -15,83 +16,50 @@ static inline size_t pow2 (size_t size) {
   return ret;
 }
 
-static inline void * alloc_mem (size_t size, int cpu) {
-    void* ret = NULL;
-    if((uintptr_t)head[cpu] + SLAB_SIZE  > (uintptr_t)tail[cpu]){
-      //从别的CPU分配区去偷一波
-      for(int i = 0; i < cpu_count(); ++i) {
-        if(i == cpu) continue;
-        if((uintptr_t)head[i] + SLAB_SIZE  < (uintptr_t)tail[i]){
-          ret = head[i];
-          acquire(&global_lock[i]);
-          head[i] += size;
-          release(&global_lock[i]);
-        }
-      }
-    }
+static inline void * alloc_mem (size_t size) {
+    acquire(&global_lock);
+    void *ret;
+    if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)tail) ret = NULL;
     else {
-      //自己的够用
-      ret = head[cpu];
-      acquire(&global_lock[cpu]);
-      head[cpu] += size;
-      release(&global_lock[cpu]);
+       ret = head;
+       head += SLAB_SIZE;
     }
+    release(&global_lock);
     return ret;
 }
 
-#define CHEAT
-static int cnt = 0;
-static int exist_cpu[MAX_CPU];
-
 
 static void *kalloc(size_t size) {
-  //大内存分配 (多个cpu并行进行大内存分配，每个cpu给定固定区域, 失败)
-  int cpu = cpu_current();
-  for(int i = 0; i < cpu_count(); ++i) {
-    if(cpu == exist_cpu[i]) {
-      cpu = i;
-      break;
-    }
-    if(exist_cpu[i] == -1){
-      exist_cpu[i] = cpu;
-      cpu = i;
-      break;
-    }
-  }
-
+  //大内存分配
   if(size > PAGE_SIZE) {
-    #ifdef CHEAT
-      if(cpu_current() > 2 && cpu_current() <= 8) {
-        if(cnt ++ > 5) return NULL;
-      }
-    #endif
     size_t bsize = pow2(size);
-    void *tmp = tail[cpu];
-    acquire(&big_alloc_lock[cpu]);
-    tail[cpu] -= size; 
-    tail[cpu] = (void*)(((size_t)tail[cpu] / bsize) * bsize);
-    release(&big_alloc_lock[cpu]);
-    void *ret = tail[cpu]; 
-    if((uintptr_t)tail[cpu] < (uintptr_t)head[cpu]) {
-      tail[cpu] = tmp;
+    void *tmp = tail;
+    acquire(&big_alloc_lock);
+    tail -= size; 
+    tail = (void*)(((size_t)tail / bsize) * bsize);
+    release(&big_alloc_lock);
+    void *ret = tail; 
+    if((uintptr_t)tail < (uintptr_t)head) {
+      tail = tmp;
       return NULL;
     }
     return ret;
   }
 
+  int cpu = cpu_current();
     // cache的最小单位为 8B
-  int item_id = 1;
+  int item_id = 3;
   while(size > (1 << item_id)) item_id++;
   struct slab *now;
   if(cache_chain[cpu][item_id] == NULL){
-    cache_chain[cpu][item_id] = (struct slab*) alloc_mem(SLAB_SIZE, cpu);
+    cache_chain[cpu][item_id] = (struct slab*) alloc_mem(SLAB_SIZE);
     if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
     new_slab(cache_chain[cpu][item_id], cpu, item_id);
   } else{
     if(full_slab(cache_chain[cpu][item_id])) {
       print(FONT_RED, "the cache_chain is full, needed to allocate new space");
       //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
-      struct slab* sb = (struct slab*) alloc_mem(SLAB_SIZE, cpu);
+      struct slab* sb = (struct slab*) alloc_mem(SLAB_SIZE);
       if(sb == NULL) return NULL;
       new_slab(sb, cpu, item_id);
       //这里注意，本来不应该用insert的，因为它是一个new的slab，本身不在链表上
@@ -103,9 +71,9 @@ static void *kalloc(size_t size) {
   //成功找到slab
   uint32_t block = 0;
   for(int i = 0; i < BITMAP_SIZE; ++i) {
-    if(now->bitmap[i] != UINT64_MAX) {
-      uint64_t tmp = 1;
-      for(int j = 0; j < 64; ++j) {
+    if(now->bitmap[i] != UINT32_MAX) {
+      uint32_t tmp = 1;
+      for(int j = 0; j < 32; ++j) {
         if(now->bitmap[i] & tmp){ 
           tmp <<= 1;
           continue;
@@ -114,7 +82,7 @@ static void *kalloc(size_t size) {
         now->bitmap[i] |= tmp;
         now->now_item_nr++;
         release(&now->lock);
-        block = i * 64 + j;
+        block = i * 32 + j;
         break;
       }
       break;
@@ -135,9 +103,9 @@ static void kfree(void *ptr) {
   uintptr_t slab_head = ((uintptr_t) ptr / SLAB_SIZE) * SLAB_SIZE;
   struct slab* sb = (struct slab *)slab_head;
   uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
-  uint64_t row = block / 64, col = block % 64;
+  uint64_t row = block / 32, col = block % 32;
   Log("the free ptr's cpu is %d, item_id is %d, cache_chain now is %p", sb->cpu, sb->item_id, (void*)cache_chain[sb->cpu][sb->item_id]);
-  panic_on((sb->bitmap[row] | (1ULL << col)) != sb->bitmap[row], "invalid free!!");
+  panic_on((sb->bitmap[row] | (1ULL << col)) != sb->bitmap[row], "free wrong!!");
   acquire(&sb->lock);
   sb->bitmap[row] ^= (1ULL << col);
   sb->now_item_nr--;
@@ -148,37 +116,29 @@ static void kfree(void *ptr) {
 
 #ifndef TEST
 static void pmm_init() {
-  for(int i = 0; i < MAX_CPU; ++i) {
-    initlock(&global_lock[i],"GlobalLock");
-    initlock(&big_alloc_lock[i],"big_lock");
-  }
+  initlock(&global_lock,"GlobalLock");
+  initlock(&big_alloc_lock,"big_lock");
   slab_init();
-  memset(exist_cpu, -1, sizeof(exist_cpu));
-  Log("%d",cpu_count());
+  head = heap.start;
+  tail = heap.end;
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
-  uintptr_t block_size = pmsize / cpu_count();
-  for (int i = 0; i < cpu_count(); ++i) {
-    head[i] = heap.start + i * block_size;
-    tail[i] = head[i] + block_size;
-    head[i] = (void *)(((uintptr_t)head[i] / SLAB_SIZE) * SLAB_SIZE); //对齐
-  }
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
-  // 给每个链表先分个十个slab再说 只从8B开始分配
-  for(int i = 0; i < cpu_count(); ++i) {
-    for(int j = 1; j < NR_ITEM_SIZE + 1; ++j) {
-        cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE, i);
-        if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
-        new_slab(cache_chain[i][j], i, j);
-        int num = 1;    
-        while(num <= NR_INIT_CACHE){
-          num++;
-          struct slab* now = (struct slab*) alloc_mem(SLAB_SIZE, i);
-          if(now == NULL) return;
-          new_slab(now,i,j);
-          insert_slab_to_head(now); 
-        }
-    }
-  }
+  //给每个链表先分个十个slab再说 只从8B开始分配
+  // for(int i = 0; i < cpu_count() + 1; ++i) {
+  //   for(int j = 3; j < NR_ITEM_SIZE + 1; ++j) {
+  //       cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE);
+  //       if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
+  //       new_slab(cache_chain[i][j], i, j);
+  //       int num = 1;    
+  //       while(num <= NR_INIT_CACHE){
+  //         num++;
+  //         struct slab* now = (struct slab*) alloc_mem(SLAB_SIZE);
+  //         if(now == NULL) return;
+  //         new_slab(now,i,j);
+  //         insert_slab_to_head(now); 
+  //       }
+  //   }
+  // }
 }
 #else
 static void pmm_init() {
