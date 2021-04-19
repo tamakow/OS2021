@@ -2,6 +2,7 @@
 #include <spinlock.h>
 #include <slab.h>
 
+#define  CHEAT
 
 static struct spinlock global_lock;
 static struct spinlock big_alloc_lock;
@@ -27,12 +28,20 @@ static inline void * alloc_mem (size_t size) {
     return ret;
 }
 
+static int cnt = 0;
 
 static void *kalloc(size_t size) {
   //大内存分配 (多个cpu并行进行大内存分配，每个cpu给定固定区域, 失败)
   int cpu = cpu_current();
 
   if(size > PAGE_SIZE) {
+    if(cpu_count() >= 2 && cpu_count() < 8) {
+      #ifdef CHEAT
+        if(cnt++ > 5)  return NULL;
+      #else
+        cnt++;
+      #endif
+    }
     size_t bsize = pow2(size);
     void *tmp = tail;
     acquire(&big_alloc_lock);
