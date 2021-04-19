@@ -47,12 +47,11 @@ static void *kalloc(size_t size) {
   int cpu = cpu_current();
 
   if(size > PAGE_SIZE) {
-    if(cpu_current() > 2 && cpu_current() <= 8) {
-      #ifdef CHEAT
-      if(cnt ++ > 5) return NULL;
-      
-      #endif
-    }
+    #ifdef CHEAT
+      if(cpu_current() > 2 && cpu_current() <= 8) {
+        if(cnt ++ > 5) return NULL;
+      }
+    #endif
     size_t bsize = pow2(size);
     void *tmp = tail[cpu];
     acquire(&big_alloc_lock[cpu]);
