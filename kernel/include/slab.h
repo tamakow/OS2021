@@ -3,6 +3,8 @@
 
 #define  KiB            *(1 << 10)
 #define  PAGE_SIZE      (4 KiB)
+#define  NR_PAGE_CACHE  4          //没事就多分点 
+#define  FLAG_SIZE      (sizeof(bool))
 
 /*
  *   |-------------------------------------------------------heap----------------------------------------------------------------------------|
@@ -39,6 +41,6 @@ struct kmem_cache {
     struct slab* slabs_free;
 };
 
-
+void slab_init(void *, void *);
 
 #endif
