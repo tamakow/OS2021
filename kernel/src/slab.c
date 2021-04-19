@@ -1,8 +1,6 @@
 #include <common.h>
 #include <slab.h>
 
-
-
 void slab_init() {
     for(int i = 0; i < MAX_CPU + 1; ++i) {
         for(int j = 0; j < NR_ITEM_SIZE + 1; ++j) {
