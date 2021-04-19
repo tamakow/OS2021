@@ -93,10 +93,10 @@ static void *kalloc(size_t size) {
           tmp <<= 1;
           continue;
         }
-        acquire(&now->lock);
+        // acquire(&now->lock);
         now->bitmap[i] |= tmp;
         now->now_item_nr++;
-        release(&now->lock);
+        // release(&now->lock);
         block = i * 32 + j;
         break;
       }
@@ -137,16 +137,15 @@ static void kfree(void *ptr) {
     }
     return;
   }
-  return;
   //否则正常在slab里free就好
   uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
   uint64_t row = block / 32, col = block % 32;
   Log("the free ptr's cpu is %d, item_id is %d, cache_chain now is %p", sb->cpu, sb->item_id, (void*)cache_chain[sb->cpu][sb->item_id]);
   panic_on((sb->bitmap[row] | (1ULL << col)) != sb->bitmap[row], "free wrong!!");
-  acquire(&sb->lock);
+  // acquire(&sb->lock);
   sb->bitmap[row] ^= (1ULL << col);
   sb->now_item_nr--;
-  release(&sb->lock);
+  // release(&sb->lock);
   insert_slab_to_head(sb);
   Log("Now cache_chain is %p with now_item_nr is %d",(void*)cache_chain[sb->cpu][sb->item_id], sb->now_item_nr);
 }
