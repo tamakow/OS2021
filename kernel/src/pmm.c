@@ -3,7 +3,7 @@
 #include <slab.h>
 
 
-static struct spinlock global_lock;
+static struct spinlock global_lock[MAX_CPU];
 static struct spinlock big_alloc_lock[MAX_CPU];
 void *head;
 void *tail;
@@ -16,14 +16,14 @@ static inline size_t pow2 (size_t size) {
 }
 
 static inline void * alloc_mem (size_t size) {
-    acquire(&global_lock);
+    acquire(&global_lock[cpu_current()]);
     void *ret;
     if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)tail) ret = NULL;
     else {
        ret = head;
        head += SLAB_SIZE;
     }
-    release(&global_lock);
+    release(&global_lock[cpu_current()]);
     return ret;
 }
 
@@ -121,9 +121,10 @@ static void kfree(void *ptr) {
 
 #ifndef TEST
 static void pmm_init() {
-  initlock(&global_lock,"GlobalLock");
-  for(int i = 0; i < MAX_CPU; ++i)
+  for(int i = 0; i < MAX_CPU; ++i){
+      initlock(&global_lock[i],"GlobalLock");
     initlock(&big_alloc_lock[i],"big_lock");
+  }
   slab_init();
   head = heap.start;
   tail = heap.end;
