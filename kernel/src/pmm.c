@@ -48,7 +48,7 @@ static void *kalloc(size_t size) {
   }
 
     // cache的最小单位为 8B
-  int item_id = 7;
+  int item_id = 3;
   while(size > (1 << item_id)) item_id++;
   struct slab *now;
   if(cache_chain[cpu][item_id] == NULL){
@@ -71,9 +71,9 @@ static void *kalloc(size_t size) {
   //成功找到slab
   uint32_t block = 0;
   for(int i = 0; i < BITMAP_SIZE; ++i) {
-    if(now->bitmap[i] != UINT8_MAX) {
-      uint8_t tmp = 1;
-      for(int j = 0; j < 8; ++j) {
+    if(now->bitmap[i] != UINT32_MAX) {
+      uint32_t tmp = 1;
+      for(int j = 0; j < 32; ++j) {
         if(now->bitmap[i] & tmp){ 
           tmp <<= 1;
           continue;
@@ -82,7 +82,7 @@ static void *kalloc(size_t size) {
         now->bitmap[i] |= tmp;
         now->now_item_nr++;
         release(&now->lock);
-        block = i * 8 + j;
+        block = i * 32 + j;
         break;
       }
       break;
@@ -103,7 +103,7 @@ static void kfree(void *ptr) {
   uintptr_t slab_head = ((uintptr_t) ptr / SLAB_SIZE) * SLAB_SIZE;
   struct slab* sb = (struct slab *)slab_head;
   uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
-  uint64_t row = block / 8, col = block % 8;
+  uint64_t row = block / 32, col = block % 32;
   Log("the free ptr's cpu is %d, item_id is %d, cache_chain now is %p", sb->cpu, sb->item_id, (void*)cache_chain[sb->cpu][sb->item_id]);
   panic_on((sb->bitmap[row] | (1ULL << col)) != sb->bitmap[row], "invalid free!!");
   acquire(&sb->lock);
@@ -126,7 +126,7 @@ static void pmm_init() {
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
   //给每个链表先分个十个slab再说 只从8B开始分配
   for(int i = 0; i < cpu_count(); ++i) {
-    for(int j = 7; j < NR_ITEM_SIZE + 1; ++j) {
+    for(int j = 3; j < NR_ITEM_SIZE + 1; ++j) {
         cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE);
         if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
         new_slab(cache_chain[i][j], i, j);
