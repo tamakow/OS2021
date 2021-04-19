@@ -101,7 +101,7 @@ static void kfree(void *ptr) {
   uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
   uint64_t row = block / 64, col = block % 64;
   Log("the free ptr's cpu is %d, item_id is %d, cache_chain now is %p", sb->cpu, sb->item_id, (void*)cache_chain[sb->cpu][sb->item_id]);
-  panic_on((sb->bitmap[row] | (1ULL << col)) == sb->bitmap[row], "free wrong!!");
+  panic_on((sb->bitmap[row] | (1ULL << col)) != sb->bitmap[row], "free wrong!!");
   acquire(&sb->lock);
   sb->bitmap[row] ^= (1ULL << col);
   sb->now_item_nr--;
