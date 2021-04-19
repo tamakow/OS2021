@@ -32,14 +32,14 @@ static inline void * alloc_mem (size_t size) {
       return ret;
     }
     //如果freehead没有，从堆区申请
-    acquire(&global_lock);
+    // acquire(&global_lock);
     void *ret;
     if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)tail) ret = NULL;
     else {
        ret = head;
        head += SLAB_SIZE;
     }
-    release(&global_lock);
+    // release(&global_lock);
     return ret;
 }
 
@@ -157,7 +157,7 @@ static void pmm_init() {
   slab_init();
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
-  head = heap.end - pmsize / 8;
+  head = heap.end + pmsize / 2;
   tail = heap.end;
   //先给freehead来个一半的堆区再说
   freehead = (struct slab *)heap.start;
