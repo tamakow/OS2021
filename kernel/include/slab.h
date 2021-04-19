@@ -5,7 +5,7 @@
 #define  PAGE_SIZE      (4 KiB)
 #define  NR_SLAB_PAGE   2
 #define  SLAB_SIZE      (NR_SLAB_PAGE * PAGE_SIZE)
-#define  BITMAP_SIZE    14
+#define  BITMAP_SIZE    28
 #define  NR_ITEM_SIZE   12
 #define  NR_INIT_CACHE  10
 

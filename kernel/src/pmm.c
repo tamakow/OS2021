@@ -2,7 +2,6 @@
 #include <spinlock.h>
 #include <slab.h>
 
-#define  CHEAT
 
 static struct spinlock global_lock;
 static struct spinlock big_alloc_lock;
@@ -28,26 +27,18 @@ static inline void * alloc_mem (size_t size) {
     return ret;
 }
 
-static int cnt = 0;
 
 static void *kalloc(size_t size) {
   //大内存分配 (多个cpu并行进行大内存分配，每个cpu给定固定区域, 失败)
   int cpu = cpu_current();
 
   if(size > PAGE_SIZE) {
-    if(cpu_count() >= 2 && cpu_count() < 8) {
-      #ifdef CHEAT
-        if(cnt++ > 5)  return NULL;
-      #else
-        cnt++;
-      #endif
-    }
     size_t bsize = pow2(size);
     void *tmp = tail;
-    // acquire(&big_alloc_lock);
+    acquire(&big_alloc_lock);
     tail -= size; 
     tail = (void*)(((size_t)tail / bsize) * bsize);
-    // release(&big_alloc_lock);
+    release(&big_alloc_lock);
     void *ret = tail; 
     if((uintptr_t)tail < (uintptr_t)head) {
       tail = tmp;
@@ -56,8 +47,8 @@ static void *kalloc(size_t size) {
     return ret;
   }
 
-    // cache的最小单位为 16B
-  int item_id = 4;
+    // cache的最小单位为 8B
+  int item_id = 3;
   while(size > (1 << item_id)) item_id++;
   struct slab *now;
   if(cache_chain[cpu][item_id] == NULL){
@@ -134,21 +125,21 @@ static void pmm_init() {
   Log("%d",cpu_count());
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
   //给每个链表先分个十个slab再说 只从8B开始分配
-  for(int i = 0; i < cpu_count(); ++i) {
-    for(int j = 4; j < NR_ITEM_SIZE + 1; ++j) {
-        cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE);
-        if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
-        new_slab(cache_chain[i][j], i, j);
-        int num = 1;    
-        while(num <= NR_INIT_CACHE){
-          num++;
-          struct slab* now = (struct slab*) alloc_mem(SLAB_SIZE);
-          if(now == NULL) return;
-          new_slab(now,i,j);
-          insert_slab_to_head(now); 
-        }
-    }
-  }
+  // for(int i = 0; i < cpu_count(); ++i) {
+  //   for(int j = 3; j < NR_ITEM_SIZE + 1; ++j) {
+  //       cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE);
+  //       if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
+  //       new_slab(cache_chain[i][j], i, j);
+  //       int num = 1;    
+  //       while(num <= NR_INIT_CACHE){
+  //         num++;
+  //         struct slab* now = (struct slab*) alloc_mem(SLAB_SIZE);
+  //         if(now == NULL) return;
+  //         new_slab(now,i,j);
+  //         insert_slab_to_head(now); 
+  //       }
+  //   }
+  // }
 }
 #else
 static void pmm_init() {
