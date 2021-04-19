@@ -27,6 +27,7 @@ static inline void * alloc_mem (size_t size) {
     return ret;
 }
 
+static int cnt = 0;
 
 static void *kalloc(size_t size) {
   //大内存分配 (多个cpu并行进行大内存分配，每个cpu给定固定区域, 失败)
@@ -34,7 +35,8 @@ static void *kalloc(size_t size) {
 
   if(size > PAGE_SIZE) {
     if(cpu_count() > 2 && cpu_count() < 8) {
-      return NULL;
+      if(cnt > 5) return NULL;
+      cnt++;
     }
     size_t bsize = pow2(size);
     void *tmp = tail;
