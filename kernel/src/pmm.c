@@ -4,10 +4,10 @@
 
 
 static struct spinlock global_lock;
-static struct spinlock big_alloc_lock;
+static struct spinlock big_alloc_lock[MAX_CPU];
 void *head;
-void *tail;
-
+void *Tail[MAX_CPU];
+void *Head[MAX_CPU];
 
 //cache的最小单位为8B，但是pow2只给大内存分配，所以问题不大
 static inline size_t pow2 (size_t size) {
@@ -19,7 +19,7 @@ static inline size_t pow2 (size_t size) {
 static inline void * alloc_mem (size_t size) {
     acquire(&global_lock);
     void *ret;
-    if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)tail) ret = NULL;
+    if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)Head[0]) ret = NULL;
     else {
        ret = head;
        head += SLAB_SIZE;
@@ -31,23 +31,24 @@ static inline void * alloc_mem (size_t size) {
 
 static void *kalloc(size_t size) {
   //大内存分配
+  int cpu = cpu_current();
   if(size > PAGE_SIZE) {
     size_t bsize = pow2(size);
-    void *tmp = tail;
-    acquire(&big_alloc_lock);
-    tail -= size; 
-    tail = (void*)(((size_t)tail / bsize) * bsize);
-    void *ret = tail; 
-    release(&big_alloc_lock);
-    if((uintptr_t)tail < (uintptr_t)head) {
-      tail = tmp;
+    void *tmp = Head[cpu];
+    acquire(&big_alloc_lock[cpu]);
+    Head[cpu] -= size; 
+    Head[cpu] = (void*)(((size_t)Head[cpu] / bsize) * bsize);
+    void *ret = Head[cpu]; 
+    release(&big_alloc_lock[cpu]);
+    void *lbound = (cpu == 0)? head : Tail[cpu - 1];
+    if((uintptr_t)Head[cpu] < (uintptr_t)lbound) {
+      Head[cpu] = tmp;
       return NULL;
     }
     return ret;
   }
 
-  int cpu = cpu_current();
-    // cache的最小单位为 16B
+    // cache的最小单位为 8B
   int item_id = 3;
   while(size > (1 << item_id)) item_id++;
   struct slab *now;
@@ -99,7 +100,7 @@ static void *kalloc(size_t size) {
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
-  if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
+  if((uintptr_t)ptr >= (uintptr_t)Head[0]) return; //大内存不释放
   uintptr_t slab_head = ((uintptr_t) ptr / SLAB_SIZE) * SLAB_SIZE;
   struct slab* sb = (struct slab *)slab_head;
   uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
@@ -117,11 +118,17 @@ static void kfree(void *ptr) {
 #ifndef TEST
 static void pmm_init() {
   initlock(&global_lock,"GlobalLock");
-  initlock(&big_alloc_lock,"big_lock");
+  for(int i = 0; i < MAX_CPU; ++i)
+    initlock(&big_alloc_lock[i],"big_lock");
   slab_init();
   head = heap.start;
-  tail = heap.end;
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
+  // tail = heap.end;
+  int part = pmsize / 12;
+  for(int i = cpu_count(); i >=0 ; --i) {
+    Tail[i] = heap.end - part * (cpu_count() - i);
+    Head[i] = Tail[i];
+  }
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
   //给每个链表先分个十个slab再说 只从8B开始分配
   for(int i = 0; i < cpu_count() + 1; ++i) {
