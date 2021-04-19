@@ -7,7 +7,7 @@
 #define  SLAB_SIZE      (NR_SLAB_PAGE * PAGE_SIZE)
 #define  BITMAP_SIZE    64
 #define  NR_ITEM_SIZE   12
-#define  NR_INIT_CACHE  100
+#define  NR_INIT_CACHE  10
 
 //item size 设置为{2, 4, 8, 16,... ,2^12} 共十二项，故bitmap的最大size应该设置为不小于 SLAB_SIZE / 2 = 3.5 KiB ，这里为了方便，设置为 4 KiB = 64 * BITMAP_SIZE
 //每个slab可以配一把自己的锁
@@ -19,6 +19,7 @@ struct slab {
     int item_size;           // slab 的每个item的大小
     int item_id;             // 2^item_id = item_size
     int max_item_nr;         // 最多可以有的 item数量
+    int now_item_nr;        // 现在有的item数量
     uint64_t bitmap[BITMAP_SIZE];
     struct slab *next;
     struct slab *prev;

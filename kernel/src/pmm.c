@@ -51,7 +51,6 @@ static void *kalloc(size_t size) {
     cache_chain[cpu][item_id] = (struct slab*) alloc_mem(SLAB_SIZE);
     if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
     new_slab(cache_chain[cpu][item_id], cpu, item_id);
-    now = cache_chain[cpu][item_id];
   } else{
     if(full_slab(cache_chain[cpu][item_id])) {
       //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
@@ -61,8 +60,8 @@ static void *kalloc(size_t size) {
       //这里注意，本来不应该用insert的，因为它是一个new的slab，本身不在链表上
       insert_slab_to_head(sb);
     }
-    now = cache_chain[cpu][item_id];
   }
+  now = cache_chain[cpu][item_id];
   if(now == NULL) return NULL;
   //成功找到slab
   uint64_t block = 0;
@@ -76,6 +75,7 @@ static void *kalloc(size_t size) {
         }
         acquire(&now->lock);
         now->bitmap[i] |= tmp;
+        now->now_item_nr++;
         release(&now->lock);
         block = i * 64 + j;
         break;
@@ -83,7 +83,7 @@ static void *kalloc(size_t size) {
       break;
     }
   }
-  if(block >= now->max_item_nr - 1) { //已经满了
+  if(now->now_item_nr >= now->max_item_nr) { //已经满了
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next; 
   }
   return (void*) ((uintptr_t)((uintptr_t)now + block * now->item_size));
@@ -98,6 +98,7 @@ static void kfree(void *ptr) {
   uint64_t row = block / 64, col = block % 64;
   acquire(&sb->lock);
   sb->bitmap[row] ^= (1ULL << col);
+  sb->now_item_nr--;
   release(&sb->lock);
   insert_slab_to_head(sb);
 }

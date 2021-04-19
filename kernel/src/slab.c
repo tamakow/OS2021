@@ -17,6 +17,7 @@ void new_slab(struct slab * sb, int cpu, int item_id) {
     sb->item_id = item_id;
     sb->item_size = (1 << item_id);
     sb->max_item_nr = (SLAB_SIZE - 1 KiB) / sb->item_size;
+    sb->now_item_nr = 0;
     memset(sb->bitmap, 0, sizeof(sb->bitmap));
     initlock(&sb->lock,"lock");
     // init circular list
@@ -27,24 +28,25 @@ void new_slab(struct slab * sb, int cpu, int item_id) {
 //判断该slab是否已满，满了返回true，否则返回false
 bool full_slab(struct slab* sb) {
     assert(sb != NULL);
-    int block = -1;
-    for (int i = 0; i < 64; ++i) {
-        if (sb->bitmap[i] != UINT64_MAX) {
-            uint64_t tmp = 1;
-            for(int j = 0; j < 64; ++j) {
-                if(sb->bitmap[i] & tmp){ 
-                    tmp <<= 1;
-                    continue;
-                }
-                block = i * 64 + j;
-                break;
-            }
-            break;
-        }
-    }
-    if (block == -1) return true; // 没有必要，因为一定会有不合理的位置空出
-    if (block < sb->max_item_nr - 1) return false;
-    return true;
+    return sb->now_item_nr >= sb->max_item_nr;
+    // int block = -1;
+    // for (int i = 0; i < 64; ++i) {
+    //     if (sb->bitmap[i] != UINT64_MAX) {
+    //         uint64_t tmp = 1;
+    //         for(int j = 0; j < 64; ++j) {
+    //             if(sb->bitmap[i] & tmp){ 
+    //                 tmp <<= 1;
+    //                 continue;
+    //             }
+    //             block = i * 64 + j;
+    //             break;
+    //         }
+    //         break;
+    //     }
+    // }
+    // if (block == -1) return true; // 没有必要，因为一定会有不合理的位置空出
+    // if (block < sb->max_item_nr - 1) return false;
+    // return true;
 }
 
 
