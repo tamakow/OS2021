@@ -17,7 +17,21 @@ static inline size_t pow2 (size_t size) {
   return ret;
 }
 
+
 static inline void * alloc_mem (size_t size) {
+    //如果freehead有，直接从freehead拿
+    if(freehead != NULL) {
+      //将 freehead 从链表中删除
+      freehead->prev->next = freehead->next;
+      freehead->next->prev = freehead->prev;
+      void *ret = freehead;
+      // 移动freehead
+      if(freehead == freehead->next) freehead = NULL;
+      else freehead = freehead->next;
+      //可以不用初始化返回的freehead，因为后面会对申请来的内存初始化
+      return ret;
+    }
+    //如果freehead没有，从堆区申请
     acquire(&global_lock);
     void *ret;
     if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)tail) ret = NULL;
