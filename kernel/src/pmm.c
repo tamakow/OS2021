@@ -7,8 +7,6 @@ static struct spinlock global_lock;
 static struct spinlock big_alloc_lock;
 void *head;
 void *tail;
-const int MAX_BIG = 100;
-int cnt = 0;
 
 static inline size_t pow2 (size_t size) {
   size_t ret = 1;
@@ -32,8 +30,6 @@ static inline void * alloc_mem (size_t size) {
 static void *kalloc(size_t size) {
   //大内存分配
   if(size > PAGE_SIZE) {
-    if(cnt > MAX_BIG) return NULL;
-    cnt++;
     size_t bsize = pow2(size);
     void *tmp = tail;
     acquire(&big_alloc_lock);
