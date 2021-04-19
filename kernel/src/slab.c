@@ -34,6 +34,7 @@ bool full_slab(struct slab* sb) {
 void insert_slab_to_head (struct slab* sb) {
     int cpu = sb->cpu;
     int id  = sb->item_id;
+    if(cache_chain[cpu][id] == sb) return;
     //如果在链表的话，先从链表中删除
     sb->prev->next = sb->next;
     sb->next->prev = sb->prev;
