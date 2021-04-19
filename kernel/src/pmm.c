@@ -5,11 +5,12 @@
 
 static struct spinlock global_lock;
 static struct spinlock big_alloc_lock;
+
+static struct slab *freehead;
+
 void *head;
 void *tail;
 
-
-//cache的最小单位为8B，但是pow2只给大内存分配，所以问题不大
 static inline size_t pow2 (size_t size) {
   size_t ret = 1;
   while (size > ret) ret <<=1;
@@ -119,26 +120,22 @@ static void pmm_init() {
   initlock(&global_lock,"GlobalLock");
   initlock(&big_alloc_lock,"big_lock");
   slab_init();
-  head = heap.start;
-  tail = heap.end;
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
-  //给每个链表先分个十个slab再说 只从8B开始分配
-  // for(int i = 0; i < cpu_count() + 1; ++i) {
-  //   for(int j = 3; j < NR_ITEM_SIZE + 1; ++j) {
-  //       cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE);
-  //       if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
-  //       new_slab(cache_chain[i][j], i, j);
-  //       int num = 1;    
-  //       while(num <= NR_INIT_CACHE){
-  //         num++;
-  //         struct slab* now = (struct slab*) alloc_mem(SLAB_SIZE);
-  //         if(now == NULL) return;
-  //         new_slab(now,i,j);
-  //         insert_slab_to_head(now); 
-  //       }
-  //   }
-  // }
+  head = heap.start + pmsize / 2;
+  tail = heap.end;
+  //先给freehead来个一半的堆区再说
+  freehead = (struct slab *)heap.start;
+  new_slab(freehead, -1, 0);
+  struct slab *sb = freehead + SLAB_SIZE;
+  while((uintptr_t)sb + SLAB_SIZE < (uintptr_t)head) {
+     new_slab(sb, -1, 0);
+     struct slab *pre = (struct slab*)(sb - SLAB_SIZE);
+     sb->prev = pre;
+     sb->next = freehead; 
+     freehead->prev = sb;
+     pre->next = sb;
+  }
 }
 #else
 static void pmm_init() {

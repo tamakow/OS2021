@@ -3,17 +3,17 @@
 
 #define  KiB            *(1 << 10)
 #define  PAGE_SIZE      (4 KiB)
-#define  NR_SLAB_PAGE   2
-#define  SLAB_SIZE      (NR_SLAB_PAGE * PAGE_SIZE)
-#define  BITMAP_SIZE    28
+#define  HEADER_SIZE    256 
+#define  SLAB_SIZE      (2 * PAGE_SIZE)
+#define  BITMAP_SIZE    31
 #define  NR_ITEM_SIZE   12
 #define  NR_INIT_CACHE  10
 
-//item size 设置为{8, 16,... ,2^12} 共10项，故bitmap的最大size应该设置为不小于 7KiB / 8 = 896B ，这里为了方便，设置为 32 * BITMAP_SIZE(28)
+//item size 设置为{8, 16,... ,2^12} 共10项，故bitmap的最大size应该设置为不小于 7KiB / 8 = 896B ，这里为了方便，设置为 32 * BITMAP_SIZE(31)
 //每个slab可以配一把自己的锁
 //可以把next和prev换成freelist 和 fulllist
 struct slab {
-    uint8_t data[SLAB_SIZE - 1 KiB]; // 分配空间，这里给了7kiB
+    uint8_t data[SLAB_SIZE - HEADER_SIZE]; // 分配空间，这里给了8KiB - 256B
     int cpu;                 // 所属的cpu
     struct spinlock lock;    // 每个的锁
     int item_size;           // slab 的每个item的大小
