@@ -50,8 +50,7 @@ static void *kalloc(size_t size) {
     if(cpu_current() > 2 && cpu_current() <= 8) {
       #ifdef CHEAT
       if(cnt ++ > 5) return NULL;
-      #else
-      cnt++;
+      
       #endif
     }
     size_t bsize = pow2(size);
