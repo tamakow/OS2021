@@ -31,12 +31,14 @@ static void *kalloc(size_t size) {
   //大内存分配
   if(size > PAGE_SIZE) {
     size_t bsize = pow2(size);
+    void *tmp = tail;
     acquire(&big_alloc_lock);
-    tail -= bsize; 
+    tail -= size; 
     tail = (void*)(((size_t)tail / bsize) * bsize);
     void *ret = tail; 
     release(&big_alloc_lock);
     if((uintptr_t)tail < (uintptr_t)head) {
+      tail = tmp;
       return NULL;
     }
     return ret;
