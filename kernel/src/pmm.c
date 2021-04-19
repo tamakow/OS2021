@@ -117,6 +117,27 @@ static void kfree(void *ptr) {
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
   uintptr_t slab_head = ((uintptr_t) ptr / SLAB_SIZE) * SLAB_SIZE;
   struct slab* sb = (struct slab *)slab_head;
+  //如果只剩下一个对象，说明释放后直接空闲
+  if(sb->now_item_nr == 1) {
+    //先处理自己所在链表
+    sb->next->prev = sb->prev;
+    sb->prev->next = sb->next;
+    struct slab* tmp = sb;
+    if(sb == sb->next) cache_chain[sb->cpu][sb->item_id] = NULL;
+    //将tmp插进freehead
+    if(freehead == NULL) {
+      freehead = tmp;
+      freehead->next = freehead;
+      freehead->prev = freehead;
+    } else {
+      tmp->next = freehead->next;
+      tmp->prev = freehead;
+      freehead->next->prev = tmp;
+      freehead->next = tmp;
+    }
+    return;
+  }
+  //否则正常在slab里free就好
   uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
   uint64_t row = block / 32, col = block % 32;
   Log("the free ptr's cpu is %d, item_id is %d, cache_chain now is %p", sb->cpu, sb->item_id, (void*)cache_chain[sb->cpu][sb->item_id]);
