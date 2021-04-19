@@ -11,7 +11,7 @@
 
 //item size 设置为{8, 16,... ,2^12} 共10项，故bitmap的最大size应该设置为不小于 7KiB / 8 = 896B ，这里为了方便，设置为 32 * BITMAP_SIZE(28)
 //每个slab可以配一把自己的锁
-//可以把next和prev换成freelist 和 fulllist， 然后就不用指针了
+//可以把next和prev换成freelist 和 fulllist
 struct slab {
     uint8_t data[SLAB_SIZE - 1 KiB]; // 分配空间，这里给了7kiB
     int cpu;                 // 所属的cpu
@@ -20,7 +20,7 @@ struct slab {
     int item_id;             // 2^item_id = item_size
     int max_item_nr;         // 最多可以有的 item数量
     int now_item_nr;        // 现在有的item数量
-    unsigned int bitmap[BITMAP_SIZE];
+    uint32_t bitmap[BITMAP_SIZE];
     struct slab *next;
     struct slab *prev;
 };
