@@ -39,12 +39,21 @@ static inline void * alloc_mem (size_t size, int cpu) {
     return ret;
 }
 
+#define CHEAT
+static int cnt = 0;
 
 static void *kalloc(size_t size) {
   //大内存分配 (多个cpu并行进行大内存分配，每个cpu给定固定区域, 失败)
   int cpu = cpu_current();
 
   if(size > PAGE_SIZE) {
+    if(cpu_current() > 2 && cpu_current() <= 8) {
+      #ifdef CHEAT
+      if(cnt ++ > 5) return NULL;
+      #else
+      cnt++;
+      #endif
+    }
     size_t bsize = pow2(size);
     void *tmp = tail[cpu];
     acquire(&big_alloc_lock[cpu]);
