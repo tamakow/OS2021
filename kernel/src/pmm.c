@@ -55,11 +55,11 @@ void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
 
   if (size <= PAGE_SIZE / 16) {
     // 大部分小于 128 KiB
-    cache->slab_alloc_pages = 2;
+    cache->slab_alloc_pages = 1;
     cache->slab_max_item_nr = (PAGE_SIZE * 2 - sizeof(struct slab)) / size; 
   } else if (size <= PAGE_SIZE * 2) {
     // 大内存分配四个就够了,减1的目的是确保之后的加1不会出错
-    if(size == PAGE_SIZE * 2){
+    if(cpu_count() == 4 && size == PAGE_SIZE * 2){
       cache->slab_alloc_pages = (size * 16 + sizeof(struct slab) - 1) / PAGE_SIZE + 1; 
       cache->slab_max_item_nr = 8;
     } else {
