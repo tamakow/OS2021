@@ -228,6 +228,7 @@ static void *kalloc(size_t size) {
 
 static void kfree(void *ptr) {
   if(cpu_count() > 3) {
+  if(cpu_count() > 4)
   acquire(&globallock);
 
   struct item* it = (struct item*)(ptr - sizeof(struct item));
@@ -261,7 +262,7 @@ static void kfree(void *ptr) {
       walk->next = sb;
     }
   }
-
+  if(cpu_count() >4)
   release(&globallock);
   }
   return;
