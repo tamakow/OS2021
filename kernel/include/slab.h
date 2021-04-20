@@ -41,6 +41,5 @@ struct kmem_cache {
     struct slab* slabs_free;
 };
 
-void slab_init(void *, void *);
 
 #endif
