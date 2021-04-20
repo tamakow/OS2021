@@ -51,7 +51,6 @@ void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
   cache->slab_item_size = size;
   cache->slabs_free = NULL;
   cache->slabs_full = NULL;
-  cache->slabs_partial = NULL;
 
   //这个分配可能很有问题，主要是对齐可能会导致空间的浪费，从而使得slab_max_item_nr达不到，  粗暴的解决方法： 在判断的时候判断合理时直接判断 now_item_nr < max_item_nr - 1
   if (size <= PAGE_SIZE / 16) {
@@ -117,7 +116,9 @@ struct kmem_cache* Find_Kmem_Cache(size_t size) {
  */
 
 bool New_Slab (struct kmem_cache* cache) {
+  acquire(&cache->lock);
   void * freehead = alloc_pages(cache->slab_alloc_pages);
+  acquire(&cache->lock);
   if(freehead == NULL) {
     Log("No enough space to allocate a new slab of %d pages", cache->slab_alloc_pages);
     return false;
@@ -140,8 +141,10 @@ bool New_Slab (struct kmem_cache* cache) {
   else {
     //也可以直接插在链表头
     struct slab* walk = cache->slabs_free;
-    while(walk->next) walk = walk->next;
-    walk->next = sb;
+    sb->next = walk;
+    cache->slabs_free = sb;
+    // while(walk->next) walk = walk->next;
+    // walk->next = sb;
   }
   return true;
 }
@@ -159,7 +162,7 @@ static void *kalloc(size_t size) {
   }
 
   //找到cache中没有full的一个slab，没有则申请一个新的slab插入到slabs_free
-  if(cache->slabs_partial == NULL && cache->slabs_free == NULL) {
+  if(cache->slabs_free == NULL) {
     bool flag = New_Slab(cache);
     if(!flag) {
       Log("Fail to allocate a new slab");
@@ -193,8 +196,10 @@ static void *kalloc(size_t size) {
     if(cache->slabs_full == NULL) cache->slabs_full = sb;
     else {
       struct slab* walk = cache->slabs_full;
-      while(walk->next) walk = walk->next;
-      walk->next = sb;
+      sb->next = walk;
+      cache->slabs_full = sb;
+      // while(walk->next) walk = walk->next;
+      // walk->next = sb;
     }
   }
 
