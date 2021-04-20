@@ -156,7 +156,7 @@ bool New_Slab (struct kmem_cache* cache) {
 
 
 static void *kalloc(size_t size) {
-  if(size > (1 << 20)) return NULL;
+  if(size > (1 << 24)) return NULL;
   acquire(&globallock);
   size = pow2(size + sizeof(struct item)); //如果size刚好是2的幂，那略浪费
 
