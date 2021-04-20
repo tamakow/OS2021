@@ -175,8 +175,10 @@ static void *kalloc(size_t size) {
   struct slab* sb = cache->slabs_free;
   struct item* it = sb->items;
   while(it->used) it = it->next;
+  acquire(&cache->lock);
   it->used = true;
   sb->now_item_nr ++;
+  release(&cache->lock);
   if(sb->now_item_nr >= sb->max_item_nr - 1) {
     //将 sb 移动到 slabs->full
 
