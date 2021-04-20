@@ -65,7 +65,16 @@ void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
 }
 
 void Init_Slab(struct kmem_cache *cache, struct slab* sb) {
-
+  sb->alloc_pages = cache->slab_alloc_pages;
+  sb->cache = cache;
+  sb->item_size = cache->slab_item_size;
+  sb->items = NULL;
+  sb->max_item_nr = cache->slab_max_item_nr;
+  sb->next = NULL;
+  sb->now_item_nr = 0;
+  //找第一个对齐点，+sizeof(struct item)的原因是要在第一个对齐点之前插一个item
+  sb->st = (void *)((((intptr_t)sb + sizeof(struct slab) + sizeof(struct item) - 1) / sb->item_size + 1) * sb->item_size);
+  //sb->st -= sizeof(struct item);
 }
 
 struct kmem_cache* Find_Kmem_Cache(size_t size) {
@@ -85,7 +94,7 @@ struct kmem_cache* Find_Kmem_Cache(size_t size) {
  *                                        slab 的结构
  * |=========================Allocated Pages(size is cache->slab_alloc_pages)=======================|
  * |====struct slab=====|==+  ...   +==|==struct item==|== item memory==|==struct item==| .....
- * |   slab的header     | 一些无用的内存  |第一个对齐点    
+ * |   slab的header     | 一些无用的内存  |           第一个对齐点    
  * 出事了， 对齐不了了       
  * 将struct item 一开始就加在size里   
  */
@@ -99,6 +108,12 @@ bool New_Slab (struct kmem_cache* cache) {
   //slab header 直接放在slab的头部
   struct slab *sb = (struct slab*) freehead;
   Init_Slab(cache, sb);
+
+  struct item *it = (struct item*)(sb->st - sizeof(struct item));
+  //暴力解决冲突问题
+  for(int i = 0; i < sb->max_item_nr - 1; ++i) {
+    
+  }
   return true;
 }
 
