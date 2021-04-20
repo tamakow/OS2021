@@ -118,11 +118,12 @@ struct kmem_cache* Find_Kmem_Cache(size_t size) {
  */
 
 bool New_Slab (struct kmem_cache* cache) {
-  // acquire(&cache->lock);
+  acquire(&cache->lock);
   void * freehead = alloc_pages(cache->slab_alloc_pages);
-  // release(&cache->lock);
+
   if(freehead == NULL) {
     Log("No enough space to allocate a new slab of %d pages", cache->slab_alloc_pages);
+    release(&cache->lock);
     return false;
   }
   //slab header 直接放在slab的头部
@@ -146,6 +147,7 @@ bool New_Slab (struct kmem_cache* cache) {
     while(walk->next) walk = walk->next;
     walk->next = sb;
   }
+  release(&cache->lock);
   return true;
 }
 
