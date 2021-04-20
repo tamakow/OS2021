@@ -141,10 +141,8 @@ bool New_Slab (struct kmem_cache* cache) {
   else {
     //也可以直接插在链表头
     struct slab* walk = cache->slabs_free;
-    sb->next = walk;
-    cache->slabs_free = sb;
-    // while(walk->next) walk = walk->next;
-    // walk->next = sb;
+    while(walk->next) walk = walk->next;
+    walk->next = sb;
   }
   return true;
 }
@@ -196,10 +194,8 @@ static void *kalloc(size_t size) {
     if(cache->slabs_full == NULL) cache->slabs_full = sb;
     else {
       struct slab* walk = cache->slabs_full;
-      sb->next = walk;
-      cache->slabs_full = sb;
-      // while(walk->next) walk = walk->next;
-      // walk->next = sb;
+      while(walk->next) walk = walk->next;
+      walk->next = sb;
     }
   }
 
