@@ -200,7 +200,7 @@ static void *kalloc(size_t size) {
   it->used = true;
   sb->now_item_nr ++;
 
-  if(sb->now_item_nr >= sb->max_item_nr - 1) {
+  if(cpu_count() > 3 && sb->now_item_nr >= sb->max_item_nr - 1) {
     //将 sb 移动到 slabs->full
 
     //先从slabs_free中删除
@@ -217,13 +217,11 @@ static void *kalloc(size_t size) {
     }
     //再移动到slabs_full
     sb->next = NULL;
-    if(cpu_count() > 3) {
     if(cache->slabs_full == NULL) cache->slabs_full = sb;
     else {
       struct slab* walk = cache->slabs_full;
       while(walk->next) walk = walk->next;
       walk->next = sb;
-    }
     }
   }
   if(cpu_count() > 3)
