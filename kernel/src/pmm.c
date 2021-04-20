@@ -172,7 +172,7 @@ static void *kalloc(size_t size) {
   }
 
   //找到cache中没有full的一个slab，没有则申请一个新的slab插入到slabs_free
-  if(cache->slabs_free == NULL) {
+  if(__builtin_expect(!!(cache->slabs_free == NULL), 1)) {
     bool flag = New_Slab(cache);
     if(!flag) {
       Log("Fail to allocate a new slab");
