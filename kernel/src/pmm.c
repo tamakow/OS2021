@@ -57,9 +57,9 @@ void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
     // 大部分小于 128 KiB
     cache->slab_alloc_pages = 2;
     cache->slab_max_item_nr = (PAGE_SIZE * 2 - sizeof(struct slab)) / size; 
-  } else if (size <= PAGE_SIZE) {
+  } else if (size <= PAGE_SIZE * 2) {
     // 大内存分配四个就够了,减1的目的是确保之后的加1不会出错
-    if(size == PAGE_SIZE){
+    if(size == PAGE_SIZE * 2){
       printf("yes\n");
       cache->slab_alloc_pages = (size * 16 + sizeof(struct slab) - 1) / PAGE_SIZE + 1; 
       cache->slab_max_item_nr = 8;
@@ -165,7 +165,6 @@ static void *kalloc(size_t size) {
   if(cpu_count() > 3)
   acquire(&globallock);
   size = pow2(size + sizeof(struct item)); //如果size刚好是2的幂，那略浪费
-  printf("size = %d\n",size);
 
   //找到size相同的cache，如果没有则申请一个
   struct kmem_cache * cache = Find_Kmem_Cache(size);
@@ -173,6 +172,7 @@ static void *kalloc(size_t size) {
 
   if(cache == NULL) {
     Log("Fail to allocate a new kmem_cache");
+    if(cpu_count() > 3)
     release(&globallock);
     return NULL;
   }
@@ -182,6 +182,7 @@ static void *kalloc(size_t size) {
     bool flag = New_Slab(cache);
     if(!flag) {
       Log("Fail to allocate a new slab");
+      if(cpu_count() > 3)
       release(&globallock);
       return NULL;
     }
