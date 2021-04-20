@@ -150,7 +150,7 @@ bool New_Slab (struct kmem_cache* cache) {
 static void *kalloc(size_t size) {
   size = pow2(size + sizeof(struct item)); //如果size刚好是2的幂，那略浪费
 
-  // acquire(&globallock);
+  acquire(&globallock);
   //找到size相同的cache，如果没有则申请一个
   struct kmem_cache * cache = Find_Kmem_Cache(size);
   if(cache == NULL) {
@@ -198,13 +198,13 @@ static void *kalloc(size_t size) {
     }
   }
 
-  // release(&globallock);
+  release(&globallock);
   return (void *)it + sizeof(struct item);
 }
 
 
 static void kfree(void *ptr) {
-  // acquire(&globallock);
+  acquire(&globallock);
 
   struct item* it = (struct item*)(ptr - sizeof(struct item));
   struct slab* sb = it->slab;
@@ -236,7 +236,7 @@ static void kfree(void *ptr) {
       walk->next = sb;
     }
   }
-  // release(&globallock);
+  release(&globallock);
   return;
 }
 
