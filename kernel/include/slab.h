@@ -34,7 +34,6 @@ struct slab {
 //将kmem_cache[MAX_CPU + 1]改成struct, 添加一下slab_free，slab_partial和slab_full,并添加item_size显示slab的size ，还有总共分配的页面数
 //https://segmentfault.com/a/1190000022506020
 struct kmem_cache {
-    int cpu;                 // 所属的cpu
     struct spinlock lock;    // 每个的锁
     size_t slab_item_size;   // 和slab中的一样
     int slab_max_item_nr;    // slab中最多的item数量     

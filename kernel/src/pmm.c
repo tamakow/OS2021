@@ -46,7 +46,6 @@ static inline void free_pages(void* st, int num) {
 
 /*======================Allocation Function======================*/
 void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
-  cache->cpu = cpu_current();
   initlock(&cache->lock, "cachelock");
   cache->slab_item_size = size;
   cache->slabs_free = NULL;
@@ -183,7 +182,7 @@ static void *kalloc(size_t size) {
   
   struct slab* sb = cache->slabs_free;
   struct item* it = sb->items;
-  while(it->used) it = it->next;
+  while(__builtin_expect(!!(it->used), 1)) it = it->next;
 
   it->used = true;
   sb->now_item_nr ++;
