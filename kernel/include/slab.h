@@ -36,7 +36,7 @@ struct kmem_cache {
     struct spinlock lock;    // 每个的锁
     size_t slab_item_size;   // 和slab中的一样
     int slab_max_item_nr;    // slab中最多的item数量     
-    int cache_alloc_pages;   
+    int slab_alloc_pages;    // 每个slab要分配的页面
     struct slab* slabs_partial;
     struct slab* slabs_full;
     struct slab* slabs_free;
