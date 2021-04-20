@@ -213,7 +213,7 @@ static void kfree(void *ptr) {
   acquire(&cache->lock);
   it->used = false;
   sb->now_item_nr --;
-  
+  release(&cache->lock);
   if(sb->now_item_nr + 1 >= sb->max_item_nr - 1) {
     //将sb从full移动到free
     if(sb == cache->slabs_full) cache->slabs_full = sb->next;
@@ -237,7 +237,6 @@ static void kfree(void *ptr) {
       walk->next = sb;
     }
   }
-    release(&cache->lock);
   // release(&globallock);
   return;
 }
