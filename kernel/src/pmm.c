@@ -59,7 +59,7 @@ void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
     return;
   }
 
-  if (size <= PAGE_SIZE / 16) {
+  if (size <= PAGE_SIZE / 8) {
     // 大部分小于 128 KiB
     cache->slab_alloc_pages = 1;
     cache->slab_max_item_nr = (PAGE_SIZE * 1 - sizeof(struct slab)) / size; 
