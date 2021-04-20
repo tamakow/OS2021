@@ -16,14 +16,23 @@ static inline size_t pow2 (size_t size) {
 }
 
 static inline void* alloc_pages (int num) {
-  void *ret = page_start;
-  for(int i = 0; i + num < nr_pages; ++i) {
-    bool flag = true;
-    for(int j = 0; j < num; ++j){
-      if(*(flag + i + j))
+  for(int i = 0; i + num < nr_pages;) {
+    int j = 0;
+    for(j = 0; j < num; ++j){
+      if(*(flag_start + i + j)){
+        break;
+      }
+    }
+    if(j == num) {
+      //找到符合要求的, 直接返回
+      for(int k = 0; k < num; ++k){
+        *(flag_start + i + k) = true;
+      }
+      return page_start + i * PAGE_SIZE;
+    } else {
+      i += (j + 1);
     }
   }
-
   return NULL;
 }
 
