@@ -53,6 +53,7 @@ void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
   cache->slabs_full = NULL;
 
   //这个分配可能很有问题，主要是对齐可能会导致空间的浪费，从而使得slab_max_item_nr达不到，  粗暴的解决方法： 在判断的时候判断合理时直接判断 now_item_nr < max_item_nr - 1
+  acquire(&cache->lock);
   if (size <= PAGE_SIZE / 8) {
     // 大部分小于 256 KiB
     cache->slab_alloc_pages = 1;
@@ -62,6 +63,7 @@ void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
     cache->slab_alloc_pages = (size * 4 + sizeof(struct slab) - 1) / PAGE_SIZE + 1; 
     cache->slab_max_item_nr = 4;
   }
+  release(&cache->lock);
 }
 
 void Init_Slab(struct kmem_cache *cache, struct slab *sb) {
@@ -150,10 +152,10 @@ bool New_Slab (struct kmem_cache* cache) {
 
 static void *kalloc(size_t size) {
   size = pow2(size + sizeof(struct item)); //如果size刚好是2的幂，那略浪费
-  acquire(&globallock);
+
   //找到size相同的cache，如果没有则申请一个
   struct kmem_cache * cache = Find_Kmem_Cache(size);
-  release(&globallock);
+
   if(cache == NULL) {
     Log("Fail to allocate a new kmem_cache");
     return NULL;
