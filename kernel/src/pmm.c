@@ -96,6 +96,7 @@ bool New_Slab (struct kmem_cache* cache) {
     Log("No enough space to allocate a new slab of %d pages", cache->slab_alloc_pages);
     return false;
   }
+  //slab header 直接放在slab的头部
   struct slab *sb = (struct slab*) freehead;
   Init_Slab(cache, sb);
   return true;

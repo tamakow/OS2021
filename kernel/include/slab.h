@@ -16,6 +16,7 @@
 struct item {
     bool used;               //简单的判断是否已经被分配
     struct item *next;
+    struct slab *slab;       //所属的slab
 };
 
 
@@ -27,6 +28,7 @@ struct slab {
     void *st;                // start pointer
     struct item *items;      // slab的item
     struct slab *next;       // 相同size的slab
+    struct kmem_cache* cache;// 所属的cache
 };
 
 //将kmem_cache[MAX_CPU + 1]改成struct, 添加一下slab_free，slab_partial和slab_full,并添加item_size显示slab的size ，还有总共分配的页面数
