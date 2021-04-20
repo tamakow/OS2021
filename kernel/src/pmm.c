@@ -150,16 +150,15 @@ bool New_Slab (struct kmem_cache* cache) {
 
 static void *kalloc(size_t size) {
   size = pow2(size + sizeof(struct item)); //如果size刚好是2的幂，那略浪费
-
   acquire(&globallock);
   //找到size相同的cache，如果没有则申请一个
   struct kmem_cache * cache = Find_Kmem_Cache(size);
+  release(&globallock);
   if(cache == NULL) {
     Log("Fail to allocate a new kmem_cache");
     return NULL;
   }
-  release(&globallock);
-  acquire(&cache->lock);
+  // acquire(&cache->lock);
   //找到cache中没有full的一个slab，没有则申请一个新的slab插入到slabs_free
   if(cache->slabs_free == NULL) {
     bool flag = New_Slab(cache);
@@ -199,48 +198,48 @@ static void *kalloc(size_t size) {
       walk->next = sb;
     }
   }
-  release(&cache->lock);
+  // release(&cache->lock);
 
   return (void *)it + sizeof(struct item);
 }
 
 
 static void kfree(void *ptr) {
-  // acquire(&globallock);
+  // // acquire(&globallock);
 
-  struct item* it = (struct item*)(ptr - sizeof(struct item));
-  struct slab* sb = it->slab;
-  struct kmem_cache* cache = sb->cache;
+  // struct item* it = (struct item*)(ptr - sizeof(struct item));
+  // struct slab* sb = it->slab;
+  // struct kmem_cache* cache = sb->cache;
 
-  acquire(&cache->lock);
-  it->used = false;
-  sb->now_item_nr --;
+  // acquire(&cache->lock);
+  // it->used = false;
+  // sb->now_item_nr --;
   
-  if(sb->now_item_nr + 1 >= sb->max_item_nr - 1) {
-    //将sb从full移动到free
-    if(sb == cache->slabs_full) cache->slabs_full = sb->next;
-    else {
-      struct slab *walk = cache->slabs_full;
-      while(walk && walk->next) {
-        if(walk->next == sb) {
-          walk->next = sb->next;
-          break;
-        }
-        walk = walk->next;
-      }
-    }
+  // if(sb->now_item_nr + 1 >= sb->max_item_nr - 1) {
+  //   //将sb从full移动到free
+  //   if(sb == cache->slabs_full) cache->slabs_full = sb->next;
+  //   else {
+  //     struct slab *walk = cache->slabs_full;
+  //     while(walk && walk->next) {
+  //       if(walk->next == sb) {
+  //         walk->next = sb->next;
+  //         break;
+  //       }
+  //       walk = walk->next;
+  //     }
+  //   }
 
-    // //再移动到slabs_free
-    sb->next = NULL;
-    if(cache->slabs_free == NULL) cache->slabs_free = sb;
-    else {
-      struct slab* walk = cache->slabs_free;
-      while(walk->next) walk = walk->next;
-      walk->next = sb;
-    }
-  }
-  release(&cache->lock);
-  // release(&globallock);
+  //   // //再移动到slabs_free
+  //   sb->next = NULL;
+  //   if(cache->slabs_free == NULL) cache->slabs_free = sb;
+  //   else {
+  //     struct slab* walk = cache->slabs_free;
+  //     while(walk->next) walk = walk->next;
+  //     walk->next = sb;
+  //   }
+  // }
+  // release(&cache->lock);
+  // // release(&globallock);
   return;
 }
 
