@@ -96,10 +96,10 @@ void Init_Item(struct slab *sb, struct item *it) {
     if(sb->items == NULL) sb->items = it;
     else {
       //也可以直接插在链表头
-      acquire(&sb->cache->lock);
+      // acquire(&sb->cache->lock);
       it->next = sb->items;
       sb->items = it;
-      release(&sb->cache->lock);
+      // release(&sb->cache->lock);
       // struct item *walk = sb->items;
       // while(walk->next) walk = walk->next;
       // walk->next = it;
