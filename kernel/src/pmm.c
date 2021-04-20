@@ -165,9 +165,37 @@ static void *kalloc(size_t size) {
     }
   }
   
-  
-  
-  return NULL;
+  struct slab* sb = cache->slabs_free;
+  struct item* it = sb->items;
+  while(it->used) it = it->next;
+  it->used = true;
+  sb->now_item_nr ++;
+  if(sb->now_item_nr >= sb->max_item_nr - 1) {
+    //将 sb 移动到 slabs->full
+
+    //先从slabs_free中删除
+    if(sb == cache->slabs_free) cache->slabs_free = sb->next;
+    else {
+      struct slab *walk = cache->slabs_free;
+      while(walk && walk->next) {
+        if(walk->next == sb) {
+          walk->next = sb->next;
+          break;
+        }
+        walk = walk->next;
+      }
+    }
+
+    //再移动到slabs_full
+    sb->next = NULL;
+    if(cache->slabs_full == NULL) cache->slabs_full = sb;
+    else {
+      struct slab* walk = cache->slabs_full;
+      while(walk->next) walk = walk->next;
+      walk->next = sb;
+    }
+  }
+  return (void *)it + sizeof(struct item);
 }
 
 
