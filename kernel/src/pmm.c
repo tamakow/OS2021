@@ -97,12 +97,12 @@ void Init_Item(struct slab *sb, struct item *it) {
     else {
       //也可以直接插在链表头
       // acquire(&sb->cache->lock);
-      it->next = sb->items;
-      sb->items = it;
+      // it->next = sb->items;
+      // sb->items = it;
       // release(&sb->cache->lock);
-      // struct item *walk = sb->items;
-      // while(walk->next) walk = walk->next;
-      // walk->next = it;
+      struct item *walk = sb->items;
+      while(walk->next) walk = walk->next;
+      walk->next = it;
     }
 }
 
@@ -154,11 +154,11 @@ bool New_Slab (struct kmem_cache* cache) {
   if(cache->slabs_free == NULL) cache->slabs_free = sb;
   else {
     //也可以直接插在链表头
-    sb->next = cache->slabs_free;
-    cache->slabs_free = sb;  
-    // struct slab* walk = cache->slabs_free;
-    // while(walk->next) walk = walk->next;
-    // walk->next = sb;
+    // sb->next = cache->slabs_free;
+    // cache->slabs_free = sb;  
+    struct slab* walk = cache->slabs_free;
+    while(walk->next) walk = walk->next;
+    walk->next = sb;
   }
 
   return true;
