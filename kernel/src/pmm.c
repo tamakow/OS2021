@@ -220,9 +220,11 @@ static void *kalloc(size_t size) {
     sb->next = NULL;
     if(cache->slabs_full == NULL) cache->slabs_full = sb;
     else {
-      struct slab* walk = cache->slabs_full;
-      while(walk->next) walk = walk->next;
-      walk->next = sb;
+      sb->next = cache->slabs_full;
+      cache->slabs_full = sb;
+      // struct slab* walk = cache->slabs_full;
+      // while(walk->next) walk = walk->next;
+      // walk->next = sb;
     }
   }
   if(cpu_count() > 3)
