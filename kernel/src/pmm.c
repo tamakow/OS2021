@@ -64,7 +64,7 @@ void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
   }
 }
 
-void Init_Slab(struct kmem_cache *cache, struct slab* sb) {
+void Init_Slab(struct kmem_cache *cache, struct slab *sb) {
   sb->alloc_pages = cache->slab_alloc_pages;
   sb->cache = cache;
   sb->item_size = cache->slab_item_size;
@@ -75,6 +75,22 @@ void Init_Slab(struct kmem_cache *cache, struct slab* sb) {
   //找第一个对齐点，+sizeof(struct item)的原因是要在第一个对齐点之前插一个item
   sb->st = (void *)((((intptr_t)sb + sizeof(struct slab) + sizeof(struct item) - 1) / sb->item_size + 1) * sb->item_size);
   //sb->st -= sizeof(struct item);
+}
+
+void Init_Item(struct slab *sb, struct item *it) {
+    it->used = false;
+    it->slab = sb;
+
+    //将item插入sb->items里
+    //Insert_Item_In_Slab
+    it->next = NULL;
+    if(sb->items == NULL) sb->items = it;
+    else {
+      //也可以直接插在链表头
+      struct item *walk = sb->items;
+      while(walk->next) walk = walk->next;
+      walk->next = it;
+    }
 }
 
 struct kmem_cache* Find_Kmem_Cache(size_t size) {
@@ -109,10 +125,22 @@ bool New_Slab (struct kmem_cache* cache) {
   struct slab *sb = (struct slab*) freehead;
   Init_Slab(cache, sb);
 
+   // 初始化所有的item并将其插入到sb->items中
   struct item *it = (struct item*)(sb->st - sizeof(struct item));
-  //暴力解决冲突问题
+  //暴力解决冲突问题(少分配一个对象)
   for(int i = 0; i < sb->max_item_nr - 1; ++i) {
-    
+    Init_Item(sb, it);
+    //更新it为下一个item
+    it = (struct item *) ((void*)it + sb->item_size);
+  }
+
+  //将sb放入cache->slabs_free中
+  if(cache->slabs_free == NULL) cache->slabs_free = sb;
+  else {
+    //也可以直接插在链表头
+    struct slab* walk = cache->slabs_free;
+    while(walk->next) walk = walk->next;
+    walk->next = sb;
   }
   return true;
 }
@@ -136,7 +164,8 @@ static void *kalloc(size_t size) {
       return NULL;
     }
   }
-  //TODO() 3
+  
+  
   
   return NULL;
 }
