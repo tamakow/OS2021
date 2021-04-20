@@ -215,7 +215,7 @@ static void *kalloc(size_t size) {
         walk = walk->next;
       }
     }
-    if(cpu_count() > 3) {
+    // if(cpu_count() > 3) {
     //再移动到slabs_full
     sb->next = NULL;
     if(cache->slabs_full == NULL) cache->slabs_full = sb;
@@ -224,7 +224,7 @@ static void *kalloc(size_t size) {
       while(walk->next) walk = walk->next;
       walk->next = sb;
     }
-    }
+    // }
   }
   if(cpu_count() > 3)
   release(&globallock);
