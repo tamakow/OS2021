@@ -165,7 +165,7 @@ static void *kalloc(size_t size) {
   if(cpu_count() > 3)
   acquire(&globallock);
   size = pow2(size + sizeof(struct item)); //如果size刚好是2的幂，那略浪费
-
+  printf("size = %d\n",size);
 
   //找到size相同的cache，如果没有则申请一个
   struct kmem_cache * cache = Find_Kmem_Cache(size);
