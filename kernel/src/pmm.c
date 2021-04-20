@@ -36,6 +36,12 @@ static inline void* alloc_pages (int num) {
   return NULL;
 }
 
+static inline void free_pages(void* st, int num) {
+  int page_index = (st - page_start) / PAGE_SIZE;
+  for(int i = page_index; i < page_index + num; ++i) {
+    *(flag_start + i) = false;
+  }
+}
 
 /*======================Allocation Function======================*/
 void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
@@ -52,8 +58,8 @@ void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
     cache->slab_alloc_pages = 1;
     cache->slab_max_item_nr = (PAGE_SIZE - sizeof(struct slab)) / (size + sizeof(struct item)); 
   } else {
-    // 大内存分配四个就够了
-    cache->slab_alloc_pages = ((size + sizeof(struct item)) * 4 + sizeof(struct slab)) / PAGE_SIZE + 1; 
+    // 大内存分配四个就够了,减1的目的是确保之后的加1不会出错
+    cache->slab_alloc_pages = ((size + sizeof(struct item)) * 4 + sizeof(struct slab) - 1) / PAGE_SIZE + 1; 
     cache->slab_max_item_nr = 4;
   }
 }
@@ -78,7 +84,7 @@ void New_Slab (struct kmem_cache* cache) {
     Log("No enough space to allocate a new slab of %d pages", cache->slab_alloc_pages);
     return;
   }
-  //TODO() 2
+  
 }
 
 
