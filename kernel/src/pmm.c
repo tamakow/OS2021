@@ -54,7 +54,7 @@ void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
 
   //这个分配可能很有问题，主要是对齐可能会导致空间的浪费，从而使得slab_max_item_nr达不到，  粗暴的解决方法： 在判断的时候判断合理时直接判断 now_item_nr < max_item_nr - 1
 
-  if (size <= PAGE_SIZE / 16) {
+  if (size <= PAGE_SIZE / 32) {
     // 大部分小于 256 KiB
     cache->slab_alloc_pages = 1;
     cache->slab_max_item_nr = (PAGE_SIZE - sizeof(struct slab)) / size; 
