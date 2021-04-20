@@ -65,8 +65,8 @@ void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
     cache->slab_max_item_nr = (PAGE_SIZE * 2 - sizeof(struct slab)) / size; 
   } else if (size <= PAGE_SIZE) {
     // 大内存分配四个就够了,减1的目的是确保之后的加1不会出错
-    cache->slab_alloc_pages = (size * 4 + sizeof(struct slab) - 1) / PAGE_SIZE + 1; 
-    cache->slab_max_item_nr = 4;
+    cache->slab_alloc_pages = (size * 8 + sizeof(struct slab) - 1) / PAGE_SIZE + 1; 
+    cache->slab_max_item_nr = 8;
   } else {
     cache->slab_alloc_pages = (size * 2  + sizeof(struct slab) - 1) / PAGE_SIZE + 1; 
     cache->slab_max_item_nr = 2;
@@ -228,7 +228,6 @@ static void *kalloc(size_t size) {
 
 static void kfree(void *ptr) {
   if(cpu_count() > 3) {
-  if(cpu_count() > 4)
   acquire(&globallock);
 
   struct item* it = (struct item*)(ptr - sizeof(struct item));
@@ -253,7 +252,7 @@ static void kfree(void *ptr) {
       }
     }
 
-    // //再移动到slabs_free
+    //再移动到slabs_free
     sb->next = NULL;
     if(cache->slabs_free == NULL) cache->slabs_free = sb;
     else {
@@ -262,7 +261,6 @@ static void kfree(void *ptr) {
       walk->next = sb;
     }
   }
-  if(cpu_count() >4)
   release(&globallock);
   }
   return;
