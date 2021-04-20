@@ -23,7 +23,7 @@ struct slab {
     size_t item_size;        // slab 的每个item的大小
     int max_item_nr;         // 最多可以有的 item数量
     int now_item_nr;         // 现在有的item数量
-    int slab_alloc_pages;    // 需要分配的页面数目
+    int alloc_pages;         // 需要分配的页面数目
     void *st;                // start pointer
     struct item *items;      // slab的item
     struct slab *next;       // 相同size的slab

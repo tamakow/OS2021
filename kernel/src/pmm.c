@@ -56,14 +56,17 @@ void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
   if (size <= PAGE_SIZE / 16) {
     // 大部分小于 256 KiB
     cache->slab_alloc_pages = 1;
-    cache->slab_max_item_nr = (PAGE_SIZE - sizeof(struct slab)) / (size + sizeof(struct item)); 
+    cache->slab_max_item_nr = (PAGE_SIZE - sizeof(struct slab)) / size; 
   } else {
     // 大内存分配四个就够了,减1的目的是确保之后的加1不会出错
-    cache->slab_alloc_pages = ((size + sizeof(struct item)) * 4 + sizeof(struct slab) - 1) / PAGE_SIZE + 1; 
+    cache->slab_alloc_pages = (size * 4 + sizeof(struct slab) - 1) / PAGE_SIZE + 1; 
     cache->slab_max_item_nr = 4;
   }
 }
 
+void Init_Slab(struct kmem_cache *cache, struct slab* sb) {
+
+}
 
 struct kmem_cache* Find_Kmem_Cache(size_t size) {
   struct kmem_cache *walk = cache_start;
@@ -78,18 +81,29 @@ struct kmem_cache* Find_Kmem_Cache(size_t size) {
   return walk;
 }
 
-void New_Slab (struct kmem_cache* cache) {
+/*
+ *                                        slab 的结构
+ * |=========================Allocated Pages(size is cache->slab_alloc_pages)=======================|
+ * |====struct slab=====|==+  ...   +==|==struct item==|== item memory==|==struct item==| .....
+ * |   slab的header     | 一些无用的内存  |第一个对齐点    
+ * 出事了， 对齐不了了       
+ * 将struct item 一开始就加在size里   
+ */
+
+bool New_Slab (struct kmem_cache* cache) {
   void * freehead = alloc_pages(cache->slab_alloc_pages);
   if(freehead == NULL) {
     Log("No enough space to allocate a new slab of %d pages", cache->slab_alloc_pages);
-    return;
+    return false;
   }
-  
+  struct slab *sb = (struct slab*) freehead;
+  Init_Slab(cache, sb);
+  return true;
 }
 
 
 static void *kalloc(size_t size) {
-  size = pow2(size);
+  size = pow2(size + sizeof(struct item)); //如果size刚好是2的幂，那略浪费
 
   //找到size相同的cache，如果没有则申请一个
   struct kmem_cache * cache = Find_Kmem_Cache(size);
@@ -100,11 +114,11 @@ static void *kalloc(size_t size) {
 
   //找到cache中没有full的一个slab，没有则申请一个新的slab插入到slabs_free
   if(cache->slabs_partial == NULL && cache->slabs_free == NULL) {
-    New_Slab(cache);
-  }
-  if(cache->slabs_partial == NULL && cache->slabs_free == NULL) {
-    Log("Fail to allocate a new slab")
-    return NULL;
+    bool flag = New_Slab(cache);
+    if(!flag) {
+      Log("Fail to allocate a new slab");
+      return NULL;
+    }
   }
   //TODO() 3
   
