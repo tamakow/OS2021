@@ -16,6 +16,14 @@ static inline size_t pow2 (size_t size) {
 }
 
 static inline void* alloc_pages (int num) {
+  void *ret = page_start;
+  for(int i = 0; i + num < nr_pages; ++i) {
+    bool flag = true;
+    for(int j = 0; j < num; ++j){
+      if(*(flag + i + j))
+    }
+  }
+
   return NULL;
 }
 
@@ -61,6 +69,7 @@ void New_Slab (struct kmem_cache* cache) {
     Log("No enough space to allocate a new slab of %d pages", cache->slab_alloc_pages);
     return;
   }
+  //TODO() 2
 }
 
 
@@ -82,7 +91,7 @@ static void *kalloc(size_t size) {
     Log("Fail to allocate a new slab")
     return NULL;
   }
-  
+  //TODO() 3
   
   return NULL;
 }
