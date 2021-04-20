@@ -34,7 +34,8 @@ struct slab {
 struct kmem_cache {
     int cpu;                 // 所属的cpu
     struct spinlock lock;    // 每个的锁
-    size_t item_size;        // 和slab中的一样
+    size_t slab_item_size;   // 和slab中的一样
+    int slab_max_item_nr;    // slab中最多的item数量     
     int cache_alloc_pages;   
     struct slab* slabs_partial;
     struct slab* slabs_full;

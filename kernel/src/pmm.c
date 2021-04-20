@@ -18,25 +18,29 @@ static inline size_t pow2 (size_t size) {
 void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
   cache->cpu = cpu_current();
   initlock(&cache->lock, "cachelock");
-  cache->item_size = size;
+  cache->slab_item_size = size;
   cache->slabs_free = NULL;
   cache->slabs_full = NULL;
   cache->slabs_partial = NULL;
+
+  //这个分配可能很有问题，主要是对齐可能会导致空间的浪费，从而使得slab_max_item_nr达不到，  粗暴的解决方法： 在判断的时候判断合理时直接判断 now_item_nr < max_item_nr - 1
   if (size <= PAGE_SIZE / 16) {
     // 大部分小于 256 KiB
     cache->cache_alloc_pages = 1;
+    cache->slab_max_item_nr = (PAGE_SIZE - sizeof(struct slab)) / (size + sizeof(struct item)); 
   } else {
     // 大内存分配四个就够了
-    cache->cache_alloc_pages = (size * 4 + sizeof(struct slab)) / PAGE_SIZE + 1; 
+    cache->cache_alloc_pages = ((size + sizeof(struct item)) * 4 + sizeof(struct slab)) / PAGE_SIZE + 1; 
+    cache->slab_max_item_nr = 4;
   }
 }
 
 
 struct kmem_cache* Find_Kmem_Cache(size_t size) {
   struct kmem_cache *walk = cache_start;
-  while((intptr_t)walk < (intptr_t)flag_start && walk->item_size && walk->item_size != size) walk++; //保证所有没有使用的cache上的item_size不大于0
+  while((intptr_t)walk < (intptr_t)flag_start && walk->slab_item_size && walk->slab_item_size != size) walk++; //保证所有没有使用的cache上的item_size不大于0
   if((intptr_t)walk >= (intptr_t)flag_start) return NULL; // No enough space for a new cache
-  if(walk->item_size == size) return walk;
+  if(walk->slab_item_size == size) return walk;
   // 申请一个大小为size的新cache 
   Init_Kmem_Cache(walk, size); 
   return walk;
@@ -52,6 +56,7 @@ static void *kalloc(size_t size) {
     Log("no enough space for a new kmem_cache for size %d", size);
     return NULL;
   }
+  
   return NULL;
 }
 
