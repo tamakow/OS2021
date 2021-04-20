@@ -216,8 +216,8 @@ static void *kalloc(size_t size) {
       }
     }
     //再移动到slabs_full
-    if(cpu_count() > 3) {
     sb->next = NULL;
+    if(cpu_count() > 3) {
     if(cache->slabs_full == NULL) cache->slabs_full = sb;
     else {
       struct slab* walk = cache->slabs_full;
