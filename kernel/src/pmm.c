@@ -154,9 +154,11 @@ bool New_Slab (struct kmem_cache* cache) {
   if(cache->slabs_free == NULL) cache->slabs_free = sb;
   else {
     //也可以直接插在链表头
-    struct slab* walk = cache->slabs_free;
-    while(walk->next) walk = walk->next;
-    walk->next = sb;
+    sb->next = cache->slabs_free;
+    cache->slabs_free = sb;  
+    // struct slab* walk = cache->slabs_free;
+    // while(walk->next) walk = walk->next;
+    // walk->next = sb;
   }
 
   return true;
