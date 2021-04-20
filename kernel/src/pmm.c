@@ -71,7 +71,6 @@ void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
     cache->slab_alloc_pages = (size * 8  + sizeof(struct slab) - 1) / PAGE_SIZE + 1; 
     cache->slab_max_item_nr = 8;
   }
-
 }
 
 void Init_Slab(struct kmem_cache *cache, struct slab *sb) {
@@ -97,9 +96,13 @@ void Init_Item(struct slab *sb, struct item *it) {
     if(sb->items == NULL) sb->items = it;
     else {
       //也可以直接插在链表头
-      struct item *walk = sb->items;
-      while(walk->next) walk = walk->next;
-      walk->next = it;
+      acquire(&sb->cache->lock);
+      it->next = sb->items;
+      sb->items = it;
+      release(&sb->cache->lock);
+      // struct item *walk = sb->items;
+      // while(walk->next) walk = walk->next;
+      // walk->next = it;
     }
 }
 
