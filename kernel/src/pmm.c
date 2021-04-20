@@ -7,6 +7,7 @@ static int                  nr_pages;
 static void*                page_start;
 static bool*                flag_start;
 static struct kmem_cache *  cache_start;
+static struct spinlock      globallock;
 
 /*=====================Helpers Function=========================*/
 static inline size_t pow2 (size_t size) {
@@ -149,6 +150,7 @@ bool New_Slab (struct kmem_cache* cache) {
 static void *kalloc(size_t size) {
   size = pow2(size + sizeof(struct item)); //如果size刚好是2的幂，那略浪费
 
+  acquire(&globallock);
   //找到size相同的cache，如果没有则申请一个
   struct kmem_cache * cache = Find_Kmem_Cache(size);
   if(cache == NULL) {
@@ -195,6 +197,8 @@ static void *kalloc(size_t size) {
       walk->next = sb;
     }
   }
+
+  release(&globallock);
   return (void *)it + sizeof(struct item);
 }
 
@@ -215,6 +219,9 @@ static void pmm_init() {
   cache_start = (struct kmem_cache *) (page_start + PAGE_SIZE * nr_pages);
 
   memset(flag_start, 0, nr_pages * FLAG_SIZE);
+  memset(cache_start, 0, NR_PAGE_CACHE * PAGE_SIZE);
+
+  initlock(&globallock, "globallock");
 }
 #else
 static void pmm_init() {
