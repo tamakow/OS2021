@@ -3,7 +3,7 @@
 
 #define  KiB            *(1 << 10)
 #define  PAGE_SIZE      (4 KiB)
-#define  NR_PAGE_CACHE  1          //没事就多分点 
+#define  NR_PAGE_CACHE  2          //没事就多分点 
 #define  FLAG_SIZE      (sizeof(bool))
 
 /*
