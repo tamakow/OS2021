@@ -7,7 +7,7 @@ static int                  nr_pages;
 static void*                page_start;
 static bool*                flag_start;
 static struct kmem_cache *  cache_start;
-static struct spinlock      globallock[MAX_CPU];
+static struct spinlock      globallock;
 
 /*=====================Helpers Function=========================*/
 static inline size_t pow2 (size_t size) {
@@ -156,7 +156,7 @@ bool New_Slab (struct kmem_cache* cache) {
 
 
 static void *kalloc(size_t size) {
-  acquire(&globallock[cpu_current()]);
+  acquire(&globallock);
   size = pow2(size + sizeof(struct item)); //如果size刚好是2的幂，那略浪费
 
 
@@ -166,7 +166,7 @@ static void *kalloc(size_t size) {
 
   if(cache == NULL) {
     Log("Fail to allocate a new kmem_cache");
-    release(&globallock[cpu_current()]);
+    release(&globallock);
     return NULL;
   }
 
@@ -175,7 +175,7 @@ static void *kalloc(size_t size) {
     bool flag = New_Slab(cache);
     if(!flag) {
       Log("Fail to allocate a new slab");
-      release(&globallock[cpu_current()]);
+      release(&globallock);
       return NULL;
     }
   }
@@ -212,13 +212,13 @@ static void *kalloc(size_t size) {
       walk->next = sb;
     }
   }
-  release(&globallock[cpu_current()]);
+  release(&globallock);
   return (void *)it + sizeof(struct item);
 }
 
 
 static void kfree(void *ptr) {
-  acquire(&globallock[cpu_current()]);
+  acquire(&globallock);
 
   struct item* it = (struct item*)(ptr - sizeof(struct item));
   struct slab* sb = it->slab;
@@ -252,7 +252,7 @@ static void kfree(void *ptr) {
     }
   }
 
-  release(&globallock[cpu_current()]);
+  release(&globallock);
   return;
 }
 
@@ -270,8 +270,7 @@ static void pmm_init() {
   memset(flag_start, 0, nr_pages * FLAG_SIZE);
   memset(cache_start, 0, NR_PAGE_CACHE * PAGE_SIZE);
 
-  for (int i = 0; i < MAX_CPU; ++i)
-    initlock(&globallock[i], "globallock");
+  initlock(&globallock, "globallock");
 }
 #else
 static void pmm_init() {
