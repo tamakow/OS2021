@@ -263,9 +263,11 @@ static void kfree(void *ptr) {
     sb->next = NULL;
     if(cache->slabs_free == NULL) cache->slabs_free = sb;
     else {
-      struct slab* walk = cache->slabs_free;
-      while(walk->next) walk = walk->next;
-      walk->next = sb;
+      sb->next = cache->slabs_free;
+      cache->slabs_free = sb;
+      // struct slab* walk = cache->slabs_free;
+      // while(walk->next) walk = walk->next;
+      // walk->next = sb;
     }
   }
   release(&globallock);
