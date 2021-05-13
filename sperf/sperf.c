@@ -2,6 +2,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#define  DEBUG 
+
+#ifdef   DEBUG 
+#define Log(format, ...) \
+    printf("\33[1;34m[%s,%d,%s] " format "\33[0m\n", \
+        __FILE__, __LINE__, __func__, ## __VA_ARGS__)
+#else
+#define Log(format, ...)
+#endif
+
 int main(int argc, char *argv[]) {
   char *exec_argv[] = { "strace", "ls", NULL, };
   char *exec_envp[] = { "PATH=/bin", NULL, };
