@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
   char **exec_argv;
   char **exec_envp = environ;
   char *path = getenv("PATH");
-  char *exec_path = (char*)malloc(10 + sizeof(path));
+  char *exec_path = (char*)malloc(10 + strlen(path));
   
 
   
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
     strcat(exec_path, "strace");
     char *token = strtok(path, ":"); // path can't be used after the operations
     while(execve(exec_path, exec_argv, exec_envp) == -1) {
-      memset(exec_path, 0, sizeof(exec_path));
+      memset(exec_path, 0, strlen(exec_path));
       strcat(exec_path, token);
       strcat(exec_path, "/strace");
       token = strtok(NULL, path);
