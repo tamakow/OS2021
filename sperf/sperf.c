@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
       memset(exec_path, 0, strlen(exec_path));
       strcat(exec_path, token);
       strcat(exec_path, "/strace");
-      token = strtok(NULL, path);
+      token = strtok(NULL, ":");
       Log("try exec_path: %s",exec_path);
     }
     Assert(FONT_RED, "Should not reach here!");
