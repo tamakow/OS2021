@@ -161,8 +161,6 @@ int main(int argc, char *argv[]) {
       _time = atof(time); 
 
       //更新syscall_node_t链表
-      syscall_node_t *p = head;
-      syscall_node_t *q = NULL;
       if(head == NULL) {
         head = (syscall_node_t*)malloc(sizeof(syscall_node_t));
         head->name = name;
@@ -170,6 +168,8 @@ int main(int argc, char *argv[]) {
         head->next = NULL;
         printf("head name is %s\n",name);
       } else {
+        syscall_node_t *p = head;
+        syscall_node_t *q = NULL;
         while (p != NULL && (strcmp(p->name, name) != 0)) {
           q = p;
           p = p->next;
