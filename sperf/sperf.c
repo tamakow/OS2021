@@ -75,11 +75,11 @@ int main(int argc, char *argv[]) {
     // dup2(blackhole, STDOUT_FILENO);
     // dup2(blackhole, STDERR_FILENO); 
     // strace must be in some place in the path
-    strcat(exec_path, "strace");
+    strcpy(exec_path, "strace");
     char *token = strtok(path, ":"); // path can't be used after the operations
     while(execve(exec_path, exec_argv, exec_envp) == -1) {
       memset(exec_path, 0, strlen(exec_path));
-      strcat(exec_path, token);
+      strcpy(exec_path, token);
       strcat(exec_path, "/strace");
       token = strtok(NULL, ":");
       Log("try exec_path: %s",exec_path);
