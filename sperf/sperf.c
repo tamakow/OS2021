@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     dup2(fildes[1], STDIN_FILENO);
     char tmp[1024];
     while(fgets(tmp, 1024, stdin)) {
-      printf("%s\n",tmp);
+      Log("%s",tmp);
     }
   }
 }
