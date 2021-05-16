@@ -24,23 +24,25 @@ int main(int argc, char *argv[]) {
     Assert(FONT_RED, "Invalid arguements!\nUsage: ./sperf-64 [cmd] [args]");
   }
 
-  //pipe [0 : stdin] [1 : stdout] [2 : stderr]
   int fildes[2]; // 0: read 1: write
+  char **exec_argv;
+  char **exec_envp = environ;
+  char *path = getenv("PATH");
+  for(int i = 0; i < strlen(exec_envp); ++i)
+    Log("envp[i] is %s",i);
+  //pipe [0 : stdin] [1 : stdout] [2 : stderr]
   if(pipe(fildes) < 0) {
     Assert(FONT_YELLOW, "Pipe failed");
   }
   Log("%d %d",fildes[0],fildes[1]);
 
-  char **exec_argv = (char**)malloc(sizeof(char*) * (argc + 3));
+  exec_argv = (char**)malloc(sizeof(char*) * (argc + 3));
   exec_argv[0] = "strace";
   exec_argv[1] = "-T";
   exec_argv[2] = "-xx";
   memcpy(exec_argv + 3, argv + 1, argc * sizeof(char*));
-  Log("%d",argc);
   for(int i = 0; i < argc + 3; ++i)
     Log("%s",exec_argv[i]);
-  char *path = getenv("PATH");
-  Log("%s",path);
   
 
 
