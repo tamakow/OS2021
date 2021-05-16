@@ -154,13 +154,21 @@ int main(int argc, char *argv[]) {
     // close(fildes[1]);
     // dup2(fildes[1], STDIN_FILENO);
     int c = 0;
+
     
     FILE* f = NULL;
     f = fopen("strace_output", "r");
     if(f == NULL) {
       Assert(FONT_RED, "can't open strace_output");
     }
+
+    clock_t r = clock();
     while(1) {
+      clock_t l = clock();
+      if(r - l >= CLOCKS_PER_SEC) {
+        display();
+        l = r;
+      }
       char str[1024]; // 每次从文件内读取一行
       int idx = 0;
       c = fgetc(f);
