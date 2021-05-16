@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
           new_node->next = NULL;
           q->next = new_node;
         } else {
-          q->time += _time;
+          p->time += _time;
         }
       }
       total_time += _time;
