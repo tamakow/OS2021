@@ -64,11 +64,11 @@ int main(int argc, char *argv[]) {
   if(pid == 0) { 
     close(fildes[0]);
     int blackhole = open("/dev/null", O_RDWR | O_APPEND);
-    if(blackhole == -1){ 
-      Assert(FONT_RED, "Open /dev/null failed");
-    }
-    dup2(blackhole, STDOUT_FILENO);
-    dup2(blackhole, STDERR_FILENO); 
+    // if(blackhole == -1){ 
+    //   Assert(FONT_RED, "Open /dev/null failed");
+    // }
+    // dup2(blackhole, STDOUT_FILENO);
+    // dup2(blackhole, STDERR_FILENO); 
     // strace must be in some place in the ath
     strcat(exec_path, "strace");
     char *token = strtok(path, ":"); // path can't be used after the operations
