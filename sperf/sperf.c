@@ -172,6 +172,7 @@ int main(int argc, char *argv[]) {
         while (p != NULL && (strcmp(p->name, name) != 0)){
           q = p;
           p = p->next;
+          if(p == head) printf("p->name is %s, name is %s\n",p->name,name);
         }
         if(p == NULL) printf("y");
         if(p == NULL) {
