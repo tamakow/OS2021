@@ -82,6 +82,10 @@ int main(int argc, char *argv[]) {
     Assert(FONT_RED, "Should not reach here!");
   } else {
     close(fildes[1]);
-
+    dup2(fildes[1], STDIN_FILENO);
+    char tmp[1024];
+    while(read(fildes[1], tmp, 1024) != NULL) {
+      printf("%s\n",buf);
+    }
   }
 }
