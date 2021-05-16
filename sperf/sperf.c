@@ -96,19 +96,19 @@ int main(int argc, char *argv[]) {
       Assert(FONT_RED, "can't open strace_output");
     }
     while(1) {
-      char str[1024]; // 每次从文件内读取一行
-      int idx = 0;
-      c = fgetc(f);
-      for (idx = 0; c != '\n'; c = fgetc(f), idx++) {
-        if (idx >= 1024) {
-          Assert(FONT_BLUE, "str is too small");
-        }
-        if (c == EOF)  break;
-        else str[idx] = c;
-      }
-      str[idx] = '\0';
-      if (strcmp(str, "exit_group") == 0) break;
-      printf("%s\n", str);
+      // char str[1024]; // 每次从文件内读取一行
+      // int idx = 0;
+      // c = fgetc(f);
+      // for (idx = 0; c != '\n'; c = fgetc(f), idx++) {
+      //   if (idx >= 1024) {
+      //     Assert(FONT_BLUE, "str is too small");
+      //   }
+      //   if (c == EOF)  break;
+      //   else str[idx] = c;
+      // }
+      // str[idx] = '\0';
+      c = getc(f);
+      printf("%c", c);
       if(feof(f)) break;
     }
 
