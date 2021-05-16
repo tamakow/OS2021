@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
   exec_argv[3] = "-o";
   exec_argv[4] = file_path;
   memcpy(exec_argv + 5, argv + 1, argc * sizeof(char*));
-  for(int i = 0; i < argc + 5; ++i)
+  for(int i = 0; i < argc + 4; ++i)
     printf("%s\n",exec_argv[i]);
 
 
@@ -72,7 +72,6 @@ int main(int argc, char *argv[]) {
     // dup2(blackhole, STDERR_FILENO); 
     // strace must be in some place in the path
     strcpy(exec_path, "strace");
-    printf("y\n");
     char *token = strtok(path, ":"); // path can't be used after the operations
     while(execve(exec_path, exec_argv, exec_envp) == -1) {
       memset(exec_path, 0, strlen(exec_path));
