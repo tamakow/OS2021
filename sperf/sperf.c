@@ -103,9 +103,11 @@ int main(int argc, char *argv[]) {
         if (idx >= 1024) {
           Assert(FONT_BLUE, "str is too small");
         }
-        if (c == EOF) { idx--; break;}
+        if (c == EOF)  break;
         else str[idx] = c;
       }
+      str[idx] = '\0';
+      if (strcmp(str, "exit_group") == 0) break;
       printf("%s\n", str);
       if(feof(f)) break;
     }
