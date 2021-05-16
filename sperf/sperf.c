@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 
   //正则
   regex_t name_preg;
-  if(regcomp(&name_preg, "^.*?\\(", REG_EXTENDED) !=  0) {
+  if(regcomp(&name_preg, "^[a-zA-Z_\\*]+?\\(", REG_EXTENDED) !=  0) {
     Assert(FONT_BLUE,"Name regcomp failed!");
   }
 
