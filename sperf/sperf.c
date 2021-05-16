@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
   exec_argv[0] = "strace";
   exec_argv[1] = "-T";
   exec_argv[2] = "-xx";
-  memcpy(exec_argv + 2, argv + 1, argc * sizeof(char*));
+  memcpy(exec_argv + 3, argv + 1, argc * sizeof(char*));
   for(int i = 0; i < argc + 3; ++i)
     Log("%s",exec_argv[i]);
   char *path = getenv("PATH");
