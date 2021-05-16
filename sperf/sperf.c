@@ -169,15 +169,12 @@ int main(int argc, char *argv[]) {
       } else {
         syscall_node_t *p = head;
         syscall_node_t *q = NULL;
-        do {
+        while (p != NULL && (strcmp(p->name, name) != 0)){
           q = p;
           p = p->next;
-        } while (p != NULL && (strcmp(p->name, name) != 0));
-        if(p!= NULL)
-          printf("p->name is %s, name is %s\n",p->name,name);
-        else
-          printf("p is NULL, create new node for %s", name);
-        if(p == NULL || strcmp(p->name, name)) {
+        }
+        if(p == NULL) printf("y");
+        if(p == NULL) {
           syscall_node_t* new_node = (syscall_node_t*)malloc(sizeof(syscall_node_t));
           new_node->name = name;
           new_node->time = _time;
