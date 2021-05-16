@@ -8,7 +8,7 @@
 
 #define __USE_GNU
 #include <unistd.h>
-#define DEBUG
+// #define DEBUG
 #include "debug.h"
 
 #define NAME_LEN 64
