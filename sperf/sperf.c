@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
   exec_argv[4] = file_path;
   memcpy(exec_argv + 5, argv + 1, argc * sizeof(char*));
   for(int i = 0; i < argc + 5; ++i)
-    Log("%s",exec_argv[i]);
+    printf("%s",exec_argv[i]);
 
 
   // pid_t pid = fork();
