@@ -56,12 +56,12 @@ int main(int argc, char *argv[]) {
   // Log("%s", exec_path);
 
 
-  pid_t pid = fork();
-  if(pid < 0) {
-    Assert(FONT_BLUE, "Fork failed");
-  }
+  // pid_t pid = fork();
+  // if(pid < 0) {
+  //   Assert(FONT_BLUE, "Fork failed");
+  // }
 
-  if(pid == 0) { 
+  // if(pid == 0) { 
     // close(fildes[0]);
     // int blackhole = open("/dev/null", O_RDWR | O_APPEND);
     // if(blackhole == -1){ 
@@ -80,8 +80,8 @@ int main(int argc, char *argv[]) {
       Log("try exec_path: %s",exec_path);
     }
     Assert(FONT_RED, "Should not reach here!");
-  } else {
-    close(fildes[1]);
+  // } else {
+  //   close(fildes[1]);
 
-  }
+  // }
 }
