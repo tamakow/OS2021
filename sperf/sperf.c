@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
   }
   Log("%d %d",fildes[0],fildes[1]);
 
-  strcat(path, getenv("PATH"));
+  strcpy(path, getenv("PATH"));
   exec_argv = (char**)malloc(sizeof(char*) * (argc + 5));
   exec_argv[0] = "strace";
   exec_argv[1] = "-T";
