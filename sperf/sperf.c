@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 
 
-// #define DEBUG
+#define DEBUG
 #include "debug.h"
 
 #define NAME_LEN 64
@@ -35,10 +35,6 @@ int main(int argc, char *argv[]) {
   char exec_path[1024];
   char file_path[] = "strace_output";
 
-  for(int i = 0; exec_envp[i] != NULL; ++i)
-    Log("%s",exec_envp[i]);
-
-  
   //pipe [0 : stdin] [1 : stdout] [2 : stderr]
   if(pipe(fildes) < 0) {
     Assert(FONT_YELLOW, "Pipe failed");
