@@ -24,4 +24,13 @@
 #define print(FONT_COLOR, format, ...)
 #endif
 
+
+#ifdef  DEBUG
+#define Assert(color, format, ...)\
+    print(color, format,##  __VA_ARGS__);\
+    assert(0)
+#else
+#define Assert(color, format, ...)
+#endif
+
 #endif
