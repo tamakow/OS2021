@@ -28,7 +28,7 @@ void bubble_sort() {
   if(head == NULL || head->next == NULL) return;
   for(syscall_node_t *i = head; i != NULL; i = i->next) {
     for(syscall_node_t *j = i->next; j != NULL; j = j->next) {
-      if(i->time > j->time) {
+      if(i->time < j->time) {
         char tmp_name[NAME_LEN];
         strcpy(tmp_name,i->name);
         double tmp_time = i->time;
