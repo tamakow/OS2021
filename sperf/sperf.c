@@ -16,16 +16,36 @@
 #define TIME_LEN 64
 
 typedef struct syscall_node {
-  char   name[NAME_LEN];
+  char*   name;
   double time;
   struct syscall_node *next;
 } syscall_node_t;
 
-syscall_node_t *head = NULL;
+syscall_node_t *head;
 double total_time = 0;
 
+void bubble_sort() {
+  if(head == NULL || head->next == NULL) return;
+  for(syscall_node_t *i = head; i != NULL; i = i->next) {
+    for(syscall_node_t *j = i->next; j != NULL; j = j->next) {
+      if(i->time > j->time) {
+        char *tmp_name = i->name;
+        double tmp_time = i->time;
+        i->name = j->name;
+        i->time = j->time;
+        j->name = tmp_name;
+        j->time = tmp_time;
+      }
+    }
+  }
+}
+
 void display() {
-  //TODO
+  bubble_sort();
+  syscall_node_t *walk = head;
+  for(; walk != NULL; walk = walk->next) {
+    printf("%.24s (%.2lf)\n",walk->name, (walk->time * 100) / total);
+  }
   printf("====================\n");
   for(int i = 0; i < 80; ++i)
     putc('\0', stdout);
@@ -140,10 +160,36 @@ int main(int argc, char *argv[]) {
       time[time_match.rm_eo - time_match.rm_so - 2] = '\0';
       _time = atof(time); 
 
-      printf("%s: %lf\n", name, _time);
+      //更新syscall_node_t链表
+      syscall_node_t *p = head;
+      syscall_node_t *q = NULL;
+      if(head == NULL) {
+        head = (syscall_node_t*)malloc(sizeof(syscall_node_t));
+        head->name = name;
+        head->time = _time;
+        head->next = NULL;
+      } else {
+        while (p != NULL && (strcmp(p->name, name) != 0)) {
+          q = p;
+          p = p->next;
+        }
+        if(p == NULL) {
+          syscall_node_t* new_node = (syscall_node_t*)malloc(sizeof(syscall_node_t));
+          new_node->name = name;
+          new_node->time = _time;
+          new_node->next = NULL;
+          q->next = new_node;
+        } else {
+          q->time += _time;
+        }
+        total_time += _time;
+      }
+      display();
       if(feof(f)) break;
     }
-
     fclose(f);
   }
+  regfree(&name_preg);
+  regfree(&time_preg);
+  return 0;
 }
