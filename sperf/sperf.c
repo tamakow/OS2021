@@ -99,6 +99,7 @@ int main(int argc, char *argv[]) {
     while(1) {
       char str[1024]; // 每次从文件内读取一行
       int idx = 0;
+      c = fgetc(f);
       for (idx = 0; c != '\n'; c = fgetc(f), idx++) {
         if (idx >= 1024) {
           Assert(FONT_BLUE, "str is too small");
