@@ -185,9 +185,9 @@ int main(int argc, char *argv[]) {
         }
       }
       total_time += _time;
-      display();
       if(feof(f)) break;
     }
+    display();
     fclose(f);
   }
   regfree(&name_preg);
