@@ -66,7 +66,8 @@ int main(int argc, char *argv[]) {
     // strace must be in some place in the ath
     strcat(exec_path, "strace");
     char *token = strtok(path, ":"); // path can't be used after the operations
-    while((execve(exec_path, exec_argv, exec_envp)) == -1) {
+    Log("initial exec_path is %s\ntoken is %s",exec_path,token);
+    while(execve(exec_path, exec_argv, exec_envp) == -1) {
       memset(exec_path, 0, strlen(exec_path));
       strcat(exec_path, token);
       strcat(exec_path, "/strace");
