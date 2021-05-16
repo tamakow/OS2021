@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
   char **exec_argv;
   char **exec_envp = __environ;
   char path[1024];
-  char *exec_path = (char*)malloc(10 + strlen(path));
+  char exec_path[1024];
   char file_path[] = "strace_output";
 
   for(int i = 0; exec_envp[i] != NULL; ++i)
