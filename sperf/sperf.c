@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
   char **exec_argv;
   char **exec_envp = environ;
   char *path = getenv("PATH");
-  for(int i = 0; i < strlen(exec_envp); ++i)
+  for(int i = 0; i < 1; ++i)
     Log("envp[%d] is %s", i, exec_envp[i]);
   //pipe [0 : stdin] [1 : stdout] [2 : stderr]
   if(pipe(fildes) < 0) {
