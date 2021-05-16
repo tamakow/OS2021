@@ -10,6 +10,7 @@
 int main(int argc, char *argv[]) {
   if(argc < 2) {
     print(FONT_CYAN, "Invalid arguements\n Usage: ./sperf-64 [cmd] [args]");
+    fflush(stderr);
     assert(0);
   }
 }
