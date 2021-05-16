@@ -16,7 +16,7 @@
 #define TIME_LEN 64
 
 typedef struct syscall_node {
-  char*   name;
+  char   name[NAME_LEN];
   double time;
   struct syscall_node *next;
 } syscall_node_t;
@@ -29,11 +29,12 @@ void bubble_sort() {
   for(syscall_node_t *i = head; i != NULL; i = i->next) {
     for(syscall_node_t *j = i->next; j != NULL; j = j->next) {
       if(i->time > j->time) {
-        char *tmp_name = i->name;
+        char tmp_name[NAME_LEN];
+        strcpy(tmp_name,i->name);
         double tmp_time = i->time;
-        i->name = j->name;
+        strcpy(i->name, j->name);
         i->time = j->time;
-        j->name = tmp_name;
+        strcpy(j->name, tmp_name);
         j->time = tmp_time;
       }
     }
@@ -163,32 +164,28 @@ int main(int argc, char *argv[]) {
       //更新syscall_node_t链表
       if(head == NULL) {
         head = (syscall_node_t*)malloc(sizeof(syscall_node_t));
-        head->name = name;
+        strcpy(head->name, name);
         head->time = _time;
         head->next = NULL;
       } else {
         syscall_node_t *p = head;
         syscall_node_t *q;
-        printf("%s %s\n",head->name, name);
         while ((p != NULL) && (strcmp(p->name, name) != 0)){
           q = p;
-          if(p == head) printf("p->name is %s, name is %s\n",p->name,name);
           p = p->next;
         }
-        if(p == NULL) printf("y");
         if(p == NULL) {
           syscall_node_t* new_node = (syscall_node_t*)malloc(sizeof(syscall_node_t));
-          new_node->name = name;
+          strcpy(new_node->name, name);
           new_node->time = _time;
           new_node->next = NULL;
           q->next = new_node;
-          printf("New node %s\n",name);
         } else {
           p->time += _time;
         }
       }
       total_time += _time;
-      // display();
+      display();
       if(feof(f)) break;
     }
     fclose(f);
