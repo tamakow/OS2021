@@ -10,7 +10,7 @@
 
 
 // #define DEBUG
-#include "debug.h"
+// #include "debug.h"
 
 #define NAME_LEN 64
 #define TIME_LEN 64
