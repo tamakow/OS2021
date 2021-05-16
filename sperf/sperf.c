@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
       } else {
         syscall_node_t *p = head;
         syscall_node_t *q;
-        printf("%s %s\n",p->name, name);
+        printf("%s %s\n",head->name, name);
         while ((p != NULL) && (strcmp(p->name, name) != 0)){
           q = p;
           if(p == head) printf("p->name is %s, name is %s\n",p->name,name);
