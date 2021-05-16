@@ -103,9 +103,10 @@ int main(int argc, char *argv[]) {
         str[idx++] = c;
       }
       printf("%s\n",str);
-      // if (c == '\n') {
-      //   continue;
-      // }
+      break;
+      if (c == '\n') {
+        continue;
+      }
       if(feof(f)) break;
     }
 
