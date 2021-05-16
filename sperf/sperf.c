@@ -123,6 +123,7 @@ int main(int argc, char *argv[]) {
       char name[NAME_LEN];
       regmatch_t time_match;
       char time[NAME_LEN];
+      double _time = 0;
 
       //读取系统调用名称
       if(regexec(&name_preg, str, 1, &name_match, 0) == REG_NOMATCH) {
@@ -137,8 +138,9 @@ int main(int argc, char *argv[]) {
       }
       strncpy(time, str + time_match.rm_so + 1, time_match.rm_eo - time_match.rm_so - 1);
       time[time_match.rm_eo - time_match.rm_so - 2] = '\0';
+      _time = atof(time); 
 
-      printf("%s: %s\n", name, time);
+      printf("%s: %lf\n", name, _time);
       if(feof(f)) break;
     }
 
