@@ -33,6 +33,9 @@ int main(int argc, char *argv[]) {
   char *exec_path = (char*)malloc(10 + strlen(path));
   char file_path[] = "strace_output";
 
+  for(int i = 0; exec_envp[i] != NULL; ++i)
+    Log("%s",exec_envp[i]);
+
   
   //pipe [0 : stdin] [1 : stdout] [2 : stderr]
   if(pipe(fildes) < 0) {
