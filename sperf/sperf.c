@@ -41,7 +41,7 @@ void bubble_sort() {
 }
 
 void display() {
-  // bubble_sort();
+  bubble_sort();
   syscall_node_t *walk = head;
   for(; walk != NULL; walk = walk->next) {
     printf("%.24s (%.2lf%%)\n",walk->name, (walk->time * 100) / total_time);
@@ -179,11 +179,13 @@ int main(int argc, char *argv[]) {
           new_node->time = _time;
           new_node->next = NULL;
           q->next = new_node;
+          printf("New node %s\n",name);
         } else {
           p->time += _time;
         }
       }
       total_time += _time;
+      Log("total time now is %lf\n",total_time);
       display();
       if(feof(f)) break;
     }
