@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
   int fildes[2]; // 0: read 1: write
   char **exec_argv;
   char **exec_envp = __environ;
-  char path[1024] = {0}; //may be small 
+  char path[1024];
   char *exec_path = (char*)malloc(10 + strlen(path));
   char file_path[] = "strace_output";
 
