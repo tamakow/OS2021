@@ -7,7 +7,9 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/stat.h>
-// #define DEBUG
+
+
+#define DEBUG
 #include "debug.h"
 
 #define NAME_LEN 64
