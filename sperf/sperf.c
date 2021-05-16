@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include <fcntl.h>
+#include <regex.h>
 
 #define DEBUG
 #define __USE_GNU
@@ -59,16 +60,15 @@ int main(int argc, char *argv[]) {
 
   if(pid == 0) { 
     close(fildes[0]);
-    // int blackhole = open("/dev/null", O_RDWR | O_APPEND);
-    // if(blackhole == -1){ 
-    //   Assert(FONT_RED, "Open /dev/null failed");
-    // }
-    // dup2(blackhole, STDOUT_FILENO);
+    int blackhole = open("/dev/null", O_RDWR | O_APPEND);
+    if(blackhole == -1){ 
+      Assert(FONT_RED, "Open /dev/null failed");
+    }
+    dup2(blackhole, STDOUT_FILENO);
     dup2(fildes[1], STDERR_FILENO); 
     // strace must be in some place in the ath
     strcat(exec_path, "strace");
     char *token = strtok(path, ":"); // path can't be used after the operations
-    Log("initial exec_path is %s\ntoken is %s",exec_path,token);
     while(execve(exec_path, exec_argv, exec_envp) == -1) {
       memset(exec_path, 0, strlen(exec_path));
       strcat(exec_path, token);
@@ -78,6 +78,7 @@ int main(int argc, char *argv[]) {
     }
     Assert(FONT_RED, "Should not reach here!");
   } else {
+    close(fildes[1]);
 
   }
 }
