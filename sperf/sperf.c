@@ -50,8 +50,8 @@ int main(int argc, char *argv[]) {
   memcpy(exec_argv + 5, argv + 1, argc * sizeof(char*));
   for(int i = 0; i < argc + 5; ++i)
     Log("%s",exec_argv[i]);
-  Log("%s",exec_envp[0]);
-  Log("%s",exec_envp[1]);
+  for(int i = 0; i < 5; ++i)
+    Log("%s",exec_envp[i]);
   // strcat(exec_path, "PATH=");
   // strcat(exec_path, path);
   // Log("%s", exec_path);
