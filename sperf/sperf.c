@@ -35,11 +35,11 @@ int main(int argc, char *argv[]) {
   char exec_path[1024];
   char file_path[] = "strace_output";
 
-  //pipe [0 : stdin] [1 : stdout] [2 : stderr]
-  if(pipe(fildes) < 0) {
-    Assert(FONT_YELLOW, "Pipe failed");
-  }
-  Log("%d %d",fildes[0],fildes[1]);
+  //pipe [seems no use in my code]
+  // if(pipe(fildes) < 0) {
+  //   Assert(FONT_YELLOW, "Pipe failed");
+  // }
+  // Log("%d %d",fildes[0],fildes[1]);
 
   strcpy(path, getenv("PATH"));
   exec_argv = (char**)malloc(sizeof(char*) * (argc + 5));
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
   }
 
   if(pid == 0) { 
-    close(fildes[0]);
+    // close(fildes[0]);
     int blackhole = open("/dev/null", O_RDWR | O_APPEND);
     if(blackhole == -1){ 
       Assert(FONT_RED, "Open /dev/null failed");
@@ -77,7 +77,8 @@ int main(int argc, char *argv[]) {
     }
     Assert(FONT_RED, "Should not reach here!");
   } else {
-    close(fildes[1]);
-    dup2(fildes[1], STDIN_FILENO);
+    // close(fildes[1]);
+    // dup2(fildes[1], STDIN_FILENO);
+    
   }
 }
