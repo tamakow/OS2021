@@ -185,8 +185,8 @@ int main(int argc, char *argv[]) {
         }
       }
       total_time += _time;
-      Log("total time now is %lf\n",total_time);
-      display();
+      printf("total time now is %lf\n",total_time);
+      // display();
       if(feof(f)) break;
     }
     fclose(f);
