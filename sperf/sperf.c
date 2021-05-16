@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
   int fildes[2]; // 0: read 1: write
   char **exec_argv;
   char **exec_envp = __environ;
-  char *path = getenv("PATH");
+  char path[128] = {0}; //may be small 
   char *exec_path = (char*)malloc(10 + strlen(path));
   char file_path[] = "strace_output";
 
@@ -45,6 +45,7 @@ int main(int argc, char *argv[]) {
   }
   Log("%d %d",fildes[0],fildes[1]);
 
+  strcat(path, getenv("PATH"));
   exec_argv = (char**)malloc(sizeof(char*) * (argc + 5));
   exec_argv[0] = "strace";
   exec_argv[1] = "-T";
