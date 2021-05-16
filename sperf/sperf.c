@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
       }
       str[idx] = '\0';
       if (strcmp(str, "exit_group") == 0) break;
-      printf("%s\n", str);
+      // printf("%s\n", str);
       if(feof(f)) break;
     }
 
