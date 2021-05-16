@@ -85,10 +85,10 @@ int main(int argc, char *argv[]) {
       Assert(FONT_RED, "can't open strace_output");
     }
     int c = 0;
-    if (c == pid) return 0;
     while(1) {
       c = fgetc(f);
       if(feof(f)) break;
+      printf("%c",c);
     }
   }
 }
