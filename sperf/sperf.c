@@ -134,8 +134,8 @@ int main(int argc, char *argv[]) {
       if(regexec(&time_preg, str, 1, &time_match, 0) == REG_NOMATCH) {
         Assert(FONT_BLUE, "No match for time");
       }
-      strncpy(name, str + name_match.rm_so + 1, name_match.rm_eo - name_match.rm_so - 1);
-      name[name_match.rm_eo - name_match.rm_so - 2] = '\0';
+      strncpy(time, str + time_match.rm_so + 1, time_match.rm_eo - time_match.rm_so - 1);
+      time[time_match.rm_eo - time_match.rm_so - 2] = '\0';
 
       printf("%s: %s\n", name, time);
       if(strcmp(name, "exit_group") == 0 ||feof(f)) break;
