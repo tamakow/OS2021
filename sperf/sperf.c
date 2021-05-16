@@ -23,11 +23,15 @@ int main(int argc, char *argv[]) {
     Assert(FONT_RED, "Invalid arguements!\nUsage: ./sperf-64 [cmd] [args]");
   }
 
-  //pipe [0 : 输入] [1 : 输出]
-  int fildes[2];
+  //pipe [0 : stdin] [1 : stdout] [2 : stderr]
+  int fildes[2]; // 0: read 1: write
   if(pipe(fildes) < 0) {
     Assert(FONT_YELLOW, "Pipe failed");
   }
+  Log("%d %d",fildes[0],fildes[1]);
+
+  char *path = getenv("PATH");
+  Log("%s",path);
 
   //创建子进程，在子进程用strace
   pid_t pid = fork();
@@ -35,8 +39,8 @@ int main(int argc, char *argv[]) {
     Assert(FONT_BLUE, "Fork failed");
   }
 
-  if(pid == 0) {
-    Log("%d %d",fildes[0],fildes[1]);
+  if(pid == 0) { 
+    
   } else {
 
   }
