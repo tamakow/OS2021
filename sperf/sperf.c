@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
   char **exec_envp = environ;
   char *path = getenv("PATH");
   char *exec_path = (char*)malloc(10 + strlen(path));
-  // char file_path[] = "strace_output";
+  char file_path[] = "strace_output";
 
   
   //pipe [0 : stdin] [1 : stdout] [2 : stderr]
@@ -45,9 +45,9 @@ int main(int argc, char *argv[]) {
   exec_argv[0] = "strace";
   exec_argv[1] = "-T";
   exec_argv[2] = "-xx";
-  // exec_argv[3] = "-o";
-  // exec_argv[4] = file_path;
-  memcpy(exec_argv + 3, argv + 1, argc * sizeof(char*));
+  exec_argv[3] = "-o";
+  exec_argv[4] = file_path;
+  memcpy(exec_argv + 5, argv + 1, argc * sizeof(char*));
   for(int i = 0; i < argc + 5; ++i)
     Log("%s",exec_argv[i]);
   
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     // strace must be in some place in the path
     strcat(exec_path, "strace");
     char *token = strtok(path, ":"); // path can't be used after the operations
-    while(execve(exec_path, exec_argv, exec_envp) == -1) {
+    while(execve(exec_path, exec_argv, "PATH=/bin") == -1) {
       memset(exec_path, 0, strlen(exec_path));
       strcat(exec_path, token);
       strcat(exec_path, "/strace");
