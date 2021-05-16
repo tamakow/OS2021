@@ -2,15 +2,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define  DEBUG 
+#include "debug.h"
 
-#ifdef   DEBUG 
-#define Log(format, ...) \
-    printf("\33[1;34m[%s,%d,%s] " format "\33[0m\n", \
-        __FILE__, __LINE__, __func__, ## __VA_ARGS__)
-#else
-#define Log(format, ...)
-#endif
+#define DEBUG
 
 int main(int argc, char *argv[]) {
   char *exec_argv[] = { "strace", "ls", NULL, };
@@ -20,4 +14,5 @@ int main(int argc, char *argv[]) {
   execve("/usr/bin/strace", exec_argv, exec_envp);
   perror(argv[0]);
   exit(EXIT_FAILURE);
+  
 }
