@@ -6,7 +6,6 @@
 #include <regex.h>
 #include <time.h>
 
-#define __USE_GNU
 #include <unistd.h>
 // #define DEBUG
 #include "debug.h"
@@ -29,7 +28,7 @@ int main(int argc, char *argv[]) {
 
   int fildes[2]; // 0: read 1: write
   char **exec_argv;
-  char *exec_envp[] = {"PATH=/bin", NULL, };
+  char **exec_envp = __environ;
   char *path = getenv("PATH");
   char *exec_path = (char*)malloc(10 + strlen(path));
   char file_path[] = "strace_output";
