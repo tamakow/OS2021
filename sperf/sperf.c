@@ -99,13 +99,14 @@ int main(int argc, char *argv[]) {
     while(1) {
       char str[1024]; // 每次从文件内读取一行
       int idx = 0;
-      while((c = fgetc(f)) != '\n' && c != EOF){
-        str[idx++] = c;
+      for (idx = 0; c != '\n'; c = fgetc(f), idx++) {
+        if (idx >= 1024) {
+          Assert(FONT_BLUE, "str is too small");
+        }
+        if (c == EOF) idx--;
+        else str[idx] = c;
       }
-      printf("%s\n",str);
-      if (c == '\n') {
-        continue;
-      }
+      printf("%s\n", str);
       if(feof(f)) break;
     }
 
