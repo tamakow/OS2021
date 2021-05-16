@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 
 
-// #define DEBUG
+#define DEBUG
 #include "debug.h"
 
 #define NAME_LEN 64
@@ -55,10 +55,6 @@ int main(int argc, char *argv[]) {
   memcpy(exec_argv + 5, argv + 1, argc * sizeof(char*));
   for(int i = 0; i < argc + 5; ++i)
     Log("%s",exec_argv[i]);
-  
-  // strcat(exec_path, "PATH=");
-  // strcat(exec_path, path);
-  // Log("%s", exec_path);
 
 
   // pid_t pid = fork();
