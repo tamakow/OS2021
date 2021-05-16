@@ -97,13 +97,12 @@ int main(int argc, char *argv[]) {
       Assert(FONT_RED, "can't open strace_output");
     }
     while(1) {
-      // char str[1024]; // 每次从文件内读取一行
-      // int idx = 0;
-      // while((c = fgetc(f)) != '\n' || c != EOF){
-      //   str[idx++] = c;
-      // }
-      // printf("%s\n",str);
-      break;
+      char str[1024]; // 每次从文件内读取一行
+      int idx = 0;
+      while((c = fgetc(f)) != '\n' && c != EOF){
+        str[idx++] = c;
+      }
+      printf("%s\n",str);
       if (c == '\n') {
         continue;
       }
