@@ -54,22 +54,21 @@ int main(int argc, char *argv[]) {
   exec_argv[4] = file_path;
   memcpy(exec_argv + 5, argv + 1, argc * sizeof(char*));
   for(int i = 0; i < argc + 4; ++i)
-    printf("%s\n",exec_argv[i]);
+    Log("%s\n",exec_argv[i]);
 
+  pid_t pid = fork();
+  if(pid < 0) {
+    Assert(FONT_BLUE, "Fork failed");
+  }
 
-  // pid_t pid = fork();
-  // if(pid < 0) {
-  //   Assert(FONT_BLUE, "Fork failed");
-  // }
-
-  // if(pid == 0) { 
-    // close(fildes[0]);
-    // int blackhole = open("/dev/null", O_RDWR | O_APPEND);
-    // if(blackhole == -1){ 
-    //   Assert(FONT_RED, "Open /dev/null failed");
-    // }
-    // dup2(blackhole, STDOUT_FILENO);
-    // dup2(blackhole, STDERR_FILENO); 
+  if(pid == 0) { 
+    close(fildes[0]);
+    int blackhole = open("/dev/null", O_RDWR | O_APPEND);
+    if(blackhole == -1){ 
+      Assert(FONT_RED, "Open /dev/null failed");
+    }
+    dup2(blackhole, STDOUT_FILENO);
+    dup2(blackhole, STDERR_FILENO); 
     // strace must be in some place in the path
     strcpy(exec_path, "strace");
     char *token = strtok(path, ":"); // path can't be used after the operations
@@ -81,8 +80,8 @@ int main(int argc, char *argv[]) {
       Log("try exec_path: %s",exec_path);
     }
     Assert(FONT_RED, "Should not reach here!");
-  // } else {
-  //   close(fildes[1]);
+  } else {
+    close(fildes[1]);
 
-  // }
+  }
 }
