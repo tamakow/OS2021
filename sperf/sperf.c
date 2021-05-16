@@ -3,9 +3,9 @@
 #include <unistd.h>
 #include <assert.h>
 
-#include "debug.h"
-
 #define DEBUG
+
+#include "debug.h"
 
 int main(int argc, char *argv[]) {
   if(argc < 2) {
