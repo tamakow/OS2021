@@ -88,7 +88,6 @@ int main(int argc, char *argv[]) {
     // close(fildes[1]);
     // dup2(fildes[1], STDIN_FILENO);
     int c = 0;
-
     
     FILE* f = NULL;
     f = fopen("strace_output", "r");
@@ -96,19 +95,38 @@ int main(int argc, char *argv[]) {
       Assert(FONT_RED, "can't open strace_output");
     }
     while(1) {
-      // char str[1024]; // 每次从文件内读取一行
-      // int idx = 0;
-      // c = fgetc(f);
-      // for (idx = 0; c != '\n'; c = fgetc(f), idx++) {
-      //   if (idx >= 1024) {
-      //     Assert(FONT_BLUE, "str is too small");
-      //   }
-      //   if (c == EOF)  break;
-      //   else str[idx] = c;
-      // }
-      // str[idx] = '\0';
-      c = getc(f);
-      printf("%c", c);
+      char str[1024]; // 每次从文件内读取一行
+      int idx = 0;
+      c = fgetc(f);
+      for (idx = 0; c != '\n'; c = fgetc(f), idx++) {
+        if (idx >= 1024) {
+          Assert(FONT_BLUE, "str is too small");
+        }
+        if (c == EOF)  break;
+        else str[idx] = c;
+      }
+      str[idx] = '\0';
+
+      //正则化读取系统调用名称和时间
+      regex_t name_preg;
+      regmatch_t name_match;
+      char name[NAME_LEN];
+
+
+      if(regcomp(&name_preg, "^.*?\\(", REG_EXTENDED) !=  0) {
+        Assert(FONT_BLUE,"Name regcomp failed!");
+      }
+
+      if(regexec(&name_preg, str, 1, &name_match, 0) == REG_NOMATCH) {
+        Assert(FONT_BLUE, "No match for name");
+      }
+
+      strncpy(name, str + name_match.rm_so, name_match.rm_eo - name_match.rm_so);
+      name[name_match.rm_eo - name_match.rm_so - 1] = '\0';
+
+      printf("%s\n", name);
+
+
       if(feof(f)) break;
     }
 
