@@ -173,7 +173,11 @@ int main(int argc, char *argv[]) {
           q = p;
           p = p->next;
         }
-        if(p == NULL) {
+        if(p!= NULL)
+          printf("p->name is %s, name is %s\n",p->name,name);
+        else
+          printf("p is NULL, create new node for %s", name);
+        if(p == NULL || strcmp(p->name, name)) {
           syscall_node_t* new_node = (syscall_node_t*)malloc(sizeof(syscall_node_t));
           new_node->name = name;
           new_node->time = _time;
@@ -186,7 +190,6 @@ int main(int argc, char *argv[]) {
         }
       }
       total_time += _time;
-      printf("total time now is %lf\n",total_time);
       // display();
       if(feof(f)) break;
     }
