@@ -30,7 +30,8 @@
     print(color, format,##  __VA_ARGS__);\
     assert(0)
 #else
-#define Assert(color, format, ...)
+#define Assert(color, format, ...)\
+    assert(0)
 #endif
 
 #endif

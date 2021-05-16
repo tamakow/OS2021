@@ -79,6 +79,16 @@ int main(int argc, char *argv[]) {
   } else {
     // close(fildes[1]);
     // dup2(fildes[1], STDIN_FILENO);
-    
+    FILE* f = NULL;
+    f = fopen("strace_output", "r");
+    if(f == NULL) {
+      Assert(FONT_RED, "can't open strace_output");
+    }
+    int c;
+
+    while(1) {
+      c = fgetc(f);
+      if(feof(f)) break;
+    }
   }
 }
