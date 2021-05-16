@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     close(fildes[0]);
     int blackhole = open("/dev/null", O_RDWR | O_APPEND);
     if(blackhole == -1){ 
-      Assert(FONT_CYAN, "Open /dev/null failed");
+      Assert(FONT_RED, "Open /dev/null failed");
     }
     dup2(blackhole, STDOUT_FILENO);
     dup2(fildes[1], STDERR_FILENO); 
