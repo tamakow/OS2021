@@ -51,14 +51,13 @@ int main(int argc, char *argv[]) {
   // Log("%d %d",fildes[0],fildes[1]);
 
   strcpy(path, getenv("PATH"));
-  exec_argv = (char**)malloc(sizeof(char*) * (argc + 5));
+  exec_argv = (char**)malloc(sizeof(char*) * (argc + 4));
   exec_argv[0] = "strace";
   exec_argv[1] = "-T";
-  exec_argv[2] = "-xx";
-  exec_argv[3] = "-o";
-  exec_argv[4] = file_path;
-  memcpy(exec_argv + 5, argv + 1, argc * sizeof(char*));
-  for(int i = 0; i < argc + 4; ++i)
+  exec_argv[2] = "-o";
+  exec_argv[3] = file_path;
+  memcpy(exec_argv + 4, argv + 1, argc * sizeof(char*));
+  for(int i = 0; i < argc + 3; ++i)
     Log("%s",exec_argv[i]);
 
   pid_t pid = fork();
