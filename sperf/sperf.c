@@ -13,6 +13,7 @@
 #include "debug.h"
 
 #define NAME_LEN 64
+#define TIME_LEN 64
 
 typedef struct syscall_node {
   char   name[NAME_LEN];
@@ -39,9 +40,14 @@ int main(int argc, char *argv[]) {
 
   //正则
   regex_t name_preg;
+  regex_t time_preg;
   if(regcomp(&name_preg, "^[a-zA-Z_\\*0-9]+?\\(", REG_EXTENDED) !=  0) {
     Assert(FONT_BLUE,"Name regcomp failed!");
   }
+  if(regcomp(&time_preg, "<[0-9\\.]*>$", REG_EXTENDED) !=  0) {
+    Assert(FONT_BLUE,"time regcomp failed!");
+  }
+  
 
   int fildes[2]; // 0: read 1: write
   char **exec_argv;
@@ -113,20 +119,25 @@ int main(int argc, char *argv[]) {
       }
       str[idx] = '\0';
 
-      //正则化读取系统调用名称和时间
       regmatch_t name_match;
       char name[NAME_LEN];
+      regmatch_t time_match;
+      char time[NAME_LEN];
 
+      //读取系统调用名称
       if(regexec(&name_preg, str, 1, &name_match, 0) == REG_NOMATCH) {
         Assert(FONT_BLUE, "No match for name");
       }
-
       strncpy(name, str + name_match.rm_so, name_match.rm_eo - name_match.rm_so);
       name[name_match.rm_eo - name_match.rm_so - 1] = '\0';
+      //读取系统调用时间
+      if(regexec(&time_preg, str, 1, &time_match, 0) == REG_NOMATCH) {
+        Assert(FONT_BLUE, "No match for time");
+      }
+      strncpy(name, str + name_match.rm_so + 1, name_match.rm_eo - name_match.rm_so - 1);
+      name[name_match.rm_eo - name_match.rm_so - 2] = '\0';
 
-      printf("%s\n", name);
-
-
+      printf("%s: %s\n", name, time);
       if(strcmp(name, "exit_group") == 0 ||feof(f)) break;
     }
 
