@@ -79,9 +79,5 @@ int main(int argc, char *argv[]) {
   } else {
     close(fildes[1]);
     dup2(fildes[1], STDIN_FILENO);
-    char tmp[1024];
-    while(fgets(tmp, 1024, stdin)) {
-      Log("%s",tmp);
-    }
   }
 }
