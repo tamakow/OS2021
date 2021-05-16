@@ -50,8 +50,7 @@ int main(int argc, char *argv[]) {
   memcpy(exec_argv + 5, argv + 1, argc * sizeof(char*));
   for(int i = 0; i < argc + 5; ++i)
     Log("%s",exec_argv[i]);
-  for(int i = 0; exec_envp[i][0]!='\0'; ++i)
-    Log("%s",exec_envp[i]);
+  
   // strcat(exec_path, "PATH=");
   // strcat(exec_path, path);
   // Log("%s", exec_path);
@@ -63,8 +62,8 @@ int main(int argc, char *argv[]) {
   }
 
   if(pid == 0) { 
-    close(fildes[0]);
-    int blackhole = open("/dev/null", O_RDWR | O_APPEND);
+    // close(fildes[0]);
+    // int blackhole = open("/dev/null", O_RDWR | O_APPEND);
     // if(blackhole == -1){ 
     //   Assert(FONT_RED, "Open /dev/null failed");
     // }
