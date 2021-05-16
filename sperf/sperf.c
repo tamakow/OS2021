@@ -195,7 +195,7 @@ int main(int argc, char *argv[]) {
       name[name_match.rm_eo - name_match.rm_so - 1] = '\0';
       if(strcmp(name, "exit_group") == 0) break;
       //读取系统调用时间
-      Log("name is %s",name);
+      Log("name is %s",str);
       if(regexec(&time_preg, str, 1, &time_match, 0) == REG_NOMATCH) {
         Assert(FONT_BLUE, "No match for time");
       }
