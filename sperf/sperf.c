@@ -28,8 +28,10 @@ int main(int argc, char *argv[]) {
   char **exec_argv;
   char **exec_envp = environ;
   char *path = getenv("PATH");
-  for(int i = 0; i < 1; ++i)
-    Log("envp[%d] is %s", i, exec_envp[i]);
+  char *exec_path = (char*)malloc(10 + strlen(path));
+  
+
+  
   //pipe [0 : stdin] [1 : stdout] [2 : stderr]
   if(pipe(fildes) < 0) {
     Assert(FONT_YELLOW, "Pipe failed");
@@ -44,6 +46,9 @@ int main(int argc, char *argv[]) {
   for(int i = 0; i < argc + 3; ++i)
     Log("%s",exec_argv[i]);
   
+  strcat(exec_path, "PATH=");
+  strcat(exec_path, path);
+  Log("path is %s", exec_path);
 
 
   pid_t pid = fork();
