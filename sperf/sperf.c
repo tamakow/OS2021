@@ -20,9 +20,24 @@ syscall_node_t *head = NULL;
 
 int main(int argc, char *argv[]) {
   if(argc < 2) {
-    print(FONT_RED, "Invalid arguements!\nUsage: ./sperf-64 [cmd] [args]");
-    assert(0);
+    Assert(FONT_RED, "Invalid arguements!\nUsage: ./sperf-64 [cmd] [args]");
   }
-  //创建子进程，在子进程用strace
 
+  //pipe [0 : 输入] [1 : 输出]
+  int fildes[2];
+  if(pipe(fildes) < 0) {
+    Assert(FONT_YELLOW, "Pipe failed");
+  }
+
+  //创建子进程，在子进程用strace
+  pid_t pid = fork();
+  if(pid < 0) {
+    Assert(FONT_BLUE, "Fork failed");
+  }
+
+  if(pid == 0) {
+    Log("%d %d",fildes[0],fildes[1]);
+  } else {
+
+  }
 }
