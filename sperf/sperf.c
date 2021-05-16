@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
       printf("%s\n", name);
 
 
-      if(feof(f)) break;
+      if(strcmp(name, "exit_group") == 0 ||feof(f)) break;
     }
 
     fclose(f);
