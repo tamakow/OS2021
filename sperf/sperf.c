@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 
 
-// #define DEBUG
+#define DEBUG
 
 #define  FONT_BLACK          "\033[1;30m"
 #define  FONT_RED            "\033[1;31m"
@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
   if(regcomp(&name_preg, "^[a-zA-Z_\\*0-9]+?\\(", REG_EXTENDED) !=  0) {
     Assert(FONT_BLUE,"Name regcomp failed!");
   }
-  if(regcomp(&time_preg, "<[0-9\\.]+>$", REG_EXTENDED) !=  0) {
+  if(regcomp(&time_preg, "<[0-9\\.]*>$", REG_EXTENDED) !=  0) {
     Assert(FONT_BLUE,"time regcomp failed!");
   }
   
@@ -195,6 +195,7 @@ int main(int argc, char *argv[]) {
       name[name_match.rm_eo - name_match.rm_so - 1] = '\0';
       if(strcmp(name, "exit_group") == 0) break;
       //读取系统调用时间
+      Log("name is %s",name);
       if(regexec(&time_preg, str, 1, &time_match, 0) == REG_NOMATCH) {
         Assert(FONT_BLUE, "No match for time");
       }
