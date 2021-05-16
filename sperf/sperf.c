@@ -84,8 +84,8 @@ int main(int argc, char *argv[]) {
     close(fildes[1]);
     dup2(fildes[1], STDIN_FILENO);
     char tmp[1024];
-    while(read(fildes[1], tmp, 1024) != NULL) {
-      printf("%s\n",buf);
+    while(fgets(tmp, 1024, stdin)) {
+      printf("%s\n",tmp);
     }
   }
 }
