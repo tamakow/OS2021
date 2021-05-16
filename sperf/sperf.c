@@ -166,14 +166,13 @@ int main(int argc, char *argv[]) {
         head->name = name;
         head->time = _time;
         head->next = NULL;
-        printf("head name is %s\n",name);
       } else {
         syscall_node_t *p = head;
         syscall_node_t *q = NULL;
-        while (p != NULL && (strcmp(p->name, name) != 0)) {
+        do {
           q = p;
           p = p->next;
-        }
+        } while (p != NULL && (strcmp(p->name, name) != 0));
         if(p!= NULL)
           printf("p->name is %s, name is %s\n",p->name,name);
         else
