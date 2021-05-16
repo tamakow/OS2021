@@ -22,7 +22,7 @@ typedef struct syscall_node {
 syscall_node_t *head = NULL;
 
 
-int main(int argc, char *argv[], char *envp[]) {
+int main(int argc, char *argv[]) {
   if(argc < 2) {
     Assert(FONT_RED, "Invalid arguements!\nUsage: ./sperf-64 [cmd] [args]");
   }
