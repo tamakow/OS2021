@@ -27,7 +27,7 @@ void display() {
   //TODO
   printf("====================\n");
   for(int i = 0; i < 80; ++i)
-    printf("\0");
+    putc('\0', stdout);
   fflush(stdout);
 }
 
