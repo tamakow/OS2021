@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
   char **exec_envp = environ;
   char *path = getenv("PATH");
   for(int i = 0; i < strlen(exec_envp); ++i)
-    Log("envp[i] is %s",i);
+    Log("envp[i] is %s", i, exec_envp[i]);
   //pipe [0 : stdin] [1 : stdout] [2 : stderr]
   if(pipe(fildes) < 0) {
     Assert(FONT_YELLOW, "Pipe failed");
