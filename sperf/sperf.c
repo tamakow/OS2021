@@ -21,6 +21,15 @@ typedef struct syscall_node {
 } syscall_node_t;
 
 syscall_node_t *head = NULL;
+double total_time = 0;
+
+void display() {
+  //TODO
+  printf("====================\n");
+  for(int i = 0; i < 80; ++i)
+    printf("\0");
+  fflush(stdout);
+}
 
 
 int main(int argc, char *argv[]) {
@@ -79,16 +88,27 @@ int main(int argc, char *argv[]) {
   } else {
     // close(fildes[1]);
     // dup2(fildes[1], STDIN_FILENO);
+    int c = 0;
+
+    
     FILE* f = NULL;
     f = fopen("strace_output", "r");
     if(f == NULL) {
       Assert(FONT_RED, "can't open strace_output");
     }
-    int c = 0;
     while(1) {
-      c = fgetc(f);
+      char str[1024]; // 每次从文件内读取一行
+      int idx = 0;
+      while((c = fgetc(f)) != '\n' || c != EOF){
+        str[idx++] = c;
+      }
+      printf("%s\n",str);
+      if (c == '\n') {
+        continue;
+      }
       if(feof(f)) break;
-      printf("%c",c);
     }
+
+    fclose(f);
   }
 }
