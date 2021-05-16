@@ -22,7 +22,7 @@ typedef struct syscall_node {
 syscall_node_t *head = NULL;
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[], char *envp[]) {
   if(argc < 2) {
     Assert(FONT_RED, "Invalid arguements!\nUsage: ./sperf-64 [cmd] [args]");
   }
@@ -69,10 +69,10 @@ int main(int argc, char *argv[]) {
     // }
     // dup2(blackhole, STDOUT_FILENO);
     // dup2(blackhole, STDERR_FILENO); 
-    // strace must be in some place in the ath
+    // strace must be in some place in the path
     strcat(exec_path, "strace");
     char *token = strtok(path, ":"); // path can't be used after the operations
-    while(execve(exec_path, exec_argv, exec_envp) == -1) {
+    while(execve(exec_path, exec_argv, envp) == -1) {
       memset(exec_path, 0, strlen(exec_path));
       strcat(exec_path, token);
       strcat(exec_path, "/strace");
