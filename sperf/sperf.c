@@ -186,7 +186,6 @@ int main(int argc, char *argv[]) {
           printf("New node %s\n",name);
         } else {
           p->time += _time;
-          printf("%s node time plus\n",name);
         }
       }
       total_time += _time;
