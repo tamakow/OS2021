@@ -168,6 +168,7 @@ int main(int argc, char *argv[]) {
         head->name = name;
         head->time = _time;
         head->next = NULL;
+        printf("head name is %s\n",name);
       } else {
         while (p != NULL && (strcmp(p->name, name) != 0)) {
           q = p;
