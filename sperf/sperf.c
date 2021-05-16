@@ -37,6 +37,12 @@ int main(int argc, char *argv[]) {
     Assert(FONT_RED, "Invalid arguements!\nUsage: ./sperf-64 [cmd] [args]");
   }
 
+  //正则
+  regex_t name_preg;
+  if(regcomp(&name_preg, "^.*?\\(", REG_EXTENDED) !=  0) {
+    Assert(FONT_BLUE,"Name regcomp failed!");
+  }
+
   int fildes[2]; // 0: read 1: write
   char **exec_argv;
   char **exec_envp = __environ;
@@ -108,14 +114,8 @@ int main(int argc, char *argv[]) {
       str[idx] = '\0';
 
       //正则化读取系统调用名称和时间
-      regex_t name_preg;
       regmatch_t name_match;
       char name[NAME_LEN];
-
-
-      if(regcomp(&name_preg, "^.*?\\(", REG_EXTENDED) !=  0) {
-        Assert(FONT_BLUE,"Name regcomp failed!");
-      }
 
       if(regexec(&name_preg, str, 1, &name_match, 0) == REG_NOMATCH) {
         Assert(FONT_BLUE, "No match for name");
