@@ -196,8 +196,8 @@ int main(int argc, char *argv[]) {
         // continue;
         Assert(FONT_BLUE, "No match for time");
       }
-      strncpy(time, str + time_match.rm_so + 1, time_match.rm_eo - time_match.rm_so - 1);
-      time[time_match.rm_eo - time_match.rm_so - 2] = '\0';
+      strncpy(time, str + time_match.rm_so + 1, time_match.rm_eo - time_match.rm_so - 2);
+      time[time_match.rm_eo - time_match.rm_so - 3] = '\0';
       _time = atof(time); 
 
       //更新syscall_node_t链表
