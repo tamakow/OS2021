@@ -163,6 +163,7 @@ int main(int argc, char *argv[]) {
     }
 
     clock_t l = clock();
+    int flag = 0;
     while(1) {
       clock_t r = clock();
       if(r - l >= CLOCKS_PER_SEC) {
@@ -196,8 +197,11 @@ int main(int argc, char *argv[]) {
       if(strcmp(name, "exit_group") == 0) break;
       //读取系统调用时间
       Log("name is %s",str);
+      if(flag) break;
       if(regexec(&time_preg, str, 1, &time_match, 0) == REG_NOMATCH) {
-        Assert(FONT_BLUE, "No match for time");
+        flag = 1;
+        continue;
+        // Assert(FONT_BLUE, "No match for time");
       }
       strncpy(time, str + time_match.rm_so + 1, time_match.rm_eo - time_match.rm_so - 1);
       time[time_match.rm_eo - time_match.rm_so - 2] = '\0';
