@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 
 
-#define DEBUG
+// #define DEBUG
 
 #define  FONT_BLACK          "\033[1;30m"
 #define  FONT_RED            "\033[1;31m"
@@ -110,11 +110,11 @@ int main(int argc, char *argv[]) {
   char exec_path[1024];
   char file_path[] = "strace_output";
 
-  //pipe [seems no use in my code]
-  // if(pipe(fildes) < 0) {
-  //   Assert(FONT_YELLOW, "Pipe failed");
-  // }
-  // Log("%d %d",fildes[0],fildes[1]);
+  // pipe
+  if(pipe(fildes) < 0) {
+    Assert(FONT_YELLOW, "Pipe failed");
+  }
+  Log("%d %d",fildes[0],fildes[1]);
 
   strcpy(path, getenv("PATH"));
   exec_argv = (char**)malloc(sizeof(char*) * (argc + 4));
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
   }
 
   if(pid == 0) { 
-    // close(fildes[0]);
+    close(fildes[0]);
     int blackhole = open("/dev/null", O_RDWR | O_APPEND);
     if(blackhole == -1){ 
       Assert(FONT_RED, "Open /dev/null failed");
@@ -151,8 +151,8 @@ int main(int argc, char *argv[]) {
     }
     Assert(FONT_RED, "Sh      if(feof(f)) break;ould not reach here!");
   } else {
-    // close(fildes[1]);
-    // dup2(fildes[1], STDIN_FILENO);
+    close(fildes[1]);
+    dup2(fildes[0], STDIN_FILENO);
     int c = 0;
 
     
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
 
     char str[1024]; // 每次从文件内读取一行
     clock_t l = clock();
-    while(fgets(str, 1024, f) > 0) {
+    while(fgets(str, 1024, stdin) > 0) {
       clock_t r = clock();
       if(r - l >= CLOCKS_PER_SEC ) {
         display();
