@@ -173,14 +173,13 @@ int main(int argc, char *argv[]) {
       char str[1024]; // 每次从文件内读取一行
       int idx = 0;
       c = fgetc(f);
-      for (idx = 0; c != '\n'; c = fgetc(f), idx++) {
+      for (idx = 0; c != '\n' || feof(f); c = fgetc(f), idx++) {
         if (idx >= 1024) {
           Assert(FONT_BLUE, "str is too small");
         }
-        if (c == EOF)  break;
         else str[idx] = c;
       }
-      str[idx] = '\0';
+      str[idx - 1] = '\0';
 
       regmatch_t name_match;
       char name[NAME_LEN];
