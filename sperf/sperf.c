@@ -78,7 +78,7 @@ void display() {
   bubble_sort();
   syscall_node_t *walk = head;
   for(int i = 0;i < 5 && walk != NULL;i++, walk = walk->next) {
-    printf("%.24s (%2lf%%)\n",walk->name, (walk->time * 100) / total_time);
+    printf("%.24s (%.2lf%%)\n",walk->name, (walk->time * 100) / total_time);
   }
   printf("====================\n");
   for(int i = 0; i < 80; ++i)
