@@ -169,6 +169,7 @@ int main(int argc, char *argv[]) {
         display();
         l = r;
       }
+      if(feof(f)) break;
       char str[1024]; // 每次从文件内读取一行
       int idx = 0;
       c = fgetc(f);
