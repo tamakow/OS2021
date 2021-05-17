@@ -95,10 +95,10 @@ int main(int argc, char *argv[]) {
   //正则
   regex_t name_preg;
   regex_t time_preg;
-  if(regcomp(&name_preg, "^[a-zA-Z_\\*0-9]+?\\(", REG_EXTENDED) !=  0) {
+  if(regcomp(&name_preg, "^[a-zA-Z_\\*0-9]*?\\(", REG_EXTENDED) !=  0) {
     Assert(FONT_BLUE,"Name regcomp failed!");
   }
-  if(regcomp(&time_preg, "<[0-9\\.]*>$", REG_EXTENDED) !=  0) {
+  if(regcomp(&time_preg, "<[0-9\\.]*>\n", REG_EXTENDED) !=  0) {
     Assert(FONT_BLUE,"time regcomp failed!");
   }
   
