@@ -82,10 +82,8 @@ void display() {
   syscall_node_t *walk = head;
   for(int i = 0; i < 7 && walk != NULL; ++i, walk = walk->next) {
     printf("%s (%d%%)\n",walk->name, (int)((walk->time * 100) / total_time));
-    fflush(stdout);
   }
   printf("====================\n");
-  fflush(stdout);
   for(int i = 0; i < 80; ++i)
     putchar('\0');
   fflush(stdout);
@@ -224,7 +222,7 @@ int main(int argc, char *argv[]) {
     display();
     close(fildes[0]);
   }
-  // regfree(&name_preg);
-  // regfree(&time_preg);
+  regfree(&name_preg);
+  regfree(&time_preg);
   return 0;
 }
