@@ -83,7 +83,7 @@ void display() {
   }
   printf("====================\n");
   for(int i = 0; i < 80; ++i)
-    putc('\0', stdout);
+    putchar('\0');
   fflush(stdout);
   fflush(stderr);
 }
