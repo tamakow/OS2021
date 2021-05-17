@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
         l = r;
       }
       if(feof(f)) break;
-      char str[1024]; // 每次从文件内读取一行
+      char str[2048]; // 每次从文件内读取一行
       int idx = 0;
       c = fgetc(f);
       for (idx = 0; c != '\n' || feof(f); c = fgetc(f), idx++) {
