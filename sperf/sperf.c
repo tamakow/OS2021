@@ -79,6 +79,7 @@ void bubble_sort() {
 
 void display() {
   bubble_sort();
+  fflush(stdout);
   syscall_node_t *walk = head;
   for(int i = 0; i < 7 && walk != NULL; ++i, walk = walk->next) {
     char tmp[NAME_LEN];
