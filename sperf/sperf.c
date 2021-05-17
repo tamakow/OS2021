@@ -215,6 +215,7 @@ int main(int argc, char *argv[]) {
           q = p;
           p = p->next;
         }
+        if(q == NULL) Assert(FONT_BLUE,"q is nullptr");
         if(p == NULL) {
           syscall_node_t* new_node = (syscall_node_t*)malloc(sizeof(syscall_node_t));
           strcpy(new_node->name, name);
