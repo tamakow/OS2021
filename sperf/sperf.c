@@ -10,7 +10,7 @@
 #include <sys/wait.h>
 
 
-#define DEBUG
+// #define DEBUG
 
 #define  FONT_BLACK          "\033[1;30m"
 #define  FONT_RED            "\033[1;31m"
@@ -210,6 +210,7 @@ int main(int argc, char *argv[]) {
           p = p->next;
         }
         if(q == NULL) {
+          if(p == NULL) printf("y\n");
           Assert(FONT_BLUE,"q is nullptr");
         }
         if(p == NULL) {
