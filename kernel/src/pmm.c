@@ -164,8 +164,8 @@ bool New_Slab (struct kmem_cache* cache) {
   return true;
 }
 
-#define CHEAT
-static int c = 0;
+// #define CHEAT
+// static int c = 0;
 
 static void *kalloc(size_t size) {
   if(size > (1 << 24)) return NULL;
@@ -173,7 +173,7 @@ static void *kalloc(size_t size) {
   if(size > PAGE_SIZE) c++;
   if(c > 5) return NULL;
   #endif
-  if(cpu_count() > 3)
+  // if(cpu_count() > 3)
   acquire(&globallock);
   size = pow2(size + sizeof(struct item)); //如果size刚好是2的幂，那略浪费
 
@@ -183,7 +183,7 @@ static void *kalloc(size_t size) {
 
   if(cache == NULL) {
     Log("Fail to allocate a new kmem_cache");
-    if(cpu_count() > 3)
+    // if(cpu_count() > 3)
     release(&globallock);
     return NULL;
   }
@@ -193,7 +193,7 @@ static void *kalloc(size_t size) {
     bool flag = New_Slab(cache);
     if(!flag) {
       Log("Fail to allocate a new slab");
-      if(cpu_count() > 3)
+      // if(cpu_count() > 3)
       release(&globallock);
       return NULL;
     }
@@ -230,14 +230,14 @@ static void *kalloc(size_t size) {
       walk->next = sb;
     }
   }
-  if(cpu_count() > 3)
+  // if(cpu_count() > 3)
   release(&globallock);
   return (void *)it + sizeof(struct item);
 }
 
 
 static void kfree(void *ptr) {
-  if(cpu_count() > 3) {
+  // if(cpu_count() > 3) {
   acquire(&globallock);
 
   struct item* it = (struct item*)(ptr - sizeof(struct item));
@@ -273,8 +273,8 @@ static void kfree(void *ptr) {
       walk->next = sb;
     }
   }
-  release(&globallock);
-  }
+  // release(&globallock);
+  // }
   return;
 }
 
