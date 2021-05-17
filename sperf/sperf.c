@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
   if(regcomp(&name_preg, "^[a-zA-Z_\\*0-9]*?\\(", REG_EXTENDED) !=  0) {
     Assert(FONT_BLUE,"Name regcomp failed!");
   }
-  if(regcomp(&time_preg, "<[0-9\\.]*>$", REG_EXTENDED) !=  0) {
+  if(regcomp(&time_preg, "<[0-9\\.]*>\n", REG_EXTENDED) !=  0) {
     Assert(FONT_BLUE,"time regcomp failed!");
   }
   
@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
       token = strtok(NULL, ":");
       Log("try exec_path: %s",exec_path);
     }
-    Assert(FONT_RED, "Should not reach here!");
+    Assert(FONT_RED, "Sh      if(feof(f)) break;ould not reach here!");
   } else {
     // close(fildes[1]);
     // dup2(fildes[1], STDIN_FILENO);
