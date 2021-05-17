@@ -162,24 +162,14 @@ int main(int argc, char *argv[]) {
       Assert(FONT_RED, "can't open strace_output");
     }
 
+    char str[1024]; // 每次从文件内读取一行
     clock_t l = clock();
-    while(1) {
+    while(fgets(str, 1024, f) > 0) {
       clock_t r = clock();
-      if(r - l >= CLOCKS_PER_SEC / 10000) {
+      if(r - l >= CLOCKS_PER_SEC ) {
         display();
         l = r;
       }
-      if(feof(f)) break;
-      char str[2048]; // 每次从文件内读取一行
-      int idx = 0;
-      c = fgetc(f);
-      for (idx = 0; c != '\n' || feof(f); c = fgetc(f), idx++) {
-        if (idx >= 2048) {
-          Assert(FONT_BLUE, "str is too small");
-        }
-        else str[idx] = c;
-      }
-      str[idx - 1] = '\0';
 
       regmatch_t name_match;
       char name[NAME_LEN];
@@ -229,8 +219,8 @@ int main(int argc, char *argv[]) {
         }
       }
       total_time += _time;
-      if(feof(f)) break;
     }
+
     display();
     fclose(f);
   }
