@@ -211,6 +211,7 @@ int main(int argc, char *argv[]) {
         }
         if(q == NULL) {
           if(p == NULL) printf("y\n");
+          else {printf("%s\n",p->name)};
           return 0;
           // Assert(FONT_BLUE,"q is nullptr");
         }
