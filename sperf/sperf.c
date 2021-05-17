@@ -66,8 +66,10 @@ void bubble_sort() {
         char tmp_name[NAME_LEN];
         strcpy(tmp_name,i->name);
         double tmp_time = i->time;
+        memset(i->name, '\0', sizeof(char) * NAME_LEN);
         strcpy(i->name, j->name);
         i->time = j->time;
+        memset(j->name, '\0', sizeof(char) * NAME_LEN);
         strcpy(j->name, tmp_name);
         j->time = tmp_time;
       }
