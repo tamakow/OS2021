@@ -89,7 +89,7 @@ void display() {
       }
     }
     printf("%s (%d%%)\n",tmp, (int)((walk->time * 100) / total_time));
-    fflush(stdout);
+    // fflush(stdout);
   }
   printf("====================\n");
   fflush(stdout);
