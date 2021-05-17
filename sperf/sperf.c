@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
       strncpy(name, str + name_match.rm_so, name_match.rm_eo - name_match.rm_so);
       name[name_match.rm_eo - name_match.rm_so - 1] = '\0';
       //读取系统调用时间
-      Log("name is %s",str);
+      Log("name is %s",name);
       if(regexec(&time_preg, str, 1, &time_match, 0) == REG_NOMATCH) {
         continue;
         // Assert(FONT_BLUE, "No match for time");
@@ -224,7 +224,7 @@ int main(int argc, char *argv[]) {
     display();
     close(fildes[0]);
   }
-  regfree(&name_preg);
-  regfree(&time_preg);
+  // regfree(&name_preg);
+  // regfree(&time_preg);
   return 0;
 }
