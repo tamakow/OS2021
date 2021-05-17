@@ -166,7 +166,7 @@ int main(int argc, char *argv[]) {
     char str[1024]; // 每次从文件流读取一行
     clock_t l = clock();
     while(waitpid(-1, &status, WNOHANG) == 0) {
-      if(fgets(str, sizeof(str), stdin) <= 0) continue;
+      if(fgets(str, 1024, stdin) <= 0) continue;
       clock_t r = clock();
       if(r - l >= CLOCKS_PER_SEC) {
         display();
