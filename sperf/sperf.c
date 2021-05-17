@@ -78,7 +78,7 @@ void display() {
   bubble_sort();
   syscall_node_t *walk = head;
   for(int i = 0;i < 5 && walk != NULL;i++, walk = walk->next) {
-    printf("%.24s (%.2lf%%)\n",walk->name, (walk->time * 100) / total_time);
+    printf("%.24s (%2lf%%)\n",walk->name, (walk->time * 100) / total_time);
   }
   printf("====================\n");
   for(int i = 0; i < 80; ++i)
@@ -189,9 +189,7 @@ int main(int argc, char *argv[]) {
 
       //读取系统调用名称
       if(regexec(&name_preg, str, 1, &name_match, 0) == REG_NOMATCH) {
-        // Assert(FONT_BLUE, "No match for name");
-        if(feof(f)) break;
-        continue;
+        Assert(FONT_BLUE, "No match for name");
       }
       strncpy(name, str + name_match.rm_so, name_match.rm_eo - name_match.rm_so);
       name[name_match.rm_eo - name_match.rm_so - 1] = '\0';
@@ -199,9 +197,7 @@ int main(int argc, char *argv[]) {
       //读取系统调用时间
       Log("name is %s",str);
       if(regexec(&time_preg, str, 1, &time_match, 0) == REG_NOMATCH) {
-        // Assert(FONT_BLUE, "No match for time");
-        if(feof(f)) break;
-        continue;
+        Assert(FONT_BLUE, "No match for time");
       }
       strncpy(time, str + time_match.rm_so + 1, time_match.rm_eo - time_match.rm_so - 1);
       time[time_match.rm_eo - time_match.rm_so - 2] = '\0';
