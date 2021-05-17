@@ -163,7 +163,6 @@ int main(int argc, char *argv[]) {
     }
 
     clock_t l = clock();
-    int flag = 0;
     while(1) {
       clock_t r = clock();
       if(r - l >= CLOCKS_PER_SEC) {
@@ -190,20 +189,15 @@ int main(int argc, char *argv[]) {
 
       //读取系统调用名称
       if(regexec(&name_preg, str, 1, &name_match, 0) == REG_NOMATCH) {
-        flag = 1;
-        continue;
-        // Assert(FONT_BLUE, "No match for name");
+        Assert(FONT_BLUE, "No match for name");
       }
       strncpy(name, str + name_match.rm_so, name_match.rm_eo - name_match.rm_so);
       name[name_match.rm_eo - name_match.rm_so - 1] = '\0';
       if(strcmp(name, "exit_group") == 0) break;
       //读取系统调用时间
       Log("name is %s",str);
-      if(flag) break;
       if(regexec(&time_preg, str, 1, &time_match, 0) == REG_NOMATCH) {
-        flag = 1;
-        continue;
-        // Assert(FONT_BLUE, "No match for time");
+        Assert(FONT_BLUE, "No match for time");
       }
       strncpy(time, str + time_match.rm_so + 1, time_match.rm_eo - time_match.rm_so - 1);
       time[time_match.rm_eo - time_match.rm_so - 2] = '\0';
