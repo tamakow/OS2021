@@ -7,6 +7,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 
 // #define DEBUG
@@ -153,6 +154,8 @@ int main(int argc, char *argv[]) {
     }
     Assert(FONT_RED, "Should not reach here!");
   } else {
+    int status = 0;
+    waitpid(-1, &status, WNOHANG);
     close(fildes[1]);
     dup2(fildes[0], STDIN_FILENO);
     
