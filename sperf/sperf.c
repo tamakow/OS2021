@@ -215,6 +215,7 @@ int main(int argc, char *argv[]) {
       total_time += _time;
     }
     display();
+    close(fildes[0]);
   }
   regfree(&name_preg);
   regfree(&time_preg);
