@@ -77,13 +77,14 @@ void bubble_sort() {
 void display() {
   bubble_sort();
   syscall_node_t *walk = head;
-  for(int i = 0;i < 5 && walk != NULL;i++, walk = walk->next) {
+  for(int i = 0; i < 5 && walk != NULL;i++, walk = walk->next) {
     printf("%s (%d%%)\n",walk->name, (int)((walk->time * 100) / total_time));
   }
   printf("====================\n");
   for(int i = 0; i < 80; ++i)
     putc('\0', stdout);
   fflush(stdout);
+  fflush(stderr);
 }
 
 
