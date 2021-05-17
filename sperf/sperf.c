@@ -155,14 +155,13 @@ int main(int argc, char *argv[]) {
     Assert(FONT_RED, "Should not reach here!");
   } else {
     int status = 0;
-    waitpid(-1, &status, WNOHANG);
     close(fildes[1]);
     dup2(fildes[0], STDIN_FILENO);
     
     int c = 0;
     char str[1024]; // 每次从文件内读取一行
     clock_t l = clock();
-    while(fgets(str, 1024, stdin) > 0) {
+    while(waitpid(-1, &status, WNOHANG) == 0 && fgets(str, 1024, stdin) > 0) {
       clock_t r = clock();
       if(r - l >= CLOCKS_PER_SEC ) {
         display();
