@@ -79,7 +79,6 @@ void bubble_sort() {
 
 void display() {
   bubble_sort();
-  fflush(stdout);
   syscall_node_t *walk = head;
   for(int i = 0; i < 7 && walk != NULL; ++i, walk = walk->next) {
     char tmp[NAME_LEN];
@@ -90,8 +89,10 @@ void display() {
       }
     }
     printf("%s (%d%%)\n",tmp, (int)((walk->time * 100) / total_time));
+    fflush(stdout);
   }
   printf("====================\n");
+  fflush(stdout);
   for(int i = 0; i < 80; ++i)
     putchar('\0');
   fflush(stdout);
@@ -172,7 +173,7 @@ int main(int argc, char *argv[]) {
     char str[1024]; // 每次从文件流读取一行
     clock_t l = clock();
     while(waitpid(-1, &status, WNOHANG) == 0) {
-      if(fgets(str, 1024, stdin) <= 0) continue;
+      if(fgets(str, sizeof(str), stdin) <= 0) continue;
       clock_t r = clock();
       if(r - l >= CLOCKS_PER_SEC) {
         display();
