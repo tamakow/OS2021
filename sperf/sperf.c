@@ -81,15 +81,8 @@ void display() {
   bubble_sort();
   syscall_node_t *walk = head;
   for(int i = 0; i < 7 && walk != NULL; ++i, walk = walk->next) {
-    char tmp[NAME_LEN];
-    strcpy(tmp, walk->name);
-    for (int j = 0; j < strlen(tmp); ++j) {
-      if(tmp[j] >= 'A' && tmp[j] <= 'Z') {
-        tmp[j] = tmp[j] - 'A' + 'a';
-      }
-    }
-    printf("%s (%d%%)\n",tmp, (int)((walk->time * 100) / total_time));
-    // fflush(stdout);
+    printf("%s (%d%%)\n",walk->name, (int)((walk->time * 100) / total_time));
+    fflush(stdout);
   }
   printf("====================\n");
   fflush(stdout);
