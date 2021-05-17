@@ -84,8 +84,8 @@ void display() {
   printf("====================\n");
   for(int i = 0; i < 80; ++i)
     putchar('\0');
-  fflush(stdout);
-  fflush(stderr);
+  // fflush(stdout);
+  // fflush(stderr);
 }
 
 
