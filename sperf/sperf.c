@@ -190,7 +190,9 @@ int main(int argc, char *argv[]) {
 
       //读取系统调用名称
       if(regexec(&name_preg, str, 1, &name_match, 0) == REG_NOMATCH) {
-        Assert(FONT_BLUE, "No match for name");
+        flag = 1;
+        continue;
+        // Assert(FONT_BLUE, "No match for name");
       }
       strncpy(name, str + name_match.rm_so, name_match.rm_eo - name_match.rm_so);
       name[name_match.rm_eo - name_match.rm_so - 1] = '\0';
