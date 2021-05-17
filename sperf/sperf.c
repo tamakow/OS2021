@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
   char **exec_envp = __environ;
   char path[1024];
   char exec_path[1024];
-  char file_path[] = "strace_output";
+  char file_path[128];
 
   // pipe
   if(pipe(fildes) < 0) {
@@ -133,6 +133,7 @@ int main(int argc, char *argv[]) {
 
   if(pid == 0) { 
     close(fildes[0]);
+    sprintf(file_path, "/proc/%d/fd/%d", getpid(), fildes[1]);
     int blackhole = open("/dev/null", O_RDWR | O_APPEND);
     if(blackhole == -1){ 
       Assert(FONT_RED, "Open /dev/null failed");
@@ -155,16 +156,9 @@ int main(int argc, char *argv[]) {
     dup2(fildes[0], STDIN_FILENO);
     int c = 0;
 
-    
-    FILE* f = NULL;
-    f = fopen("strace_output", "r");
-    if(f == NULL) {
-      Assert(FONT_RED, "can't open strace_output");
-    }
-
     char str[1024]; // 每次从文件内读取一行
     clock_t l = clock();
-    while(fgets(str, 1024, f) > 0) {
+    while(fgets(str, 1024, stdin) > 0) {
       clock_t r = clock();
       if(r - l >= CLOCKS_PER_SEC ) {
         display();
