@@ -207,13 +207,10 @@ int main(int argc, char *argv[]) {
         syscall_node_t *q = NULL;
         while ((p != NULL) && (strcmp(p->name, name) != 0)){
           q = p;
-          if(q == NULL) assert(0);
           p = p->next;
         }
         if(q == NULL) {
-          if(p == NULL) printf("y\n");
-          else {printf("%s\n",p->name);}
-          return 0;
+          assert(0);
           // Assert(FONT_BLUE,"q is nullptr");
         }
         if(p == NULL) {
