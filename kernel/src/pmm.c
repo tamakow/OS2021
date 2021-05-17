@@ -273,7 +273,7 @@ static void kfree(void *ptr) {
       walk->next = sb;
     }
   }
-  // release(&globallock);
+  release(&globallock);
   // }
   return;
 }
