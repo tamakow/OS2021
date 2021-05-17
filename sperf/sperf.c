@@ -162,9 +162,9 @@ int main(int argc, char *argv[]) {
       Assert(FONT_RED, "can't open strace_output");
     }
 
-    clock_t r = clock();
+    clock_t l = clock();
     while(1) {
-      clock_t l = clock();
+      clock_t r = clock();
       if(r - l >= CLOCKS_PER_SEC) {
         display();
         l = r;
