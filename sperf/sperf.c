@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
     while(waitpid(-1, &status, WNOHANG) == 0) {
       if(fgets(str, 1024, stdin) <= 0) continue;
       clock_t r = clock();
-      if(r - l >= CLOCKS_PER_SEC / 10) {
+      if(r - l >= CLOCKS_PER_SEC / 5) {
         display();
         l = r;
       }
