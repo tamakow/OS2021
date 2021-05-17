@@ -211,7 +211,8 @@ int main(int argc, char *argv[]) {
         }
         if(q == NULL) {
           if(p == NULL) printf("y\n");
-          Assert(FONT_BLUE,"q is nullptr");
+          return 0;
+          // Assert(FONT_BLUE,"q is nullptr");
         }
         if(p == NULL) {
           syscall_node_t* new_node = (syscall_node_t*)malloc(sizeof(syscall_node_t));
