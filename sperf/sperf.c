@@ -54,7 +54,7 @@ typedef struct syscall_node {
   struct syscall_node *next;
 } syscall_node_t;
 
-syscall_node_t *head;
+syscall_node_t *head = NULL;
 double total_time = 0;
 
 void bubble_sort() {
@@ -80,7 +80,7 @@ void display() {
   for(int i = 0;i < 5 && walk != NULL;i++, walk = walk->next) {
     printf("%s (%d%%)\n",walk->name, (int)((walk->time * 100) / total_time));
   }
-  // printf("====================\n");
+  printf("====================\n");
   for(int i = 0; i < 80; ++i)
     putc('\0', stdout);
   fflush(stdout);
@@ -102,29 +102,11 @@ int main(int argc, char *argv[]) {
     Assert(FONT_BLUE,"time regcomp failed!");
   }
   
-
   int fildes[2]; // 0: read 1: write
-  char **exec_argv;
-  char **exec_envp = __environ;
-  char path[1024];
-  char exec_path[1024];
-  char file_path[128];
-
-  // pipe
   if(pipe(fildes) < 0) {
     Assert(FONT_YELLOW, "Pipe failed");
   }
   Log("%d %d",fildes[0],fildes[1]);
-
-  strcpy(path, getenv("PATH"));
-  exec_argv = (char**)malloc(sizeof(char*) * (argc + 4));
-  exec_argv[0] = "strace";
-  exec_argv[1] = "-T";
-  exec_argv[2] = "-o";
-  exec_argv[3] = file_path;
-  memcpy(exec_argv + 4, argv + 1, argc * sizeof(char*));
-  for(int i = 0; i < argc + 3; ++i)
-    Log("%s",exec_argv[i]);
 
   pid_t pid = fork();
   if(pid < 0) {
@@ -133,13 +115,31 @@ int main(int argc, char *argv[]) {
 
   if(pid == 0) { 
     close(fildes[0]);
+
+    char **exec_argv;
+    char **exec_envp = __environ;
+    char path[1024];
+    char exec_path[1024];
+    char file_path[128];
+
+    strcpy(path, getenv("PATH"));
     sprintf(file_path, "/proc/%d/fd/%d", getpid(), fildes[1]);
+    exec_argv = (char**)malloc(sizeof(char*) * (argc + 4));
+    exec_argv[0] = "strace";
+    exec_argv[1] = "-T";
+    exec_argv[2] = "-o";
+    exec_argv[3] = file_path;
+    memcpy(exec_argv + 4, argv + 1, argc * sizeof(char*));
+    for(int i = 0; i < argc + 3; ++i)
+      Log("%s",exec_argv[i]);
+
     int blackhole = open("/dev/null", O_RDWR | O_APPEND);
     if(blackhole == -1){ 
       Assert(FONT_RED, "Open /dev/null failed");
     }
     dup2(blackhole, STDOUT_FILENO);
     dup2(blackhole, STDERR_FILENO); 
+
     // strace must be in some place in the path
     strcpy(exec_path, "strace");
     char *token = strtok(path, ":"); // path can't be used after the operations
