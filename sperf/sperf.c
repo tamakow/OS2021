@@ -78,7 +78,7 @@ void bubble_sort() {
 void display() {
   bubble_sort();
   syscall_node_t *walk = head;
-  for(;walk != NULL;walk = walk->next) {
+  for(int i = 0;i < 5 && walk != NULL;++i, walk = walk->next) {
     char tmp[NAME_LEN];
     strcpy(tmp, walk->name);
     for (int j = 0; j < strlen(tmp); ++j) {
@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
     while(waitpid(-1, &status, WNOHANG) == 0) {
       if(fgets(str, 1024, stdin) <= 0) continue;
       clock_t r = clock();
-      if(r - l >= CLOCKS_PER_SEC ) {
+      if(r - l >= CLOCKS_PER_SEC / 10) {
         display();
         l = r;
       }
