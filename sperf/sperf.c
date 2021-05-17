@@ -216,7 +216,6 @@ int main(int argc, char *argv[]) {
     }
 
     display();
-    fclose(f);
   }
   regfree(&name_preg);
   regfree(&time_preg);
