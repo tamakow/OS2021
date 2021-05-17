@@ -37,11 +37,11 @@
 
 
 #ifdef  DEBUG
-#define Assert(color, format, ...)\
-    print(color, format,##  __VA_ARGS__);\
+#define Assert(format, ...)\
+    Log(format,##  __VA_ARGS__);\
     assert(0)
 #else
-#define Assert(color, format, ...)\
+#define Assert(format, ...)\
     assert(0)
 #endif
 
@@ -93,28 +93,28 @@ void display() {
 
 int main(int argc, char *argv[]) {
   if(argc < 2) {
-    Assert(FONT_RED, "Invalid arguements!\nUsage: ./sperf-64 [cmd] [args]");
+    Assert("Invalid arguements!\nUsage: ./sperf-64 [cmd] [args]");
   }
 
   //正则
   regex_t name_preg;
   regex_t time_preg;
   if(regcomp(&name_preg, "^[a-zA-Z_\\*0-9]*?\\(", REG_EXTENDED) !=  0) {
-    Assert(FONT_BLUE,"Name regcomp failed!");
+    Assert("Name regcomp failed!");
   }
   if(regcomp(&time_preg, "<[0-9\\.]*>\n", REG_EXTENDED) !=  0) {
-    Assert(FONT_BLUE,"time regcomp failed!");
+    Assert("time regcomp failed!");
   }
   
   int fildes[2]; // 0: read 1: write
   if(pipe(fildes) < 0) {
-    Assert(FONT_YELLOW, "Pipe failed");
+    Assert("Pipe failed");
   }
   Log("%d %d",fildes[0],fildes[1]);
 
   pid_t pid = fork();
   if(pid < 0) {
-    Assert(FONT_BLUE, "Fork failed");
+    Assert("Fork failed");
   }
 
   if(pid == 0) { 
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
 
     int blackhole = open("/dev/null", O_RDWR | O_APPEND);
     if(blackhole == -1){ 
-      Assert(FONT_RED, "Open /dev/null failed");
+      Assert("Open /dev/null failed");
     }
     dup2(blackhole, STDOUT_FILENO);
     dup2(blackhole, STDERR_FILENO); 
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
       token = strtok(NULL, ":");
       Log("try exec_path: %s",exec_path);
     }
-    Assert(FONT_RED, "Should not reach here!");
+    Assert("Should not reach here!");
   } else {
     int status = 0;
     close(fildes[1]);
@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
       //读取系统调用名称
       if(regexec(&name_preg, str, 1, &name_match, 0) == REG_NOMATCH) {
         continue;
-        // Assert(FONT_BLUE, "No match for name");
+        // Assert("No match for name");
       }
       strncpy(name, str + name_match.rm_so, name_match.rm_eo - name_match.rm_so);
       name[name_match.rm_eo - name_match.rm_so - 1] = '\0';
@@ -188,7 +188,7 @@ int main(int argc, char *argv[]) {
       Log("name is %s",name);
       if(regexec(&time_preg, str, 1, &time_match, 0) == REG_NOMATCH) {
         continue;
-        // Assert(FONT_BLUE, "No match for time");
+        // Assert("No match for time");
       }
       strncpy(time, str + time_match.rm_so + 1, time_match.rm_eo - time_match.rm_so - 2);
       time[time_match.rm_eo - time_match.rm_so - 3] = '\0';
