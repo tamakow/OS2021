@@ -154,8 +154,8 @@ int main(int argc, char *argv[]) {
   } else {
     close(fildes[1]);
     dup2(fildes[0], STDIN_FILENO);
+    
     int c = 0;
-
     char str[1024]; // 每次从文件内读取一行
     clock_t l = clock();
     while(fgets(str, 1024, stdin) > 0) {
@@ -214,7 +214,6 @@ int main(int argc, char *argv[]) {
       }
       total_time += _time;
     }
-
     display();
   }
   regfree(&name_preg);
