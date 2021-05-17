@@ -174,7 +174,7 @@ int main(int argc, char *argv[]) {
       int idx = 0;
       c = fgetc(f);
       for (idx = 0; c != '\n' || feof(f); c = fgetc(f), idx++) {
-        if (idx >= 1024) {
+        if (idx >= 2048) {
           Assert(FONT_BLUE, "str is too small");
         }
         else str[idx] = c;
