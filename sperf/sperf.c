@@ -165,7 +165,7 @@ int main(int argc, char *argv[]) {
     clock_t l = clock();
     while(1) {
       clock_t r = clock();
-      if(r - l >= CLOCKS_PER_SEC) {
+      if(r - l >= CLOCKS_PER_SEC / 10000) {
         display();
         l = r;
       }
