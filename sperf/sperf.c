@@ -80,7 +80,7 @@ void display() {
   for(int i = 0;i < 5 && walk != NULL;i++, walk = walk->next) {
     printf("%s (%d%%)\n",walk->name, (int)((walk->time * 100) / total_time));
   }
-  printf("====================\n");
+  // printf("====================\n");
   for(int i = 0; i < 80; ++i)
     putc('\0', stdout);
   fflush(stdout);
