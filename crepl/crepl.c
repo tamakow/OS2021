@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     if (!fgets(line, sizeof(line), stdin)) {
       break;
     }
-    if(strcmp(line, "exit") == 0) break;
+    if(strcmp(line, "exit\n") == 0) break;
     func = (strncmp(line, _func, 3) == 0);
 
     char tmp_c_file[] = "/tmp/tmp_c_XXXXXX";
