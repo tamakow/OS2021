@@ -74,12 +74,12 @@ int main(int argc, char *argv[]) {
 
     char tmp_c_file[] = "/tmp/tmp_c_XXXXXX";
     char tmp_so_file[] = "/tmp/tmp_so_XXXXXX";
-    int fd_c = 0, fd_so = 0;
-    Assert((fd_c = mkstemp(tmp_c_file)) != -1, "create tmp_c_file failed!");
-    Assert((fd_so = mkstemp(tmp_so_file)) != -1, "create tmp_so_file failed! ");
+    // int fd_c = 0, fd_so = 0;
+    Assert((mkstemp(tmp_c_file)) != -1, "create tmp_c_file failed!");
+    Assert((mkstemp(tmp_so_file)) != -1, "create tmp_so_file failed! ");
 
     Log("%s %s",tmp_c_file, tmp_so_file);
-    write(fd_c, line, sizeof(line));
+    // write(fd_c, line, sizeof(line));
     FILE* file_c = fopen(tmp_c_file, "w");
     if(func)
       fprintf(file_c, "%s", line);
@@ -88,9 +88,9 @@ int main(int argc, char *argv[]) {
     fclose(file_c);
 
     #if defined(__x86_64__)
-      char *exec_argv[] = {"gcc", "-m64", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
+      char *exec_argv[] = {"gcc", "-m64","-x", "c", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
     #elif defined(__i386__)
-      char *exec_argv[] = {"gcc", "-m32", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
+      char *exec_argv[] = {"gcc", "-m32","-x", "c", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
     #endif
 
     int pid = fork();
