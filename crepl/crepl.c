@@ -5,6 +5,7 @@
 #include <dlfcn.h>
 #include <stdint.h>
 
+
 #define bool uint8_t
 #define false 0
 #define true 1
@@ -71,6 +72,7 @@ int main(int argc, char *argv[]) {
     static char tmp_c_file[128] = "tmp_c_XXXXXX";
     static char tmp_so_file[128] = "tmp_so_XXXXXX";
 
-    Assert(mkstemp(tmp_c_file) < 0 || mkstemp(tmp_so_file) < 0, "Create tmp file failed!");
+    char template[] = "template-XXXXXX";
+    if (mkstemp(template) == -1) exit(1); 
   }
 }
