@@ -70,7 +70,8 @@ int main(int argc, char *argv[]) {
     if (!fgets(line, sizeof(line), stdin)) {
       break;
     }
-    if(strcmp(line, "exit\n") == 0) break;
+    line[strlen(line) - 1] = '\0';
+    if(strcmp(line, "exit") == 0) break;
     func = (strncmp(line, _func, 3) == 0);
 
     char tmp_c_file[] = "/tmp/tmp_c_XXXXXX";
@@ -89,9 +90,9 @@ int main(int argc, char *argv[]) {
     fclose(file_c);
 
     #if defined(__x86_64__)
-      char *exec_argv[] = {"gcc", "-m64","-x", "c", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
+      char *exec_argv[] = {"gcc", "-m64","-Wno-implicit-function-declaration","-x", "c", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
     #elif defined(__i386__)
-      char *exec_argv[] = {"gcc", "-m32","-x", "c", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
+      char *exec_argv[] = {"gcc", "-m32","-Wno-implicit-function-declaration","-x", "c", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
     #endif
 
     int pid = fork();
@@ -108,8 +109,23 @@ int main(int argc, char *argv[]) {
       waitpid(-1, &status, WNOHANG);
       if(status != 0)
         print(FONT_RED, "Compile Error");
+      else {
+        void *e = dlopen(tmp_so_file, RTLD_GLOBAL | RTLD_LAZY);
+        if(e == NULL) {
+          print(FONT_RED, "Load failed");
+        } else {
+          if(func) print(FONT_YELLOW, "Added: %s", line);
+          else {
+            char wrapper[100];
+            sprintf(wrapper, "__expr_wrapper_%d", func_cnt++); 
+            int (*entry)();
+            entry = dlsym(e, wrapper); 
+            print(FONT_GREEN, "(%s) == %d", line, entry());
+        }
+        dlclose(e);
+      }
     }
-    // unlink(tmp_so_file);
-    // unlink(tmp_c_file);
+    unlink(tmp_so_file);
+    unlink(tmp_c_file);
   }
 }
