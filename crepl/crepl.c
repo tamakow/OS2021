@@ -106,8 +106,8 @@ int main(int argc, char *argv[]) {
       execvp(exec_argv[0], exec_argv);
     } else {
       int status = 0;
-      waitpid(-1, &status, WNOHANG);
-      if(status != 0)
+      wait(&status)
+      if(WEXITSTATUS(status) != 0)
         print(FONT_RED, "Compile Error");
       else {
         void *e = dlopen(tmp_so_file, RTLD_GLOBAL | RTLD_LAZY);
