@@ -34,18 +34,29 @@
 #endif
 
 #ifdef  DEBUG
-#define Assert(format, ...)\
-    Log(format,##  __VA_ARGS__);\
-    assert(0)
+  #define Assert(cond, format, ...) \
+    do { \
+      if (!(cond)) { \
+        Log(format, ## __VA_ARGS__) \
+        exit(1); \
+      } \
+    } while (0)
 #else
-#define Assert(format, ...)\
-    assert(0)
+#define Assert(cond, format, ...)\
+    do { \
+      if (!(cond)) { \
+        exit(1); \
+      } \
+    } while (0)
 #endif
 
 
 static char line[4096];
 static const char _func[] = "int";
 static bool func = false;
+static int func_cnt = 0;
+
+
 
 int main(int argc, char *argv[]) {
   while (1) {
@@ -55,9 +66,10 @@ int main(int argc, char *argv[]) {
       break;
     }
     func = (strncmp(line, _func, 3) == 0);
-    if(func)
-      print(FONT_GREEN, "this expression is function");
-    else
-      print(FONT_GREEN, "this expression is not function");
+
+    static char tmp_c_file[] = "/tmp/tmp_c_XXXXXX";
+    static char tmp_so_file[] = "/tmp/tmp_so_XXXXXX";
+
+    Assert(mktemp(tmp_c_file) == -1 || mktemp(tmp_so_file) == -1, "Create tmp file failed!");
   }
 }
