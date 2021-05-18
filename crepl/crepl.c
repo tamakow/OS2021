@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
     } else {
       int status = 0;
       waitpid(-1, &status, WNOHANG);
-      if(!WIFEXITED(status))
+      if(status != )
         print(FONT_RED, "Compile Error");
     }
     // unlink(tmp_so_file);
