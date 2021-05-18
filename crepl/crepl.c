@@ -77,17 +77,15 @@ int main(int argc, char *argv[]) {
     int fd_c = 0, fd_so = 0;
     Assert((fd_c = mkstemp(tmp_c_file)) != -1, "create tmp_c_file failed!");
     Assert((fd_so = mkstemp(tmp_so_file)) != -1, "create tmp_so_file failed! ");
-    unlink(tmp_so_file);
-    unlink(tmp_c_file);
 
     Log("%s %s",tmp_c_file, tmp_so_file);
     write(fd_c, line, sizeof(line));
-    // FILE* file_c = fopen(tmp_c_file, "w");
-    // if(func)
-    //   fprintf(file_c, "%s", line);
-    // else
-    //   fprintf(file_c, "__expr_wrapper_%d() {return (%s);}", func_cnt, line);
-    // fclose(file_c);
+    FILE* file_c = fopen(tmp_c_file, "w");
+    if(func)
+      fprintf(file_c, "%s", line);
+    else
+      fprintf(file_c, "__expr_wrapper_%d() {return (%s);}", func_cnt, line);
+    fclose(file_c);
 
     #if defined(__x86_64__)
       char *exec_argv[] = {"gcc", "-m64", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
@@ -110,5 +108,7 @@ int main(int argc, char *argv[]) {
       if(!WIFEXITED(status))
         print(FONT_RED, "Compile Error");
     }
+    unlink(tmp_so_file);
+    unlink(tmp_c_file);
   }
 }
