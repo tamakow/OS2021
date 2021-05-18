@@ -68,8 +68,8 @@ int main(int argc, char *argv[]) {
     }
     func = (strncmp(line, _func, 3) == 0);
 
-    static char tmp_c_file[] = "/tmp/tmp_c_XXXXXX";
-    static char tmp_so_file[] = "/tmp/tmp_so_XXXXXX";
+    static char tmp_c_file[20] = "/tmp/tmp_c_XXXXXX";
+    static char tmp_so_file[20] = "/tmp/tmp_so_XXXXXX";
 
     Assert(mkstemp(tmp_c_file) < 0 || mkstemp(tmp_so_file) < 0, "Create tmp file failed! %s, %s",tmp_c_file,tmp_so_file);
   }
