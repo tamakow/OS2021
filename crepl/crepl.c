@@ -8,7 +8,8 @@
 #define bool uint8_t
 #define false 0
 #define true 1
-// #define DEBUG
+
+#define DEBUG
 
 #define  FONT_BLACK          "\033[1;30m"
 #define  FONT_RED            "\033[1;31m"
@@ -37,7 +38,7 @@
   #define Assert(cond, format, ...) \
     do { \
       if (!(cond)) { \
-        Log(format, ## __VA_ARGS__) \
+        Log(format, ## __VA_ARGS__); \
         exit(1); \
       } \
     } while (0)
@@ -70,6 +71,6 @@ int main(int argc, char *argv[]) {
     static char tmp_c_file[] = "/tmp/tmp_c_XXXXXX";
     static char tmp_so_file[] = "/tmp/tmp_so_XXXXXX";
 
-    // Assert(mkstemp(tmp_c_file) < 0 || mkstemp(tmp_so_file) < 0, "Create tmp file failed!");
+    Assert(mkstemp(tmp_c_file) < 0 || mkstemp(tmp_so_file) < 0, "Create tmp file failed!");
   }
 }
