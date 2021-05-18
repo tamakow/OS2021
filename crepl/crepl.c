@@ -56,9 +56,9 @@
 
 
 static char line[4096];
-static const char _func[] = "int";
-static bool func = false;
-static int func_cnt = 0;
+const char _func[] = "int";
+bool func = false;
+// static int func_cnt = 0;
 
 
 
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
     if(func)
       fprintf(file_c, "%s", line);
     else
-      fprintf(file_c, "__expr_wrapper_%d() {return (%s);}", func_cnt++, line);
+      fprintf(file_c, "__expr_wrapper() {return (%s);}", line);
     fclose(file_c);
 
     #if defined(__x86_64__)
@@ -116,10 +116,8 @@ int main(int argc, char *argv[]) {
         } else {
           if(func) print(FONT_YELLOW, "Added: %s", line);
           else {
-            char wrapper[100];
-            sprintf(wrapper, "__expr_wrapper_%d", func_cnt - 1); 
             int (*entry)();
-            entry = dlsym(e, wrapper); 
+            entry = dlsym(e, "__expr_wrapper"); 
             print(FONT_GREEN, "(%s) == %d", line, entry());
             dlclose(e);
           }
