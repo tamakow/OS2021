@@ -69,9 +69,9 @@ int main(int argc, char *argv[]) {
     }
     func = (strncmp(line, _func, 3) == 0);
 
-    char tmp_c_file[] = "tmp_c_XXXXXX";
-    char tmp_so_file[] = "tmp_so_XXXXXX";
+    char tmp_c_file[] = "/tmp/tmp_c_XXXXXX";
+    char tmp_so_file[] = "/tmp/tmp_so_XXXXXX";
 
-    if (mkstemp(tmp_so_file) == -1) exit(1); 
+    Assert(mkstemp(tmp_so_file) == -1 || mkstemp(tmp_c_file) == -1, "Create tmp files failed!"); 
   }
 }
