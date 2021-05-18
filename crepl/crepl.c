@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
     if(func)
       fprintf(file_c, "%s", line);
     else
-      fprintf(file_c, "__expr_wrapper_%d() {return (%s);}", func_cnt, line);
+      fprintf(file_c, "__expr_wrapper_%d() {return (%s);}", func_cnt++, line);
     fclose(file_c);
 
     #if defined(__x86_64__)
@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
           if(func) print(FONT_YELLOW, "Added: %s", line);
           else {
             char wrapper[100];
-            sprintf(wrapper, "__expr_wrapper_%d", func_cnt++); 
+            sprintf(wrapper, "__expr_wrapper_%d", func_cnt - 1); 
             int (*entry)();
             entry = dlsym(e, wrapper); 
             print(FONT_GREEN, "(%s) == %d", line, entry());
