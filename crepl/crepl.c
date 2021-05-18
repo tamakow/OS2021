@@ -74,8 +74,9 @@ int main(int argc, char *argv[]) {
     static char tmp_c_file[] = "tmp_c_XXXXXX";
     static char tmp_so_file[] = "tmp_so_XXXXXX";
     Assert(mkstemp(tmp_c_file) != -1, "create tmp_c_file failed!");
-    Assert(mkstemp(tmp_so_file) != -1, "create tmp_so_file failed!");
+    Assert(mkstemp(tmp_so_file) != -1, "create tmp_so_file failed! ");
 
+    Log("%s %s",tmp_c_file, tmp_so_file);
     FILE* file_c = fopen(tmp_c_file, "w");
     if(func)
       fprintf(file_c, "%s", line);
