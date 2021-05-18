@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
       if(WEXITSTATUS(status) != 0)
         print(FONT_RED, "Compile Error");
       else {
-        void *e = dlopen(tmp_so_file, RTLD_GLOBAL | RTLD_LAZY);
+        void *e = dlopen(tmp_so_file, RTLD_GLOBAL | RTLD_NOW);
         if(e == NULL) {
           print(FONT_RED, "Load failed: %s",dlerror());
         } else {
