@@ -89,26 +89,26 @@ int main(int argc, char *argv[]) {
     //   fprintf(file_c, "__expr_wrapper_%d() {return (%s);}", func_cnt, line);
     // fclose(file_c);
 
-    // #if defined(__x86_64__)
-    //   char *exec_argv[] = {"gcc", "-m64", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
-    // #elif defined(__i386__)
-    //   char *exec_argv[] = {"gcc", "-m32", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
-    // #endif
+    #if defined(__x86_64__)
+      char *exec_argv[] = {"gcc", "-m64", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
+    #elif defined(__i386__)
+      char *exec_argv[] = {"gcc", "-m32", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
+    #endif
 
-    // int pid = fork();
-    // Assert(pid != -1, "fork failed!");
+    int pid = fork();
+    Assert(pid != -1, "fork failed!");
 
-    // if(pid == 0) {
-    //   int blackhole = open("/dev/null", O_RDWR | O_APPEND);
-    //   Assert(blackhole != -1, "Open /dev/null failed");
-    //   dup2(blackhole, STDOUT_FILENO);
-    //   dup2(blackhole, STDERR_FILENO); 
-    //   execvp(exec_argv[0], exec_argv);
-    // } else {
-    //   int status = 0;
-    //   waitpid(-1, &status, WNOHANG);
-    //   if(!WIFEXITED(status))
-    //     print(FONT_RED, "Compile Error");
-    // }
+    if(pid == 0) {
+      int blackhole = open("/dev/null", O_RDWR | O_APPEND);
+      Assert(blackhole != -1, "Open /dev/null failed");
+      dup2(blackhole, STDOUT_FILENO);
+      dup2(blackhole, STDERR_FILENO); 
+      execvp(exec_argv[0], exec_argv);
+    } else {
+      int status = 0;
+      waitpid(-1, &status, WNOHANG);
+      if(!WIFEXITED(status))
+        print(FONT_RED, "Compile Error");
+    }
   }
 }
