@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
         dlclose(e);
       }
     }
-    unlink(tmp_so_file);
-    unlink(tmp_c_file);
+    // unlink(tmp_so_file);
+    // unlink(tmp_c_file);
   }
 }
