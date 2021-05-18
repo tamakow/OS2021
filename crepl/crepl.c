@@ -71,6 +71,6 @@ int main(int argc, char *argv[]) {
     static char tmp_c_file[] = "/tmp/tmp_c_XXXXXX";
     static char tmp_so_file[] = "/tmp/tmp_so_XXXXXX";
 
-    Assert(mkstemp(tmp_c_file) < 0 || mkstemp(tmp_so_file) < 0, "Create tmp file failed!");
+    Assert(mkstemp(tmp_c_file) < 0 || mkstemp(tmp_so_file) < 0, "Create tmp file failed! %d, %d",mktemp(tmp_c_file),mktemp(tmp_so_file));
   }
 }
