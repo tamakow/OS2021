@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
       if(!WIFEXITED(status))
         print(FONT_RED, "Compile Error");
     }
-    unlink(tmp_so_file);
-    unlink(tmp_c_file);
+    // unlink(tmp_so_file);
+    // unlink(tmp_c_file);
   }
 }
