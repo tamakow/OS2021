@@ -69,10 +69,9 @@ int main(int argc, char *argv[]) {
     }
     func = (strncmp(line, _func, 3) == 0);
 
-    static char tmp_c_file[128] = "tmp_c_XXXXXX";
-    static char tmp_so_file[128] = "tmp_so_XXXXXX";
+    char tmp_c_file[] = "tmp_c_XXXXXX";
+    char tmp_so_file[] = "tmp_so_XXXXXX";
 
-    char template[] = "template-XXXXXX";
-    if (mkstemp(template) == -1) exit(1); 
+    if (mkstemp(tmp_so_file) == -1) exit(1); 
   }
 }
