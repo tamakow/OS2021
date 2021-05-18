@@ -121,6 +121,7 @@ int main(int argc, char *argv[]) {
             int (*entry)();
             entry = dlsym(e, wrapper); 
             print(FONT_GREEN, "(%s) == %d", line, entry());
+          }
         }
         dlclose(e);
       }
