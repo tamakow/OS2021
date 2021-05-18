@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     } else {
       int status = 0;
       waitpid(-1, &status, WNOHANG);
-      if(WIFEXITED(status))
+      if(!WIFEXITED(status))
         print(FONT_RED, "Compile Error");
     }
   }
