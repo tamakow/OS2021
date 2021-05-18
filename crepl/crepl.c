@@ -72,9 +72,9 @@ int main(int argc, char *argv[]) {
     }
     func = (strncmp(line, _func, 3) == 0);
 
-    static char tmp_c_file[] = "/tmp/tmp_c_XXXXXX";
-    static char tmp_so_file[] = "/tmp/tmp_so_XXXXXX";
-    static int fd_c = 0, fd_so = 0;
+    char tmp_c_file[] = "/tmp/tmp_c_XXXXXX";
+    char tmp_so_file[] = "/tmp/tmp_so_XXXXXX";
+    int fd_c = 0, fd_so = 0;
     Assert((fd_c = mkstemp(tmp_c_file)) != -1, "create tmp_c_file failed!");
     Assert((fd_so = mkstemp(tmp_so_file)) != -1, "create tmp_so_file failed! ");
     unlink(tmp_so_file);
