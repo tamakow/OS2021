@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
       else {
         void *e = dlopen(tmp_so_file, RTLD_GLOBAL | RTLD_LAZY);
         if(e == NULL) {
-          print(FONT_RED, "Load failed");
+          print(FONT_RED, "Load failed: %s",dlerror());
         } else {
           if(func) print(FONT_YELLOW, "Added: %s", line);
           else {
