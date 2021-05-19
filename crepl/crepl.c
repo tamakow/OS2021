@@ -70,7 +70,8 @@ int main(int argc, char *argv[]) {
     if (!fgets(line, sizeof(line), stdin)) {
       break;
     }
-    line[strlen(line) - 1] = '\0';
+    if(line[strlen(line) - 1] == '\n')
+      line[strlen(line) - 1] = '\0';
     if(strcmp(line, "exit") == 0) break;
     func = (strncmp(line, _func, 3) == 0);
 
@@ -118,7 +119,12 @@ int main(int argc, char *argv[]) {
           else {
             int (*entry)();
             entry = dlsym(e, "__expr_wrapper"); 
-            print(FONT_GREEN, "(%s) == %d", line, entry());
+            char *error = dlerror();
+            if(error) {
+              print(FONT_BLUE, "dlsym failed: %s", error);
+            }
+            else
+              print(FONT_GREEN, "(%s) == %d", line, entry());
             dlclose(e);
           }
         }
