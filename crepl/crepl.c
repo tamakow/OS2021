@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     }
     if(line[strlen(line) - 1] == '\n')
       line[strlen(line) - 1] = '\0';
-    if(strcmp(line, "exit") == 0) break;
+    // if(strcmp(line, "exit") == 0) break;
     func = (strncmp(line, _func, 3) == 0);
 
     char tmp_c_file[] = "/tmp/tmp_c_XXXXXX";
