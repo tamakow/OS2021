@@ -75,8 +75,8 @@ int main(int argc, char *argv[]) {
     // if(strcmp(line, "exit") == 0) break;
     func = (strncmp(line, _func, 3) == 0);
 
-    char tmp_c_file[] = "/tmp/tmp_c_XXXXXX";
-    char tmp_so_file[] = "/tmp/tmp_so_XXXXXX";
+    char tmp_c_file[] = "tmp_c_XXXXXX";
+    char tmp_so_file[] = "tmp_so_XXXXXX";
     // int fd_c = 0, fd_so = 0;
     Assert((mkstemp(tmp_c_file)) != -1, "create tmp_c_file failed!");
     Assert((mkstemp(tmp_so_file)) != -1, "create tmp_so_file failed! ");
