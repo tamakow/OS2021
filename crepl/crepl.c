@@ -75,11 +75,17 @@ int main(int argc, char *argv[]) {
     // if(strcmp(line, "exit") == 0) break;
     func = (strncmp(line, _func, 3) == 0);
 
-    char tmp_c_file[] = "/tmp/tmp_c_XXXXXX";
-    char tmp_so_file[] = "/tmp/tmp_so_XXXXXX";
+    char tmp_file_1[] = "/tmp/tmp_c_XXXXXX";
+    char tmp_file_2[] = "/tmp/tmp_so_XXXXXX";
     // int fd_c = 0, fd_so = 0;
-    Assert((mkstemp(tmp_c_file)) != -1, "create tmp_c_file failed!");
-    Assert((mkstemp(tmp_so_file)) != -1, "create tmp_so_file failed! ");
+    Assert((mkstemp(tmp_file_1)) != -1, "create tmp_c_file failed!");
+    Assert((mkstemp(tmp_file_2)) != -1, "create tmp_so_file failed! ");
+
+    char tmp_c_file[4096],tmp_so_file[4096];
+    sprintf(tmp_c_file, "%s.c", tmp_file_1);
+    sprintf(tmp_so_file, "%s.so", tmp_file_2);
+    Assert(rename(tmp_file_1, tmp_c_file) != -1, "rename tmp_c_file failed");
+    Assert(rename(tmp_file_2, tmp_so_file) != -1, "rename tmp_so_file failed");
 
     Log("%s %s",tmp_c_file, tmp_so_file);
     // write(fd_c, line, sizeof(line));
@@ -91,9 +97,9 @@ int main(int argc, char *argv[]) {
     fclose(file_c);
 
     #if defined(__x86_64__)
-      char *exec_argv[] = {"gcc", "-m64","-Wno-implicit-function-declaration","-x", "c", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
+      char *exec_argv[] = {"gcc", "-m64","-Wno-implicit-function-declaration", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
     #elif defined(__i386__)
-      char *exec_argv[] = {"gcc", "-m32","-Wno-implicit-function-declaration","-x", "c", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
+      char *exec_argv[] = {"gcc", "-m32","-Wno-implicit-function-declaration", "-w", "-fPIC", "-shared", "-o", tmp_so_file, tmp_c_file, NULL};
     #endif
 
     int pid = fork();
