@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     Assert(pid != -1, "fork failed!");
 
     if(pid == 0) {
-      int blackhole = open("/dev/null", O_RDWR | O_APPEND);
+      int blackhole = open("/dev/null", O_RDWR);
       Assert(blackhole != -1, "Open /dev/null failed");
       dup2(blackhole, STDOUT_FILENO);
       dup2(blackhole, STDERR_FILENO); 
