@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 
     Log("%s %s",tmp_c_file, tmp_so_file);
     // write(fd_c, line, sizeof(line));
-    FILE* file_c = fopen(tmp_c_file, "w");
+    FILE* file_c = fopen(tmp_c_file, "w+");
     if(func)
       fprintf(file_c, "%s", line);
     else
