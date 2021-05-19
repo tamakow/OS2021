@@ -65,7 +65,6 @@ static int cnt = 0;
 int main(int argc, char *argv[]) {
   while (1) {
     printf(">> ");
-    memset(line, '\0', sizeof(line));
     fflush(stdout);
     if (!fgets(line, sizeof(line), stdin)) {
       break;
