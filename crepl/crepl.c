@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
               print(FONT_BLUE, "dlsym failed: %s", error);
             }
             else
-              print(FONT_GREEN, "= %d", entry());
+              print(FONT_GREEN, "= %d.", entry());
             dlclose(e);
           }
         }
