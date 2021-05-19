@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
         if(e == NULL) {
           print(FONT_RED, "Load failed: %s",dlerror());
         } else {
-          if(func) print(FONT_YELLOW, "Added: %s", line);
+          if(func) print(FONT_YELLOW, "OK.");
           else {
             char wrapper[128];
             sprintf(wrapper, "__expr_wrapper_%d",cnt++);
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
               print(FONT_BLUE, "dlsym failed: %s", error);
             }
             else
-              print(FONT_GREEN, "(%s) == %d", line, entry());
+              print(FONT_GREEN, "= %d", entry());
             dlclose(e);
           }
         }
