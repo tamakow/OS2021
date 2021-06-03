@@ -88,6 +88,6 @@ struct fat_header {
 
 
 int main(int argc, char *argv[]) {
-    Assert(sizeof(struct fat_header) != 512, "bad header!");
+    Assert(sizeof(struct fat_header) == 512, "bad header!");
 
 }
