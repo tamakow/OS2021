@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <stdlib,h>
+#include <stdlib.h>
 
 
 #define bool uint8_t
