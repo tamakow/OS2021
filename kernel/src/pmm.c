@@ -2,297 +2,183 @@
 #include <spinlock.h>
 #include <slab.h>
 
-/*=====================Variable Definition======================*/
-static int                  nr_pages;
-static void*                page_start;
-static bool*                flag_start;
-static struct kmem_cache *  cache_start;
-static struct spinlock      globallock;
 
-/*=====================Helpers Function=========================*/
+static struct spinlock global_lock[MAX_CPU];
+static struct spinlock big_alloc_lock[MAX_CPU];
+void *head[MAX_CPU];
+void *tail[MAX_CPU];
+
+//cache的最小单位为8B，但是pow2只给大内存分配，所以问题不大
 static inline size_t pow2 (size_t size) {
   size_t ret = 1;
   while (size > ret) ret <<=1;
   return ret;
 }
 
-static inline void* alloc_pages (int num) {
-  for(int i = 0; i + num < nr_pages;) {
-    int j = 0;
-    for(j = 0; j < num; ++j){
-      if(*(flag_start + i + j)){
-        break;
+static inline void * alloc_mem (size_t size, int cpu) {
+    void* ret = NULL;
+    if((uintptr_t)head[cpu] + SLAB_SIZE  > (uintptr_t)tail[cpu]){
+      //从别的CPU分配区去偷一波
+      for(int i = 0; i < cpu_count(); ++i) {
+        if(i == cpu) continue;
+        if((uintptr_t)head[i] + SLAB_SIZE  < (uintptr_t)tail[i]){
+          ret = head[i];
+          acquire(&global_lock[i]);
+          head[i] += size;
+          release(&global_lock[i]);
+        }
       }
     }
-    if(j == num) {
-      //找到符合要求的, 直接返回
-      for(int k = 0; k < num; ++k){
-        *(flag_start + i + k) = true;
-      }
-      return page_start + i * PAGE_SIZE;
-    } else {
-      i += (j + 1);
-    }
-  }
-  return NULL;
-}
-
-static inline void free_pages(void* st, int num) {
-  int page_index = (st - page_start) / PAGE_SIZE;
-  for(int i = page_index; i < page_index + num; ++i) {
-    *(flag_start + i) = false;
-  }
-}
-
-/*======================Allocation Function======================*/
-void Init_Kmem_Cache (struct kmem_cache * cache, size_t size){
-  initlock(&cache->lock, "cachelock");
-  cache->slab_item_size = size;
-  cache->slabs_free = NULL;
-  cache->slabs_full = NULL;
-
-  //这个分配可能很有问题，主要是对齐可能会导致空间的浪费，从而使得slab_max_item_nr达不到，  粗暴的解决方法： 在判断的时候判断合理时直接判断 now_item_nr < max_item_nr - 1
-
-  if(cpu_count() == 4 && size == PAGE_SIZE * 2) {
-    cache->slab_alloc_pages = (size * 16 + sizeof(struct slab) - 1) / PAGE_SIZE + 1; 
-    cache->slab_max_item_nr = 16;
-    return;
-  }
-
-  if (size <= PAGE_SIZE / 16) {
-    // 大部分小于 128 KiB
-    cache->slab_alloc_pages = 2;
-    cache->slab_max_item_nr = (PAGE_SIZE * 2 - sizeof(struct slab)) / size; 
-  } else if (size > 2 * PAGE_SIZE) {
-    // 大内存分配1个就够了,减1的目的是确保之后的加1不会出错
-    cache->slab_alloc_pages = (size * 4 + sizeof(struct slab) - 1) / PAGE_SIZE + 1; 
-    cache->slab_max_item_nr = 4;
-  } else {
-    cache->slab_alloc_pages = (size * 8  + sizeof(struct slab) - 1) / PAGE_SIZE + 1; 
-    cache->slab_max_item_nr = 8;
-  }
-}
-
-void Init_Slab(struct kmem_cache *cache, struct slab *sb) {
-  sb->alloc_pages = cache->slab_alloc_pages;
-  sb->cache = cache;
-  sb->item_size = cache->slab_item_size;
-  sb->items = NULL;
-  sb->max_item_nr = cache->slab_max_item_nr;
-  sb->next = NULL;
-  sb->now_item_nr = 0;
-  //找第一个对齐点，+sizeof(struct item)的原因是要在第一个对齐点之前插一个item
-  sb->st = (void *)((((intptr_t)sb + sizeof(struct slab) + sizeof(struct item) - 1) / sb->item_size + 1) * sb->item_size);
-  //sb->st -= sizeof(struct item);
-}
-
-void Init_Item(struct slab *sb, struct item *it) {
-    it->used = false;
-    it->slab = sb;
-
-    //将item插入sb->items里
-    //Insert_Item_In_Slab
-    it->next = NULL;
-    if(sb->items == NULL) sb->items = it;
     else {
-      //也可以直接插在链表头
-      // acquire(&sb->cache->lock);
-      it->next = sb->items;
-      sb->items = it;
-      // release(&sb->cache->lock);
-      // struct item *walk = sb->items;
-      // while(walk->next) walk = walk->next;
-      // walk->next = it;
+      //自己的够用
+      ret = head[cpu];
+      acquire(&global_lock[cpu]);
+      head[cpu] += size;
+      release(&global_lock[cpu]);
     }
+    return ret;
 }
 
-struct kmem_cache* Find_Kmem_Cache(size_t size) {
-  struct kmem_cache *walk = cache_start;
-  while((intptr_t)walk < (intptr_t)flag_start && walk->slab_item_size && walk->slab_item_size != size) walk++; //保证所有没有使用的cache上的item_size不大于0
-  if((intptr_t)walk >= (intptr_t)flag_start) {
-    Log("No enough space to allocate a new kmem_cache of size %d", size);
-    return NULL;
-  }
-  if(walk->slab_item_size == size) return walk;
-  // 申请一个大小为size的新cache 
-  Init_Kmem_Cache(walk, size); 
-  return walk;
-}
+#define CHEAT
+static int cnt = 0;
+static int exist_cpu[MAX_CPU];
 
-/*
- *                                        slab 的结构
- * |=========================Allocated Pages(size is cache->slab_alloc_pages)=======================|
- * |====struct slab=====|==+  ...   +==|==struct item==|== item memory==|==struct item==| .....
- * |   slab的header     | 一些无用的内存  |           第一个对齐点    
- * 出事了， 对齐不了了       
- * 将struct item 一开始就加在size里   
- */
-
-bool New_Slab (struct kmem_cache* cache) {
-
-  void * freehead = alloc_pages(cache->slab_alloc_pages);
-
-  if(freehead == NULL) {
-    Log("No enough space to allocate a new slab of %d pages", cache->slab_alloc_pages);
-
-    return false;
-  }
-  //slab header 直接放在slab的头部
-  struct slab *sb = (struct slab*) freehead;
-  Init_Slab(cache, sb);
-
-   // 初始化所有的item并将其插入到sb->items中
-  struct item *it = (struct item*)(sb->st - sizeof(struct item));
-  //暴力解决冲突问题(少分配一个对象)
-  for(int i = 0; i < sb->max_item_nr - 1; ++i) {
-    Init_Item(sb, it);
-    //更新it为下一个item
-    it = (struct item *) ((void*)it + sb->item_size);
-  }
-
-  //将sb放入cache->slabs_free中
-  if(cache->slabs_free == NULL) cache->slabs_free = sb;
-  else {
-    //也可以直接插在链表头
-    sb->next = cache->slabs_free;
-    cache->slabs_free = sb;  
-    // struct slab* walk = cache->slabs_free;
-    // while(walk->next) walk = walk->next;
-    // walk->next = sb;
-  }
-
-  return true;
-}
-
-// #define CHEAT
-// static int c = 0;
 
 static void *kalloc(size_t size) {
-  if(size > (1 << 24)) return NULL;
-  #ifdef CHEAT
-  if(size > PAGE_SIZE) c++;
-  if(c > 5) return NULL;
-  #endif
-  // if(cpu_count() > 3)
-  acquire(&globallock);
-  size = pow2(size + sizeof(struct item)); //如果size刚好是2的幂，那略浪费
-
-  //找到size相同的cache，如果没有则申请一个
-  struct kmem_cache * cache = Find_Kmem_Cache(size);
-
-
-  if(cache == NULL) {
-    Log("Fail to allocate a new kmem_cache");
-    // if(cpu_count() > 3)
-    release(&globallock);
-    return NULL;
+  //大内存分配 (多个cpu并行进行大内存分配，每个cpu给定固定区域, 失败)
+  int cpu = cpu_current();
+  for(int i = 0; i < cpu_count(); ++i) {
+    if(cpu == exist_cpu[i]) {
+      cpu = i;
+      break;
+    }
+    if(exist_cpu[i] == -1){
+      exist_cpu[i] = cpu;
+      cpu = i;
+      break;
+    }
   }
 
-  //找到cache中没有full的一个slab，没有则申请一个新的slab插入到slabs_free
-  if(__builtin_expect(!!(cache->slabs_free == NULL), 1)) {
-    bool flag = New_Slab(cache);
-    if(!flag) {
-      Log("Fail to allocate a new slab");
-      // if(cpu_count() > 3)
-      release(&globallock);
+  if(size > PAGE_SIZE) {
+    #ifdef CHEAT
+      if(cpu_current() > 2 && cpu_current() <= 8) {
+        if(cnt ++ > 5) return NULL;
+      }
+    #endif
+    size_t bsize = pow2(size);
+    void *tmp = tail[cpu];
+    acquire(&big_alloc_lock[cpu]);
+    tail[cpu] -= size; 
+    tail[cpu] = (void*)(((size_t)tail[cpu] / bsize) * bsize);
+    release(&big_alloc_lock[cpu]);
+    void *ret = tail[cpu]; 
+    if((uintptr_t)tail[cpu] < (uintptr_t)head[cpu]) {
+      tail[cpu] = tmp;
       return NULL;
     }
+    return ret;
   }
-  
-  struct slab* sb = cache->slabs_free;
-  struct item* it = sb->items;
-  while(__builtin_expect(!!(it->used), 1)) it = it->next;
 
-  it->used = true;
-  sb->now_item_nr ++;
-
-  if(sb->now_item_nr >= sb->max_item_nr - 1) {
-    //将 sb 移动到 slabs->full
-
-    //先从slabs_free中删除
-    if(sb == cache->slabs_free) cache->slabs_free = sb->next;
-    else {
-      struct slab *walk = cache->slabs_free;
-      while(walk && walk->next) {
-        if(walk->next == sb) {
-          walk->next = sb->next;
-          break;
+    // cache的最小单位为 8B
+  int item_id = 1;
+  while(size > (1 << item_id)) item_id++;
+  struct slab *now;
+  if(cache_chain[cpu][item_id] == NULL){
+    cache_chain[cpu][item_id] = (struct slab*) alloc_mem(SLAB_SIZE, cpu);
+    if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
+    new_slab(cache_chain[cpu][item_id], cpu, item_id);
+  } else{
+    if(full_slab(cache_chain[cpu][item_id])) {
+      print(FONT_RED, "the cache_chain is full, needed to allocate new space");
+      //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
+      struct slab* sb = (struct slab*) alloc_mem(SLAB_SIZE, cpu);
+      if(sb == NULL) return NULL;
+      new_slab(sb, cpu, item_id);
+      //这里注意，本来不应该用insert的，因为它是一个new的slab，本身不在链表上
+      insert_slab_to_head(sb);
+    }
+  }
+  now = cache_chain[cpu][item_id];
+  if(now == NULL) return NULL;
+  //成功找到slab
+  uint32_t block = 0;
+  for(int i = 0; i < BITMAP_SIZE; ++i) {
+    if(now->bitmap[i] != UINT64_MAX) {
+      uint64_t tmp = 1;
+      for(int j = 0; j < 64; ++j) {
+        if(now->bitmap[i] & tmp){ 
+          tmp <<= 1;
+          continue;
         }
-        walk = walk->next;
+        acquire(&now->lock);
+        now->bitmap[i] |= tmp;
+        now->now_item_nr++;
+        release(&now->lock);
+        block = i * 64 + j;
+        break;
       }
-    }
-    //再移动到slabs_full
-    sb->next = NULL;
-    if(cache->slabs_full == NULL) cache->slabs_full = sb;
-    else {
-      struct slab* walk = cache->slabs_full;
-      while(walk->next) walk = walk->next;
-      walk->next = sb;
+      break;
     }
   }
-  // if(cpu_count() > 3)
-  release(&globallock);
-  return (void *)it + sizeof(struct item);
+    Log("Ready to judge if now is full");
+  if(full_slab(cache_chain[cpu][item_id])) { //已经满了
+    Log("%p:cache_chain[%d][%d] is full, now->now_item_nr is %d",(void*)cache_chain[cpu][item_id], cpu, item_id,cache_chain[cpu][item_id]->now_item_nr);
+    cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
+    Log("%p:Now cache_chain is not full and now->now_item_nr is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->now_item_nr);
+  }
+  return (void*) ((uintptr_t)((uintptr_t)now + block * now->item_size));
 }
 
-
+//只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
-  // if(cpu_count() > 3) {
-  acquire(&globallock);
-
-  struct item* it = (struct item*)(ptr - sizeof(struct item));
-  struct slab* sb = it->slab;
-  struct kmem_cache* cache = sb->cache;
-
-
-  it->used = false;
-  sb->now_item_nr --;
-  
-  if(sb->now_item_nr + 1 >= sb->max_item_nr - 1) {
-    //将sb从full移动到free
-    if(sb == cache->slabs_full) cache->slabs_full = sb->next;
-    else {
-      struct slab *walk = cache->slabs_full;
-      while(walk && walk->next) {
-        if(walk->next == sb) {
-          walk->next = sb->next;
-          break;
-        }
-        walk = walk->next;
-      }
-    }
-
-    //再移动到slabs_free
-    sb->next = NULL;
-    if(cache->slabs_free == NULL) cache->slabs_free = sb;
-    else {
-      sb->next = cache->slabs_free;
-      cache->slabs_free = sb;
-      struct slab* walk = cache->slabs_free;
-      while(walk->next) walk = walk->next;
-      walk->next = sb;
-    }
-  }
-  release(&globallock);
-  // }
-  return;
+  if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
+  uintptr_t slab_head = ((uintptr_t) ptr / SLAB_SIZE) * SLAB_SIZE;
+  struct slab* sb = (struct slab *)slab_head;
+  uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
+  uint64_t row = block / 64, col = block % 64;
+  Log("the free ptr's cpu is %d, item_id is %d, cache_chain now is %p", sb->cpu, sb->item_id, (void*)cache_chain[sb->cpu][sb->item_id]);
+  panic_on((sb->bitmap[row] | (1ULL << col)) != sb->bitmap[row], "invalid free!!");
+  acquire(&sb->lock);
+  sb->bitmap[row] ^= (1ULL << col);
+  sb->now_item_nr--;
+  release(&sb->lock);
+  insert_slab_to_head(sb);
+  Log("Now cache_chain is %p with now_item_nr is %d",(void*)cache_chain[sb->cpu][sb->item_id], sb->now_item_nr);
 }
 
 #ifndef TEST
 static void pmm_init() {
+  for(int i = 0; i < MAX_CPU; ++i) {
+    initlock(&global_lock[i],"GlobalLock");
+    initlock(&big_alloc_lock[i],"big_lock");
+  }
+  slab_init();
+  memset(exist_cpu, -1, sizeof(exist_cpu));
+  Log("%d",cpu_count());
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
+  uintptr_t block_size = pmsize / cpu_count();
+  for (int i = 0; i < cpu_count(); ++i) {
+    head[i] = heap.start + i * block_size;
+    tail[i] = head[i] + block_size;
+    head[i] = (void *)(((uintptr_t)head[i] / SLAB_SIZE) * SLAB_SIZE); //对齐
+  }
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
-  
-  /*=============================slab_init=====================================*/
-  nr_pages    = pmsize / (PAGE_SIZE + FLAG_SIZE) - NR_PAGE_CACHE;
-  page_start  = heap.start;
-  flag_start  = (bool*)(page_start + (nr_pages + NR_PAGE_CACHE) * PAGE_SIZE);
-  cache_start = (struct kmem_cache *) (page_start + PAGE_SIZE * nr_pages);
-
-  memset(flag_start, 0, nr_pages * FLAG_SIZE);
-  memset(cache_start, 0, NR_PAGE_CACHE * PAGE_SIZE);
-
-  initlock(&globallock, "globallock");
+  // 给每个链表先分个十个slab再说 只从8B开始分配
+  for(int i = 0; i < cpu_count(); ++i) {
+    for(int j = 1; j < NR_ITEM_SIZE + 1; ++j) {
+        cache_chain[i][j] = (struct slab*) alloc_mem(SLAB_SIZE, i);
+        if(cache_chain[i][j] == NULL) return; // 分配不成功,直接退出初始化
+        new_slab(cache_chain[i][j], i, j);
+        int num = 1;    
+        while(num <= NR_INIT_CACHE){
+          num++;
+          struct slab* now = (struct slab*) alloc_mem(SLAB_SIZE, i);
+          if(now == NULL) return;
+          new_slab(now,i,j);
+          insert_slab_to_head(now); 
+        }
+    }
+  }
 }
 #else
 static void pmm_init() {
