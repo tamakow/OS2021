@@ -7,8 +7,7 @@
 #include <../../abstract-machine/am/src/x86/x86.h>
 
 
-// #define DEBUG
-//#define TEST
+#define DEBUG
 
 #include <debug.h>
 #include <spinlock.h>
