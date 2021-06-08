@@ -13,8 +13,15 @@ static inline size_t pow2 (size_t size) {
 }
 
 static inline void * alloc_mem (size_t size, int cpu) {
-  acquire(&global_lock);
-  return NULL;
+    acquire(&global_lock);
+    void *ret;
+    if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)tail) ret = NULL;
+    else {
+       ret = head;
+       head += SLAB_SIZE;
+    }
+    release(&global_lock);
+    return ret;
 }
 
 static void *kalloc(size_t size) {
@@ -23,6 +30,18 @@ static void *kalloc(size_t size) {
 
   if(size > PAGE_SIZE) {
     // 写freelist来分配
+    size_t bsize = pow2(size);
+    void *tmp = tail;
+    acquire(&global_lock);
+    tail -= size; 
+    tail = (void*)(((size_t)tail / bsize) * bsize);
+    release(&global_lock);
+    void *ret = tail; 
+    if((uintptr_t)tail < (uintptr_t)head) {
+      tail = tmp;
+      return NULL;
+    }
+    return ret;
   }
 
   // cache的最小单位为 8B
