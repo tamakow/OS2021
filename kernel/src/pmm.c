@@ -41,23 +41,23 @@ static inline void * alloc_mem (size_t size, int cpu) {
 
 #define CHEAT
 static int cnt = 0;
-static int exist_cpu[MAX_CPU];
+// static int exist_cpu[MAX_CPU];
 
 
 static void *kalloc(size_t size) {
   //大内存分配 (多个cpu并行进行大内存分配，每个cpu给定固定区域, 失败)
   int cpu = cpu_current();
-  for(int i = 0; i < cpu_count(); ++i) {
-    if(cpu == exist_cpu[i]) {
-      cpu = i;
-      break;
-    }
-    if(exist_cpu[i] == -1){
-      exist_cpu[i] = cpu;
-      cpu = i;
-      break;
-    }
-  }
+  // for(int i = 0; i < cpu_count(); ++i) {
+  //   if(cpu == exist_cpu[i]) {
+  //     cpu = i;
+  //     break;
+  //   }
+  //   if(exist_cpu[i] == -1){
+  //     exist_cpu[i] = cpu;
+  //     cpu = i;
+  //     break;
+  //   }
+  // }
 
   if(size > PAGE_SIZE) {
     #ifdef CHEAT
@@ -153,7 +153,7 @@ static void pmm_init() {
     initlock(&big_alloc_lock[i],"big_lock");
   }
   slab_init();
-  memset(exist_cpu, -1, sizeof(exist_cpu));
+  // memset(exist_cpu, -1, sizeof(exist_cpu));
   Log("%d",cpu_count());
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
   uintptr_t block_size = pmsize / cpu_count();
