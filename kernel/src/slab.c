@@ -24,7 +24,7 @@ void new_slab(slab * sb, int cpu, int item_id) {
     // init obj_head;
     // 只在未分配的obj上有用，已分配的无所谓
     uintptr_t offset = 0;
-    while(sb->start_ptr + offset <= (uintptr_t)&sb + PAGE_SIZE) {
+    while(sb->start_ptr + offset <= (uintptr_t)sb + PAGE_SIZE) {
         struct obj_head* objhead = (struct obj_head*) (sb->start_ptr + offset);
         objhead->next_offset = offset + size;
         offset += size;
@@ -42,7 +42,7 @@ bool full_slab(slab* sb) {
     assert(sb != NULL);
     //这里判断下一个分配的位置到底是否有所需分配的那么大的
     int size = (1 << sb->obj_order); 
-    return sb->start_ptr + size * (1 + sb->obj_cnt) > (uintptr_t)&sb + PAGE_SIZE;
+    return sb->start_ptr + size * (1 + sb->obj_cnt) > (uintptr_t)sb + PAGE_SIZE;
 }
 
 
