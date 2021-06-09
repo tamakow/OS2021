@@ -87,6 +87,7 @@ static void *kalloc(size_t size) {
   
   Log("Havn't use this slab, the offset is %p %d", now->offset, now->offset);
   now->offset = objhead->next_offset;
+  Log("use this slab, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
   Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
