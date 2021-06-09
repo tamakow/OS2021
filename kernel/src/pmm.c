@@ -51,6 +51,7 @@ static void *kalloc(size_t size) {
   slab *now;
   if(cache_chain[cpu][item_id] == NULL){
     cache_chain[cpu][item_id] = (slab*) alloc_mem(PAGE_SIZE, cpu);
+    Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]);
     if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
     new_slab(cache_chain[cpu][item_id], cpu, item_id);
   } else{
