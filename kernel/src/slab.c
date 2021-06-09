@@ -34,8 +34,7 @@ bool full_slab(slab* sb) {
     assert(sb != NULL);
     //这里判断下一个分配的位置到底是否有所需分配的那么大的
     int size = (1 << sb->obj_order); 
-    uintptr_t ptr = sb->start_ptr + sb->offset; 
-    return ptr + size > (uintptr_t)sb + PAGE_SIZE;
+    return sb->start_ptr + size * (1 + sb->obj_cnt) > (uintptr_t)sb + PAGE_SIZE;
 }
 
 
