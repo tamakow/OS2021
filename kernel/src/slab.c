@@ -33,6 +33,7 @@ void new_slab(slab * sb, int cpu, int item_id) {
     Log("offset is %p", offset);
     Log("objhead->next_offset is %p", objhead->next_offset);
     Log("start_ptr is %p",sb->start_ptr);
+    Log("sb is %p",(uintptr_t)sb);
     Log("end ptr is %p", (uintptr_t)sb + PAGE_SIZE);
 }
 
