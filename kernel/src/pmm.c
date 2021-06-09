@@ -75,7 +75,7 @@ static void *kalloc(size_t size) {
   acquire(&now->lock);
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
-
+  Log("now ptr is %p", now_ptr);
   //分配完，更新最新的offset，并更新它的下一个offset
   struct obj_head *objhead = (struct obj_head *)now_ptr;
   if(objhead->next_offset == 0) {
@@ -89,7 +89,7 @@ static void *kalloc(size_t size) {
     Log("%p:cache_chain[%d][%d] is full, now->offset is %d",(void*)cache_chain[cpu][item_id], cpu, item_id, cache_chain[cpu][item_id]->offset);
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
     Log("%p:Now cache_chain is not full and now->offset is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->offset);
-  } else
+  }
 
   release(&now->lock);
   return ret;
