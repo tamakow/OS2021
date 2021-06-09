@@ -2,7 +2,7 @@
 #define __SLAB_H__
 
 #define  KiB            *(1 << 10)
-#define  PAGE_SIZE      (32 KiB)
+#define  PAGE_SIZE      (16 KiB)
 #define  HDR_SIZE       (1 << 6)
 #define  NR_ITEM_SIZE   12
 #define  OFFSET_MAX     UINT64_MAX
@@ -40,7 +40,7 @@ typedef union slab {
 } slab;
 
 struct obj_head {
-    uintptr_t next_offset; //下一个分配的地址离start_ptr的offset
+    uint16_t next_offset; //下一个分配的地址离start_ptr的offset
 };
 
 
