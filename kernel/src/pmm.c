@@ -124,6 +124,7 @@ static void pmm_init() {
   Log("%d",cpu_count());
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
+  while(1) ;
 }
 
 MODULE_DEF(pmm) = {
