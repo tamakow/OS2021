@@ -70,6 +70,7 @@ static void *kalloc(size_t size) {
     }
   }
   now = cache_chain[cpu][item_id];
+  Log("now is %p", (uintptr_t)now);
   if(now == NULL) return NULL;
   //成功找到slab
   // TODO
