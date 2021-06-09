@@ -6,7 +6,6 @@
 static struct spinlock global_lock;
 void *tail, *head;
 
-
 //cache的最小单位为8B，但是pow2只给大内存分配，所以问题不大
 static inline size_t pow2 (size_t size) {
   size_t ret = 1;
