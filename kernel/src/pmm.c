@@ -59,6 +59,7 @@ static void *kalloc(size_t size) {
       print(FONT_RED, "the cache_chain is full, needed to allocate new space");
       //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
       slab* sb = (slab*) alloc_mem(PAGE_SIZE, cpu);
+      Log("alloc memory addr is %p", (void *)sb);
       if(sb == NULL) return NULL;
       new_slab(sb, cpu, item_id);
       //这里注意，本来不应该用insert的，因为它是一个new的slab，本身不在链表上
@@ -86,7 +87,7 @@ static void *kalloc(size_t size) {
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
     Log("%p:cache_chain[%d][%d] is full, now->offset is %d",(void*)cache_chain[cpu][item_id], cpu, item_id, cache_chain[cpu][item_id]->offset);
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
-    Log("%p:Now cache_chain is not full and now->now_item_nr is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->offset);
+    Log("%p:Now cache_chain is not full and now->offset is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->offset);
   } else
 
   release(&now->lock);
