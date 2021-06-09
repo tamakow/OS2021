@@ -24,6 +24,7 @@ void new_slab(slab * sb, int cpu, int item_id) {
     // 只在未分配的obj上有用，已分配的无所谓
     struct obj_head *fhead = (struct obj_head*)sb->start_ptr;
     fhead->next_offset = size;
+    Log("start_ptr is %p",sb->start_ptr);
 }
 
 //buggy
