@@ -101,16 +101,16 @@ static void *kalloc(size_t size) {
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
-  return;
+  // return;
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
   uintptr_t slab_head = ((uintptr_t) ptr / PAGE_SIZE) * PAGE_SIZE;
   slab* sb = (slab *)slab_head;
   struct obj_head* objhead = (struct obj_head*) ptr;
-  acquire(&sb->lock);
+  // acquire(&sb->lock);
   sb->obj_cnt--;
   objhead->next_offset = sb->offset;
   sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
-  release(&sb->lock);
+  // release(&sb->lock);
   insert_slab_to_head(sb);
 }
 
