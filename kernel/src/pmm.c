@@ -77,7 +77,7 @@ static void *kalloc(size_t size) {
   //应该有空位
 
   acquire(&now->lock);
-  
+  Log("get lock!");
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
   Log("now start_ptr is %p", now->start_ptr);
