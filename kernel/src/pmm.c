@@ -54,6 +54,7 @@ static void *kalloc(size_t size) {
     Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]);
     if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
     new_slab(cache_chain[cpu][item_id], cpu, item_id);
+    Log("now1 start_ptr is %p", cache_chain[cpu][item_id]->start_ptr);
   } else{
     if(full_slab(cache_chain[cpu][item_id])) {
       print(FONT_RED, "the cache_chain is full, needed to allocate new space");
@@ -66,7 +67,6 @@ static void *kalloc(size_t size) {
       insert_slab_to_head(sb);
     }
   }
-  Log("now1 start_ptr is %p", cache_chain[cpu][item_id]->start_ptr);
   now = cache_chain[cpu][item_id];
   if(now == NULL) return NULL;
   //成功找到slab
