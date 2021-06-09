@@ -9,38 +9,45 @@ void slab_init() {
     }
 }
 
-void new_slab(struct slab * sb, int cpu, int item_id) {
+void new_slab(slab * sb, int cpu, int item_id) {
     assert(sb != NULL);
-    sb->cpu = cpu;
-    sb->item_id = item_id;
-    sb->item_size = (1 << item_id);
-    sb->max_item_nr = (SLAB_SIZE - 1 KiB) / sb->item_size;
-    sb->now_item_nr = 0;
-    memset(sb->bitmap, 0, sizeof(sb->bitmap));
+    int size = (1 << item_id);
     initlock(&sb->lock,"lock");
+    sb->obj_cnt = 0;
+    sb->obj_order = item_id;
+    sb->start_ptr = (((uintptr_t)sb->data - 1) / size + 1) * size; 
+    sb->offset = 0;
     // init circular list
     sb->next = sb;
     sb->prev = sb;
+    // init obj_head;
+    // 只在未分配的obj上有用，已分配的无所谓
+    struct obj_head *fhead = (struct obj_head*)sb->start_ptr;
+    fhead->next_offset = size;
 }
 
+//buggy
 //判断该slab是否已满，满了返回true，否则返回false
-bool full_slab(struct slab* sb) {
+bool full_slab(slab* sb) {
     assert(sb != NULL);
-    return sb->now_item_nr >= sb->max_item_nr;
+    //这里判断下一个分配的位置到底是否有所需分配的那么大的
+    int size = (1 << sb->obj_order); 
+    uintptr_t ptr = sb->start_ptr + sb->offset; 
+    return ptr + size > (uintptr_t)sb + PAGE_SIZE;
 }
 
 
 // head 即为 cache_chain[cpu][item_id]，保证head不为NULL
-void insert_slab_to_head (struct slab* sb) {
-    int cpu = sb->cpu;
-    int id  = sb->item_id;
+void insert_slab_to_head (slab* sb) {
+    int cpu = cpu_current();
+    int order  = sb->obj_order;
     //如果在链表的话，先从链表中删除
     sb->prev->next = sb->next;
     sb->next->prev = sb->prev;
     //再加在表头之前
-    struct slab* listhead = cache_chain[cpu][id];
+    slab* listhead = cache_chain[cpu][order];
     if(listhead == NULL){
-      print(FONT_RED, "Why your cache_chain[%d][%d] is NULL!!!!!!(insert_slab_to_head)", cpu, id);
+      print(FONT_RED, "Why your cache_chain[%d][%d] is NULL!!!!!!(insert_slab_to_head)", cpu, order);
       assert(0);
     }
     sb->next = listhead;
@@ -48,5 +55,5 @@ void insert_slab_to_head (struct slab* sb) {
     listhead->prev->next = sb;
     listhead->prev = sb;
     //然后把表头向前移动一位
-    cache_chain[cpu][id] = sb;
+    cache_chain[cpu][order] = sb;
 }

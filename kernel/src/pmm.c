@@ -15,10 +15,10 @@ static inline size_t pow2 (size_t size) {
 static inline void * alloc_mem (size_t size, int cpu) {
     acquire(&global_lock);
     void *ret;
-    if((uintptr_t)head + SLAB_SIZE  > (uintptr_t)tail) ret = NULL;
+    if((uintptr_t)head + PAGE_SIZE  > (uintptr_t)tail) ret = NULL;
     else {
        ret = head;
-       head += SLAB_SIZE;
+       head += PAGE_SIZE;
     }
     release(&global_lock);
     return ret;
@@ -45,19 +45,19 @@ static void *kalloc(size_t size) {
     return ret;
   }
 
-  // cache的最小单位为 8B
+  // cache的最小单位为 2B
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
-  struct slab *now;
+  slab *now;
   if(cache_chain[cpu][item_id] == NULL){
-    cache_chain[cpu][item_id] = (struct slab*) alloc_mem(SLAB_SIZE, cpu);
+    cache_chain[cpu][item_id] = (slab*) alloc_mem(PAGE_SIZE, cpu);
     if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
     new_slab(cache_chain[cpu][item_id], cpu, item_id);
   } else{
     if(full_slab(cache_chain[cpu][item_id])) {
       print(FONT_RED, "the cache_chain is full, needed to allocate new space");
       //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
-      struct slab* sb = (struct slab*) alloc_mem(SLAB_SIZE, cpu);
+      slab* sb = (slab*) alloc_mem(PAGE_SIZE, cpu);
       if(sb == NULL) return NULL;
       new_slab(sb, cpu, item_id);
       //这里注意，本来不应该用insert的，因为它是一个new的slab，本身不在链表上
@@ -67,48 +67,46 @@ static void *kalloc(size_t size) {
   now = cache_chain[cpu][item_id];
   if(now == NULL) return NULL;
   //成功找到slab
-  uint32_t block = 0;
-  for(int i = 0; i < BITMAP_SIZE; ++i) {
-    if(now->bitmap[i] != UINT64_MAX) {
-      uint64_t tmp = 1;
-      for(int j = 0; j < 64; ++j) {
-        if(now->bitmap[i] & tmp){ 
-          tmp <<= 1;
-          continue;
-        }
-        acquire(&now->lock);
-        now->bitmap[i] |= tmp;
-        now->now_item_nr++;
-        release(&now->lock);
-        block = i * 64 + j;
-        break;
-      }
-      break;
-    }
+  // TODO
+  //应该有空位
+
+  acquire(&now->lock);
+  uintptr_t now_ptr = now->start_ptr + now->offset;
+  void *ret = (void *)now_ptr;
+
+  //分配完，更新最新的offset，并更新它的下一个offset
+  struct obj_head *objhead = (struct obj_head *)now_ptr;
+  if(objhead->next_offset == 0) {
+    objhead->next_offset = now->offset + (1 << now->obj_order);
   }
-    Log("Ready to judge if now is full");
+  now->offset = objhead->next_offset;
+  
+  Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
     Log("%p:cache_chain[%d][%d] is full, now->now_item_nr is %d",(void*)cache_chain[cpu][item_id], cpu, item_id,cache_chain[cpu][item_id]->now_item_nr);
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
     Log("%p:Now cache_chain is not full and now->now_item_nr is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->now_item_nr);
-  }
-  return (void*) ((uintptr_t)((uintptr_t)now + block * now->item_size));
+  } else
+
+  release(&now->lock);
+  return ret;
 }
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
-  if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
-  uintptr_t slab_head = ((uintptr_t) ptr / SLAB_SIZE) * SLAB_SIZE;
-  struct slab* sb = (struct slab *)slab_head;
-  uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
-  uint64_t row = block / 64, col = block % 64;
-  Log("the free ptr's cpu is %d, item_id is %d, cache_chain now is %p", sb->cpu, sb->item_id, (void*)cache_chain[sb->cpu][sb->item_id]);
-  panic_on((sb->bitmap[row] | (1ULL << col)) != sb->bitmap[row], "invalid free!!");
-  acquire(&sb->lock);
-  sb->bitmap[row] ^= (1ULL << col);
-  sb->now_item_nr--;
-  release(&sb->lock);
-  insert_slab_to_head(sb);
+  return ;
+  // if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
+  // uintptr_t slab_head = ((uintptr_t) ptr / SLAB_SIZE) * SLAB_SIZE;
+  // struct slab* sb = (struct slab *)slab_head;
+  // uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
+  // uint64_t row = block / 64, col = block % 64;
+  // Log("the free ptr's cpu is %d, item_id is %d, cache_chain now is %p", sb->cpu, sb->item_id, (void*)cache_chain[sb->cpu][sb->item_id]);
+  // panic_on((sb->bitmap[row] | (1ULL << col)) != sb->bitmap[row], "invalid free!!");
+  // acquire(&sb->lock);
+  // sb->bitmap[row] ^= (1ULL << col);
+  // sb->now_item_nr--;
+  // release(&sb->lock);
+  // insert_slab_to_head(sb);
   Log("Now cache_chain is %p with now_item_nr is %d",(void*)cache_chain[sb->cpu][sb->item_id], sb->now_item_nr);
 }
 
