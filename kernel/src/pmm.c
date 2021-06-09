@@ -86,7 +86,6 @@ static void *kalloc(size_t size) {
   struct obj_head *objhead = (struct obj_head *)now_ptr;
   
   Log("Havn't use this slab, the offset is %p %d", now->offset, now->offset);
-  objhead->next_offset = now->offset + (1 << now->obj_order);
   now->offset = objhead->next_offset;
   now->obj_cnt ++;
   Log("Ready to judge if now is full");
