@@ -3,7 +3,7 @@
 
 #define  KiB            *(1 << 10)
 #define  PAGE_SIZE      (32 KiB)
-#define  HDR_SIZE       (1 << 6)
+#define  HDR_SIZE       (1 << 7)
 #define  NR_ITEM_SIZE   12
 #define  OFFSET_MAX     UINT64_MAX
 //item size 设置为{2, 4, 8, 16,... ,2^12} 共12项，故bitmap的最大size应该设置为不小于 7KiB / 2 = 3.5KiB

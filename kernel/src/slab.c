@@ -15,6 +15,7 @@ void new_slab(slab * sb, int cpu, int item_id) {
     initlock(&sb->lock,"lock");
     sb->obj_cnt = 0;
     sb->obj_order = item_id;
+    //去掉减1可以partial ac？
     sb->start_ptr = (((uintptr_t)(&sb->data) - 1) / size + 1) * size; 
     sb->offset = 0;
     // init circular list
