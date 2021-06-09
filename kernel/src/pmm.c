@@ -54,7 +54,7 @@ static void *kalloc(size_t size) {
     Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]);
     if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
     new_slab(cache_chain[cpu][item_id], cpu, item_id);
-    Log("now1 start_ptr is %p", cache_chain[cpu][item_id]->start_ptr);
+    Log("after new_slab start_ptr is %p", cache_chain[cpu][item_id]->start_ptr);
   } else{
     if(full_slab(cache_chain[cpu][item_id])) {
       print(FONT_RED, "the cache_chain is full, needed to allocate new space");
@@ -80,11 +80,11 @@ static void *kalloc(size_t size) {
   Log("now offset is %p", now->offset);
   Log("now ptr is %p", now_ptr);
   //分配完，更新最新的offset，并更新它的下一个offset
-  // struct obj_head *objhead = (struct obj_head *)now_ptr;
+  struct obj_head *objhead = (struct obj_head *)now_ptr;
   
   //在不free的时候可以这么用
   Log("Havn't use this slab, the offset is %p %d", now->offset, now->offset);
-  // objhead->next_offset = now->offset + (1 << now->obj_order);
+  objhead->next_offset = now->offset + (1 << now->obj_order);
   now->offset = now->offset + (1 << now->obj_order);
   
   Log("Ready to judge if now is full");
