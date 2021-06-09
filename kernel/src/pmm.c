@@ -79,6 +79,7 @@ static void *kalloc(size_t size) {
   //分配完，更新最新的offset，并更新它的下一个offset
   struct obj_head *objhead = (struct obj_head *)now_ptr;
   if(objhead->next_offset == 0) {
+    Log("Havn't use this slab, the offset is %p %d", now->offset, now->offset);
     objhead->next_offset = now->offset + (1 << now->obj_order);
   }
   now->offset = objhead->next_offset;
