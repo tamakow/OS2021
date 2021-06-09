@@ -29,6 +29,7 @@ void new_slab(slab * sb, int cpu, int item_id) {
     // init obj_head;
     // 只在未分配的obj上有用，已分配的无所谓
     uintptr_t offset = 0;
+    Log("ok");
     acquire(&sb->lock);
     while(sb->start_ptr + offset <= (uintptr_t)sb + PAGE_SIZE) {
         struct obj_head* objhead = (struct obj_head*) (sb->start_ptr + offset);
