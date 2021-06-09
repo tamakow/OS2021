@@ -78,10 +78,10 @@ static void *kalloc(size_t size) {
   Log("now ptr is %p", now_ptr);
   //分配完，更新最新的offset，并更新它的下一个offset
   struct obj_head *objhead = (struct obj_head *)now_ptr;
-  if(objhead->next_offset == 0) {
-    Log("Havn't use this slab, the offset is %p %d", now->offset, now->offset);
-    objhead->next_offset = now->offset + (1 << now->obj_order);
-  }
+  
+  //在不free的时候可以这么用
+  Log("Havn't use this slab, the offset is %p %d", now->offset, now->offset);
+  objhead->next_offset = now->offset + (1 << now->obj_order);
   now->offset = objhead->next_offset;
   
   Log("Ready to judge if now is full");
