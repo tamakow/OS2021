@@ -54,6 +54,7 @@ static void *kalloc(size_t size) {
   // cache的最小单位为 2B
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
+  if(cpu_count() == 4 && item_id != 12) return NULL;
   slab *now;
   if(cache_chain[cpu][item_id] == NULL){
     cache_chain[cpu][item_id] = (slab*) alloc_mem(PAGE_SIZE, cpu);
@@ -79,8 +80,7 @@ static void *kalloc(size_t size) {
   //成功找到slab
   // TODO
   //应该有空位
-  if(cpu_count() == 4)
-  acquire(&now->lock);
+  // acquire(&now->lock);
   print(FONT_RED, "get lock!");
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
@@ -98,15 +98,14 @@ static void *kalloc(size_t size) {
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
     Log("%p:Now cache_chain is not full and now->offset is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->offset);
   }
-  if(cpu_count() == 4)
-  release(&now->lock);
+  // release(&now->lock);
   print(FONT_RED, "release lock!");
   return ret;
 }
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
-  // if(cpu_count()!= 4) return;
+  return;
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
   uintptr_t slab_head = ((uintptr_t) ptr / PAGE_SIZE) * PAGE_SIZE;
   Log("slabhead is %p", slab_head);
