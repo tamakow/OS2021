@@ -25,7 +25,6 @@ static inline void * alloc_mem (size_t size, int cpu) {
     return ret;
 }
 
-#define CHEAT
 int cheat_cnt = 0;
 static void *kalloc(size_t size) {
   //大内存分配 (多个cpu并行进行大内存分配，每个cpu给定固定区域, 失败)
@@ -112,11 +111,11 @@ static void kfree(void *ptr) {
   uintptr_t slab_head = ((uintptr_t) ptr / PAGE_SIZE) * PAGE_SIZE;
   slab* sb = (slab *)slab_head;
   struct obj_head* objhead = (struct obj_head*) ptr;
-  acquire(&sb->lock);
+  // acquire(&sb->lock);
   sb->obj_cnt--;
   objhead->next_offset = sb->offset;
   sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
-  release(&sb->lock);
+  // release(&sb->lock);
   insert_slab_to_head(sb);
 }
 
