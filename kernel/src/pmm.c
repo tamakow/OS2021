@@ -109,6 +109,7 @@ static void kfree(void *ptr) {
   if(cpu_count()!= 4) return;
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
   uintptr_t slab_head = ((uintptr_t) ptr / PAGE_SIZE) * PAGE_SIZE;
+  Log("slabhead is %p", slab_head);
   slab* sb = (slab *)slab_head;
   struct obj_head* objhead = (struct obj_head*) ptr;
   acquire(&sb->lock);
