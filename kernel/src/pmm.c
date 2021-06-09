@@ -106,11 +106,11 @@ static void kfree(void *ptr) {
   uintptr_t slab_head = ((uintptr_t) ptr / PAGE_SIZE) * PAGE_SIZE;
   slab* sb = (slab *)slab_head;
   struct obj_head* objhead = (struct obj_head*) ptr;
-  // acquire(&sb->lock);
+  acquire(&sb->lock);
   sb->obj_cnt--;
   objhead->next_offset = sb->offset;
   sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
-  // release(&sb->lock);
+  release(&sb->lock);
   insert_slab_to_head(sb);
 }
 
