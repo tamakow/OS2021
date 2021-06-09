@@ -79,8 +79,8 @@ static void *kalloc(size_t size) {
   //成功找到slab
   // TODO
   //应该有空位
-
-  // acquire(&now->lock);
+  if(cpu_count() == 4)
+  acquire(&now->lock);
   print(FONT_RED, "get lock!");
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
@@ -98,8 +98,8 @@ static void *kalloc(size_t size) {
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
     Log("%p:Now cache_chain is not full and now->offset is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->offset);
   }
-
-  // release(&now->lock);
+  if(cpu_count() == 4)
+  release(&now->lock);
   print(FONT_RED, "release lock!");
   return ret;
 }
@@ -111,11 +111,11 @@ static void kfree(void *ptr) {
   uintptr_t slab_head = ((uintptr_t) ptr / PAGE_SIZE) * PAGE_SIZE;
   slab* sb = (slab *)slab_head;
   struct obj_head* objhead = (struct obj_head*) ptr;
-  // acquire(&sb->lock);
+  acquire(&sb->lock);
   sb->obj_cnt--;
   objhead->next_offset = sb->offset;
   sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
-  // release(&sb->lock);
+  release(&sb->lock);
   insert_slab_to_head(sb);
 }
 
