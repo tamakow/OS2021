@@ -75,6 +75,7 @@ static void *kalloc(size_t size) {
   acquire(&now->lock);
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
+  Log("now offset is %p", now->offset);
   Log("now ptr is %p", now_ptr);
   //分配完，更新最新的offset，并更新它的下一个offset
   struct obj_head *objhead = (struct obj_head *)now_ptr;
