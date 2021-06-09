@@ -102,20 +102,16 @@ static void *kalloc(size_t size) {
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
-  return ;
-  // if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
-  // uintptr_t slab_head = ((uintptr_t) ptr / SLAB_SIZE) * SLAB_SIZE;
-  // struct slab* sb = (struct slab *)slab_head;
-  // uint64_t block = ((uintptr_t)ptr - slab_head) / sb->item_size;
-  // uint64_t row = block / 64, col = block % 64;
-  // Log("the free ptr's cpu is %d, item_id is %d, cache_chain now is %p", sb->cpu, sb->item_id, (void*)cache_chain[sb->cpu][sb->item_id]);
-  // panic_on((sb->bitmap[row] | (1ULL << col)) != sb->bitmap[row], "invalid free!!");
-  // acquire(&sb->lock);
-  // sb->bitmap[row] ^= (1ULL << col);
-  // sb->now_item_nr--;
-  // release(&sb->lock);
-  // insert_slab_to_head(sb);
-  // Log("Now cache_chain is %p",(void*)cache_chain[sb->cpu][sb->item_id]);
+  if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
+  uintptr_t slab_head = ((uintptr_t) ptr / PAGE_SIZE) * PAGE_SIZE;
+  slab* sb = (slab *)slab_head;
+  struct obj_head* objhead = (struct obj_head*) ptr;
+  acquire(&sb->lock);
+  sb->obj_cnt--;
+  objhead->next_offset = sb->offset;
+  sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
+  release(&sb->lock);
+  insert_slab_to_head(sb);
 }
 
 static void pmm_init() {
