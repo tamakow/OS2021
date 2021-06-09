@@ -17,6 +17,7 @@ static void os_run() {
   Log("After all allocation");
   pmm->free((void*)0x301000);
   Log("After one free");
+  pmm->alloc(4096);
   while (1) ;
 }
 
