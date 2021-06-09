@@ -29,7 +29,7 @@ void new_slab(slab * sb, int cpu, int item_id) {
         objhead->next_offset = offset + size;
         offset += size;
     }
-    // struct obj_head* objhead = (struct obj_head*) sb->start_ptr;
+    struct obj_head* objhead = (struct obj_head*) sb->start_ptr;
     Log("offset is %p", offset);
     Log("objhead->next_offset is %p", objhead->next_offset);
     Log("start_ptr is %p",sb->start_ptr);
