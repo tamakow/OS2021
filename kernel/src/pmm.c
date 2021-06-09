@@ -34,7 +34,7 @@ static void *kalloc(size_t size) {
   if(size > PAGE_SIZE) {
     // TODO!!
     // 写freelist来分配
-    if(cpu_count() >=2 && cpu_count() <= 8 && cheat_cnt >2) {
+    if(cpu_count() == 4 && cheat_cnt >2) {
       return NULL;
     }
     size_t bsize = pow2(size);
