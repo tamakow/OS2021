@@ -9,14 +9,14 @@ static void os_run() {
     putch(*s == '*' ? '0' + cpu_current() : *s);
   }
   // pmm->alloc(4);
-  pmm->alloc(1024);
+  pmm->alloc(4096);
   Log("After first allocation");
   pmm->alloc(4096);
   Log("After second allocation");
   pmm->alloc(4096);
   Log("After all allocation");
-  // pmm->free((void*)0x300080);
-  // Log("After one free");
+  pmm->free((void*)0x301000);
+  Log("After one free");
   while (1) ;
 }
 
