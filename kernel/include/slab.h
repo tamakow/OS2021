@@ -5,24 +5,8 @@
 #define  PAGE_SIZE      (32 KiB)
 #define  HDR_SIZE       (1 << 7)
 #define  NR_ITEM_SIZE   12
-#define  OFFSET_MAX     UINT64_MAX
-//item size 设置为{2, 4, 8, 16,... ,2^12} 共12项，故bitmap的最大size应该设置为不小于 7KiB / 2 = 3.5KiB
-//每个slab可以配一把自己的锁
-//可以把next和prev换成freelist 和 fulllist
-// struct slab {
-//     uint8_t data[SLAB_SIZE - 1 KiB]; // 分配空间，这里给了7kiB
-//     int cpu;                 // 所属的cpu
-//     struct spinlock lock;    // 每个的锁
-//     int item_size;           // slab 的每个item的大小
-//     int item_id;             // 2^item_id = item_size
-//     int max_item_nr;         // 最多可以有的 item数量
-//     int now_item_nr;        // 现在有的item数量
-//     uint64_t bitmap[BITMAP_SIZE];
-//     struct slab *next;
-//     struct slab *prev;
-// };
 
-
+//item size 设置为{2, 4, 8, 16,... ,2^12} 共12项
 typedef union slab {
     struct {
         struct spinlock lock; //锁，用于串行化分配和并发的free

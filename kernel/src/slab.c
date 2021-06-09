@@ -16,13 +16,15 @@ void new_slab(slab * sb, int cpu, int item_id) {
     sb->obj_cnt = 0;
     sb->obj_order = item_id;
     //去掉减1可以partial ac？
-    sb->start_ptr = (((uintptr_t)(&sb->data) - 1) / size + 1) * size; 
+    sb->start_ptr = (uintptr_t)(((uintptr_t)(&sb->data) - 1) / size + 1) * size; 
     sb->offset = 0;
     // init circular list
     sb->next = sb;
     sb->prev = sb;
     // init obj_head;
     // 只在未分配的obj上有用，已分配的无所谓
+    struct obj_head* objhead = (struct obj_head*) sb->start_ptr;
+    objhead->next_offset = size;
     Log("start_ptr is %p",sb->start_ptr);
 }
 
