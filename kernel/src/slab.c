@@ -1,6 +1,8 @@
 #include <common.h>
 #include <slab.h>
 
+int slab_cnt = 0;
+
 void slab_init() {
     for(int i = 0; i < MAX_CPU + 1; ++i) {
         for(int j = 0; j < NR_ITEM_SIZE + 1; ++j) {
@@ -12,7 +14,9 @@ void slab_init() {
 void new_slab(slab * sb, int cpu, int item_id) {
     assert(sb != NULL);
     int size = (1 << item_id);
-    initlock(&sb->lock,"lock");
+    char name[128];
+    sprintf(name, "lock%d",slab_cnt++);
+    initlock(&sb->lock,name);
     sb->obj_cnt = 0;
     sb->obj_order = item_id;
     //去掉减1可以partial ac？
