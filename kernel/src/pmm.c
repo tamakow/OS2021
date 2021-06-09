@@ -66,6 +66,7 @@ static void *kalloc(size_t size) {
       insert_slab_to_head(sb);
     }
   }
+  Log("now1 start_ptr is %p", cache_chain[cpu][item_id]->start_ptr);
   now = cache_chain[cpu][item_id];
   if(now == NULL) return NULL;
   //成功找到slab
