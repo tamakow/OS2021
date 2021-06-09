@@ -83,9 +83,9 @@ static void *kalloc(size_t size) {
   
   Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
-    Log("%p:cache_chain[%d][%d] is full, now->now_item_nr is %d",(void*)cache_chain[cpu][item_id], cpu, item_id,cache_chain[cpu][item_id]->now_item_nr);
+    Log("%p:cache_chain[%d][%d] is full, now->offset is %d",(void*)cache_chain[cpu][item_id], cpu, item_id, cache_chain[cpu][item_id]->offset);
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
-    Log("%p:Now cache_chain is not full and now->now_item_nr is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->now_item_nr);
+    Log("%p:Now cache_chain is not full and now->now_item_nr is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->offset);
   } else
 
   release(&now->lock);
@@ -107,7 +107,7 @@ static void kfree(void *ptr) {
   // sb->now_item_nr--;
   // release(&sb->lock);
   // insert_slab_to_head(sb);
-  Log("Now cache_chain is %p with now_item_nr is %d",(void*)cache_chain[sb->cpu][sb->item_id], sb->now_item_nr);
+  // Log("Now cache_chain is %p",(void*)cache_chain[sb->cpu][sb->item_id]);
 }
 
 static void pmm_init() {
