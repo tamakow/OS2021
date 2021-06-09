@@ -2,7 +2,7 @@
 #define __SLAB_H__
 
 #define  KiB            *(1 << 10)
-#define  PAGE_SIZE      (9 KiB)
+#define  PAGE_SIZE      (12 KiB)
 #define  HDR_SIZE       (1 << 6)
 #define  NR_ITEM_SIZE   12
 #define  OFFSET_MAX     UINT64_MAX
