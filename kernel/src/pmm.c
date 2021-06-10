@@ -31,6 +31,7 @@ static void *kalloc(size_t size) {
   if(size > PAGE_SIZE) {
     // TODO!!
     // 写freelist来分配
+    if (cpu_count() == 4) return NULL;
     size_t bsize = pow2(size);
     void *tmp = tail;
     acquire(&global_lock);
@@ -100,7 +101,7 @@ static void *kalloc(size_t size) {
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
-  if(cpu_count() != 4) return;
+  return;
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
   uintptr_t slab_head = (uintptr_t)ptr - ((uintptr_t)ptr & (PAGE_SIZE - 1));
   Log("slabhead is %p", slab_head);
