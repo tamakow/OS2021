@@ -73,7 +73,6 @@ static void *kalloc(size_t size) {
   //成功找到slab
   // TODO
   //应该有空位
-  // acquire(&now->lock);
   print(FONT_RED, "get lock!");
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
@@ -82,38 +81,41 @@ static void *kalloc(size_t size) {
   Log("now ptr is %p", now_ptr);
   //分配完，更新最新的offset，并更新它的下一个offset
   struct obj_head *objhead = (struct obj_head *)now_ptr;
+  
+  acquire(&now->lock);
   now->offset = objhead->next_offset;
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
+  release(&now->lock);
+  
   Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
     Log("%p:cache_chain[%d][%d] is full, now->offset is %d",(void*)cache_chain[cpu][item_id], cpu, item_id, cache_chain[cpu][item_id]->offset);
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
     Log("%p:Now cache_chain is not full and now->offset is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->offset);
   }
-  // release(&now->lock);
   print(FONT_RED, "release lock!");
   return ret;
 }
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
-  if(cpu_count() != 4) return;
+  // if(cpu_count() != 4) return;
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
   uintptr_t slab_head = (uintptr_t)ptr - ((uintptr_t)ptr & (PAGE_SIZE - 1));
   Log("slabhead is %p", slab_head);
   slab* sb = (slab *)slab_head;
   if(sb->obj_order != 12) return;
   struct obj_head* objhead = (struct obj_head*) ptr;
-  // acquire(&sb->lock);
-  // sb->obj_cnt--;
+  acquire(&sb->lock);
+  sb->obj_cnt--;
   Log("objcnt is %d", sb->obj_cnt);
   objhead->next_offset = sb->offset;
   Log("next_offset is %d", objhead->next_offset);
-  // sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
+  sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
   Log("sb->offset is %d", sb->offset);
-  // release(&sb->lock);
-  // insert_slab_to_head(sb);
+  release(&sb->lock);
+  insert_slab_to_head(sb);
 }
 
 static void pmm_init() {
