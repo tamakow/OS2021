@@ -11,6 +11,7 @@ typedef union slab {
     struct {
         struct spinlock lock; //锁，用于串行化分配和并发的free
         int obj_cnt; //页面已分配的对象数，减少到0的时候回收页面
+        int max_obj; //最多可分配的对象数
         uintptr_t offset; //start_ptr + offset就是目前分配到的地方，在这个位置上有一个obj_head代表下一个可供分配的位置
         union slab *next; //同一个cpu下的其他页面
         union slab *prev;

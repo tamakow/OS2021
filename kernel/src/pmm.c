@@ -25,17 +25,12 @@ static inline void * alloc_mem (size_t size, int cpu) {
     return ret;
 }
 
-int cheat_cnt = 0;
 static void *kalloc(size_t size) {
-  //大内存分配 (多个cpu并行进行大内存分配，每个cpu给定固定区域, 失败)
   int cpu = cpu_current();
 
   if(size > PAGE_SIZE) {
     // TODO!!
     // 写freelist来分配
-    if(cpu_count() == 4 && cheat_cnt >2) {
-      return NULL;
-    }
     size_t bsize = pow2(size);
     void *tmp = tail;
     acquire(&global_lock);
@@ -47,14 +42,12 @@ static void *kalloc(size_t size) {
       tail = tmp;
       return NULL;
     }
-    cheat_cnt++;
     return ret;
   }
 
   // cache的最小单位为 2B
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
-  if(cpu_count() == 4 && item_id != 12) return NULL;
   slab *now;
   if(cache_chain[cpu][item_id] == NULL){
     cache_chain[cpu][item_id] = (slab*) alloc_mem(PAGE_SIZE, cpu);
@@ -105,7 +98,7 @@ static void *kalloc(size_t size) {
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
-  if(cpu_count() != 4)return;
+  return;
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
   uintptr_t slab_head = ((uintptr_t) ptr / PAGE_SIZE) * PAGE_SIZE;
   Log("slabhead is %p", slab_head);

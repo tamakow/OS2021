@@ -20,7 +20,6 @@ void new_slab(slab * sb, int cpu, int item_id) {
     initlock(&sb->lock,name);
     sb->obj_cnt = 0;
     sb->obj_order = item_id;
-    //去掉减1可以partial ac？
     sb->start_ptr = (uintptr_t)(((uintptr_t)(sb->data) - 1) / size + 1) * size; 
     sb->offset = 0;
     // init circular list
@@ -33,6 +32,7 @@ void new_slab(slab * sb, int cpu, int item_id) {
         struct obj_head* objhead = (struct obj_head*) (sb->start_ptr + offset);
         objhead->next_offset = offset + size;
         offset += size;
+        sb->max_obj++;
     }
 #ifdef DEBUG
     struct obj_head* objhead = (struct obj_head*) sb->start_ptr;
@@ -49,8 +49,7 @@ void new_slab(slab * sb, int cpu, int item_id) {
 bool full_slab(slab* sb) {
     assert(sb != NULL);
     //这里判断下一个分配的位置到底是否有所需分配的那么大的
-    int size = (1 << sb->obj_order); 
-    return sb->start_ptr + size * (1 + sb->obj_cnt) > (uintptr_t)sb + PAGE_SIZE;
+    return sb->obj_cnt >= sb->max_obj;
 }
 
 
