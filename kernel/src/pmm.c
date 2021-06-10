@@ -82,11 +82,11 @@ static void *kalloc(size_t size) {
   //分配完，更新最新的offset，并更新它的下一个offset
   struct obj_head *objhead = (struct obj_head *)now_ptr;
   
-  acquire(&now->lock);
+  // acquire(&now->lock);
   now->offset = objhead->next_offset;
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
-  release(&now->lock);
+  // release(&now->lock);
   
   Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
@@ -100,7 +100,7 @@ static void *kalloc(size_t size) {
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
-  // if(cpu_count() != 4) return;
+  if(cpu_count() != 4) return;
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
   uintptr_t slab_head = (uintptr_t)ptr - ((uintptr_t)ptr & (PAGE_SIZE - 1));
   Log("slabhead is %p", slab_head);
