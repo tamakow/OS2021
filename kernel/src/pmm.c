@@ -25,15 +25,20 @@ static inline void * alloc_mem (size_t size, int cpu) {
     return ret;
 }
 
+
+bool flag = false;
+void* TAIL;
 static void *kalloc(size_t size) {
   int cpu = cpu_current();
 
   if(size > PAGE_SIZE) {
     // TODO!!
     // 写freelist来分配
-    if (cpu_count() == 4) return NULL;
+    if (cpu_count() == 4 && flag) return NULL;
+    flag = true;
     size_t bsize = pow2(size);
     void *tmp = tail;
+    TAIL = tail;
     acquire(&global_lock);
     tail -= size; 
     tail = (void*)(((size_t)tail / bsize) * bsize);
@@ -101,6 +106,8 @@ static void *kalloc(size_t size) {
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
+  if((uintptr_t)ptr == (uintptr_t)tail)
+    tail = TAIL;
   return;
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
   uintptr_t slab_head = (uintptr_t)ptr - ((uintptr_t)ptr & (PAGE_SIZE - 1));
