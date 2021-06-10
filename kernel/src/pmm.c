@@ -99,7 +99,7 @@ static void *kalloc(size_t size) {
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
-  uintptr_t slab_head = ((uintptr_t) ptr / PAGE_SIZE) * PAGE_SIZE;
+  uintptr_t slab_head = (uintptr_t)ptr - ((uintptr_t)ptr & (PAGE_SIZE - 1));
   Log("slabhead is %p", slab_head);
   slab* sb = (slab *)slab_head;
   struct obj_head* objhead = (struct obj_head*) ptr;
