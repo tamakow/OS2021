@@ -32,6 +32,8 @@ void new_slab(slab * sb, int cpu, int item_id) {
         struct obj_head* objhead = (struct obj_head*) (sb->start_ptr + offset);
         objhead->next_offset = offset + size;
         offset += size;
+        if(sb->start_ptr + offset > (uintptr_t)sb + PAGE_SIZE)
+            break;
         sb->max_obj++;
     }
 #ifdef DEBUG
