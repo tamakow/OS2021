@@ -105,14 +105,14 @@ static void kfree(void *ptr) {
   slab* sb = (slab *)slab_head;
   if(sb->obj_order != 12) return;
   struct obj_head* objhead = (struct obj_head*) ptr;
-  acquire(&sb->lock);
+  // acquire(&sb->lock);
   // sb->obj_cnt--;
   Log("objcnt is %d", sb->obj_cnt);
   objhead->next_offset = sb->offset;
   Log("next_offset is %d", objhead->next_offset);
   // sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
   Log("sb->offset is %d", sb->offset);
-  release(&sb->lock);
+  // release(&sb->lock);
   // insert_slab_to_head(sb);
 }
 
