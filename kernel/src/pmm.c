@@ -73,7 +73,7 @@ static void *kalloc(size_t size) {
   //成功找到slab
   // TODO
   //应该有空位
-  acquire(&now->lock);
+  // acquire(&now->lock);
   print(FONT_RED, "get lock!");
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
@@ -91,7 +91,7 @@ static void *kalloc(size_t size) {
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
     Log("%p:Now cache_chain is not full and now->offset is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->offset);
   }
-  release(&now->lock);
+  // release(&now->lock);
   print(FONT_RED, "release lock!");
   return ret;
 }
