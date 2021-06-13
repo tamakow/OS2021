@@ -6,9 +6,9 @@
 static struct spinlock global_lock;
 void *tail, *head;
 
-//cache的最小单位为8B，但是pow2只给大内存分配，所以问题不大
+//cache的最小单位为2B，但是pow2只给大内存分配(> 4096)，即最小的ret都是 1<<13 所以问题不大
 static inline size_t pow2 (size_t size) {
-  size_t ret = 1;
+  size_t ret = (1 << 13);
   while (size > ret) ret <<=1;
   return ret;
 }
@@ -85,9 +85,9 @@ static void *kalloc(size_t size) {
   
   now->offset = objhead->next_offset;
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
-  acquire(&now->lock);
+  // acquire(&now->lock);
   now->obj_cnt ++;
-  release(&now->lock);
+  // release(&now->lock);
   
   Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
@@ -106,7 +106,6 @@ static void kfree(void *ptr) {
   uintptr_t slab_head = (uintptr_t)ptr - ((uintptr_t)ptr & (PAGE_SIZE - 1));
   Log("slabhead is %p", slab_head);
   slab* sb = (slab *)slab_head;
-  if(sb->obj_order != 12) return;
   struct obj_head* objhead = (struct obj_head*) ptr;
   acquire(&sb->lock);
   sb->obj_cnt--;

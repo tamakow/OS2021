@@ -17,11 +17,14 @@ void new_slab(slab * sb, int cpu, int item_id) {
     char name[128];
     sprintf(name, "lock%d",slab_cnt++);
     Log("%s", name);
-    initlock(&sb->lock,name);
+    initlock(&sb->lock, name);
     sb->obj_cnt = 0;
     sb->obj_order = item_id;
     sb->start_ptr = (uintptr_t)(((uintptr_t)(sb->data) - 1) / size + 1) * size; 
     sb->offset = 0;
+    sb->max_obj = (int)((uintptr_t)sb + PAGE_SIZE - sb->start_ptr) / size;
+    Log("sb's max_obj is %d", sb->max_obj);
+    
     // init circular list
     sb->next = sb;
     sb->prev = sb;
@@ -35,7 +38,6 @@ void new_slab(slab * sb, int cpu, int item_id) {
         offset += size;
         if(sb->start_ptr + offset > (uintptr_t)sb + PAGE_SIZE)
             break;
-        sb->max_obj++;
     }
     // release(&sb->lock);
 #ifdef DEBUG
@@ -48,7 +50,6 @@ void new_slab(slab * sb, int cpu, int item_id) {
     Log("end ptr is %p", (uintptr_t)sb + PAGE_SIZE);
 }
 
-//buggy
 //判断该slab是否已满，满了返回true，否则返回false
 bool full_slab(slab* sb) {
     assert(sb != NULL);
