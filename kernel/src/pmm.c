@@ -4,6 +4,7 @@
 
 
 static struct spinlock global_lock;
+static struct spinlock big_lock;
 void *tail, *head;
 
 //cache的最小单位为2B，但是pow2只给大内存分配(> 4096)，即最小的ret都是 1<<13 所以问题不大
@@ -65,7 +66,9 @@ static void *kalloc(size_t size) {
       if(sb == NULL) return NULL;
       new_slab(sb, cpu, item_id);
       //这里注意，本来不应该用insert的，因为它是一个new的slab，本身不在链表上
+      acquire(&big_lock);
       insert_slab_to_head(sb);
+      release(&big_lock);
     }
   }
   now = cache_chain[cpu][item_id];
@@ -119,12 +122,15 @@ static void kfree(void *ptr) {
   sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
   Log("sb->offset is %d", sb->offset);
   release(&sb->lock);
+  acquire(&big_lock);
   insert_slab_to_head(sb);
+  release(&big_lock);
 }
 
 static void pmm_init() {
   slab_init();
-  initlock(&global_lock, "global_lock");
+  initlock(&global_lock, "globallock");
+  initlock(&big_lock, "biglock");
   head = heap.start;
   tail = heap.end;
   Log("%d",cpu_count());
