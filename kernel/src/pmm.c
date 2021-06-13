@@ -80,7 +80,8 @@ static void *kalloc(size_t size) {
   if(full_slab(now)) assert(0);
   print(FONT_RED, "get lock!");
   
-
+  if(cpu_count() == 4)
+  acquire(&now->lock);
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
   Log("now start_ptr is %p", now->start_ptr);
@@ -89,8 +90,7 @@ static void *kalloc(size_t size) {
   //分配完，更新最新的offset，并更新它的下一个offset
   struct obj_head *objhead = (struct obj_head *)now_ptr;
   
-  if(cpu_count() == 4)
-  acquire(&now->lock);
+  
   now->offset = objhead->next_offset;
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
