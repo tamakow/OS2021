@@ -68,14 +68,23 @@ void insert_slab_to_head (slab* sb) {
     sb->next->prev = sb->prev;
     //再加在表头之前
     slab* listhead = cache_chain[cpu][order];
+    // if(cpu_count() == 4) {
+    while(!full_slab(listhead) && listhead != sb) {
+        listhead = listhead->next;
+    }
+    // }
     if(listhead == NULL){
       print(FONT_RED, "Why your cache_chain[%d][%d] is NULL!!!!!!(insert_slab_to_head)", cpu, order);
       assert(0);
     }
+    if(listhead == sb) return;
     sb->next = listhead;
     sb->prev = listhead->prev;
     listhead->prev->next = sb;
     listhead->prev = sb;
+    
+    
     //然后把表头向前移动一位
-    cache_chain[cpu][order] = sb;
+    if(listhead == cache_chain[cpu][order])
+        cache_chain[cpu][order] = sb;
 }
