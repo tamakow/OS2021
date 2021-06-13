@@ -25,6 +25,7 @@ static inline void * alloc_mem (size_t size) {
     return ret;
 }
 
+int cnt = 0;
 
 static void *kalloc(size_t size) {
   int cpu = cpu_current();
@@ -32,6 +33,8 @@ static void *kalloc(size_t size) {
   if(size > PAGE_SIZE) {
     // TODO!!
     // 写freelist来分配
+    if (cpu_count() == 4 && cnt > 2) return NULL;
+    cnt++; 
     size_t bsize = pow2(size);
     void *tmp = tail;
     acquire(&global_lock);
@@ -77,8 +80,7 @@ static void *kalloc(size_t size) {
   if(full_slab(now)) assert(0);
   print(FONT_RED, "get lock!");
   
-  if(cpu_count() == 4)
-  acquire(&now->lock);
+
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
   Log("now start_ptr is %p", now->start_ptr);
@@ -87,10 +89,13 @@ static void *kalloc(size_t size) {
   //分配完，更新最新的offset，并更新它的下一个offset
   struct obj_head *objhead = (struct obj_head *)now_ptr;
   
+  if(cpu_count() == 4)
+  acquire(&now->lock);
   now->offset = objhead->next_offset;
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
-
+  if(cpu_count() == 4)
+  release(&now->lock);
   
   Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
@@ -98,8 +103,6 @@ static void *kalloc(size_t size) {
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
     Log("%p:Now cache_chain is not full and now->offset is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->offset);
   }
-  if(cpu_count() == 4)
-  release(&now->lock);
 
   print(FONT_RED, "release lock!");
   return ret;
