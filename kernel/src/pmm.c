@@ -89,7 +89,7 @@ static void *kalloc(size_t size) {
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
   // acquire(&now->lock);
   now->obj_cnt ++;
-  release(&now->lock);
+  
   
   Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
@@ -97,6 +97,7 @@ static void *kalloc(size_t size) {
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
     Log("%p:Now cache_chain is not full and now->offset is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->offset);
   }
+  release(&now->lock);
   print(FONT_RED, "release lock!");
   return ret;
 }
