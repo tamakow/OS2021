@@ -112,6 +112,7 @@ static void *kalloc(size_t size) {
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
+  return;
   if(cpu_count() != 4 || free_cnt >= 10) return;
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
   uintptr_t slab_head = ROUNDDOWN(ptr, PAGE_SIZE);
