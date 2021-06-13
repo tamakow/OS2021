@@ -83,10 +83,9 @@ static void *kalloc(size_t size) {
   Log("now ptr is %p", now_ptr);
   //分配完，更新最新的offset，并更新它的下一个offset
   struct obj_head *objhead = (struct obj_head *)now_ptr;
-  
+  acquire(&now->lock);
   now->offset = objhead->next_offset;
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
-  acquire(&now->lock);
   now->obj_cnt ++;
   release(&now->lock);
   
@@ -111,12 +110,12 @@ static void kfree(void *ptr) {
   struct obj_head* objhead = (struct obj_head*) ptr;
   acquire(&sb->lock);
   sb->obj_cnt--;
-  release(&sb->lock);
   Log("objcnt is %d", sb->obj_cnt);
   objhead->next_offset = sb->offset;
   Log("next_offset is %d", objhead->next_offset);
   sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
   Log("sb->offset is %d", sb->offset);
+  release(&sb->lock);
   insert_slab_to_head(sb);
 }
 
