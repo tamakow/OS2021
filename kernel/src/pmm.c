@@ -26,6 +26,7 @@ static inline void * alloc_mem (size_t size) {
 }
 
 int cnt = 0;
+int free_cnt = 0;
 
 static void *kalloc(size_t size) {
   int cpu = cpu_current();
@@ -80,7 +81,7 @@ static void *kalloc(size_t size) {
   if(full_slab(now)) assert(0);
   print(FONT_RED, "get lock!");
   
-  if(cpu_count() == 4)
+  if(cpu_count() == 4 && free_cnt < 20)
   acquire(&now->lock);
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
@@ -94,7 +95,7 @@ static void *kalloc(size_t size) {
   now->offset = objhead->next_offset;
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
-  if(cpu_count() == 4)
+  if(cpu_count() == 4  && free_cnt < 20)
   release(&now->lock);
   
   Log("Ready to judge if now is full");
@@ -109,10 +110,9 @@ static void *kalloc(size_t size) {
 }
 
 
-int free_cnt = 0;
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
-  if(cpu_count() != 4 && free_cnt < 10) return;
+  if(cpu_count() != 4 && free_cnt < 20) return;
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
   uintptr_t slab_head = ROUNDDOWN(ptr, PAGE_SIZE);
   Log("slabhead is %p", slab_head);
