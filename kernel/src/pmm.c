@@ -13,7 +13,7 @@ static inline size_t pow2 (size_t size) {
   return ret;
 }
 
-static inline void * alloc_mem (size_t size, int cpu) {
+static inline void * alloc_mem (size_t size) {
     acquire(&global_lock);
     void *ret;
     if((uintptr_t)head + PAGE_SIZE  > (uintptr_t)tail) ret = NULL;
@@ -51,7 +51,7 @@ static void *kalloc(size_t size) {
   while(size > (1 << item_id)) item_id++;
   slab *now;
   if(cache_chain[cpu][item_id] == NULL){
-    cache_chain[cpu][item_id] = (slab*) alloc_mem(PAGE_SIZE, cpu);
+    cache_chain[cpu][item_id] = (slab*) alloc_mem(PAGE_SIZE);
     Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]);
     if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
     new_slab(cache_chain[cpu][item_id], cpu, item_id);
@@ -60,7 +60,7 @@ static void *kalloc(size_t size) {
     if(full_slab(cache_chain[cpu][item_id])) {
       print(FONT_RED, "the cache_chain is full, needed to allocate new space");
       //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
-      slab* sb = (slab*) alloc_mem(PAGE_SIZE, cpu);
+      slab* sb = (slab*) alloc_mem(PAGE_SIZE);
       Log("alloc memory addr is %p", (void *)sb);
       if(sb == NULL) return NULL;
       new_slab(sb, cpu, item_id);
@@ -74,7 +74,9 @@ static void *kalloc(size_t size) {
   //成功找到slab
   // TODO
   //应该有空位
+  if(full_slab(now)) assert(0);
   print(FONT_RED, "get lock!");
+  acquire(&now->lock);
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
   Log("now start_ptr is %p", now->start_ptr);
@@ -87,7 +89,7 @@ static void *kalloc(size_t size) {
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
   // acquire(&now->lock);
   now->obj_cnt ++;
-  // release(&now->lock);
+  release(&now->lock);
   
   Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
@@ -101,9 +103,10 @@ static void *kalloc(size_t size) {
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
-  return;
+  // return;
   if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
-  uintptr_t slab_head = (uintptr_t)ptr - ((uintptr_t)ptr & (PAGE_SIZE - 1));
+  // uintptr_t slab_head = (uintptr_t)ptr - ((uintptr_t)ptr & (PAGE_SIZE - 1));
+  uintptr_t slab_head = ROUNDDOWN(ptr, PAGE_SIZE);
   Log("slabhead is %p", slab_head);
   slab* sb = (slab *)slab_head;
   struct obj_head* objhead = (struct obj_head*) ptr;
