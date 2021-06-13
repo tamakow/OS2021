@@ -60,7 +60,7 @@ bool full_slab(slab* sb) {
 
 // head 即为 cache_chain[cpu][item_id]，保证head不为NULL
 void insert_slab_to_head (slab* sb) {
-    acquire(&sb->lock);
+    // acquire(&sb->lock);
     int cpu = cpu_current();
     int order  = sb->obj_order;
     //如果在链表的话，先从链表中删除
@@ -78,5 +78,5 @@ void insert_slab_to_head (slab* sb) {
     listhead->prev = sb;
     //然后把表头向前移动一位
     cache_chain[cpu][order] = sb;
-    release(&sb->lock);
+    // release(&sb->lock);
 }
