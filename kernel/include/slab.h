@@ -17,6 +17,7 @@ typedef union slab {
         union slab *prev;
         int obj_order; //分配的大小为2^obj_order
         uintptr_t start_ptr; //第一个数据的起始位置
+        int cpu;
     };
     struct {
         uint8_t header[HDR_SIZE];

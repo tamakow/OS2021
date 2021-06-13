@@ -4,7 +4,6 @@
 
 
 static struct spinlock global_lock;
-static struct spinlock big_lock;
 void *tail, *head;
 
 //cache的最小单位为2B，但是pow2只给大内存分配(> 4096)，即最小的ret都是 1<<13 所以问题不大
@@ -66,9 +65,7 @@ static void *kalloc(size_t size) {
       if(sb == NULL) return NULL;
       new_slab(sb, cpu, item_id);
       //这里注意，本来不应该用insert的，因为它是一个new的slab，本身不在链表上
-      acquire(&big_lock);
       insert_slab_to_head(sb);
-      release(&big_lock);
     }
   }
   now = cache_chain[cpu][item_id];
@@ -79,7 +76,6 @@ static void *kalloc(size_t size) {
   //应该有空位
   if(full_slab(now)) assert(0);
   print(FONT_RED, "get lock!");
-  acquire(&now->lock);
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
   Log("now start_ptr is %p", now->start_ptr);
@@ -90,9 +86,9 @@ static void *kalloc(size_t size) {
   
   now->offset = objhead->next_offset;
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
-  // acquire(&now->lock);
+  acquire(&now->lock);
   now->obj_cnt ++;
-  
+  release(&now->lock);
   
   Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
@@ -100,7 +96,6 @@ static void *kalloc(size_t size) {
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
     Log("%p:Now cache_chain is not full and now->offset is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->offset);
   }
-  release(&now->lock);
   print(FONT_RED, "release lock!");
   return ret;
 }
@@ -116,21 +111,18 @@ static void kfree(void *ptr) {
   struct obj_head* objhead = (struct obj_head*) ptr;
   acquire(&sb->lock);
   sb->obj_cnt--;
+  release(&sb->lock);
   Log("objcnt is %d", sb->obj_cnt);
   objhead->next_offset = sb->offset;
   Log("next_offset is %d", objhead->next_offset);
   sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
   Log("sb->offset is %d", sb->offset);
-  release(&sb->lock);
-  acquire(&big_lock);
   insert_slab_to_head(sb);
-  release(&big_lock);
 }
 
 static void pmm_init() {
   slab_init();
   initlock(&global_lock, "globallock");
-  initlock(&big_lock, "biglock");
   head = heap.start;
   tail = heap.end;
   Log("%d",cpu_count());

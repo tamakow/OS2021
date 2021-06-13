@@ -23,6 +23,7 @@ void new_slab(slab * sb, int cpu, int item_id) {
     sb->start_ptr = (uintptr_t)(((uintptr_t)(sb->data) - 1) / size + 1) * size; 
     sb->offset = 0;
     sb->max_obj = (int)((uintptr_t)sb + PAGE_SIZE - sb->start_ptr) / size;
+    sb->cpu = cpu;
     Log("sb's max_obj is %d", sb->max_obj);
     
     // init circular list
@@ -60,7 +61,7 @@ bool full_slab(slab* sb) {
 
 // head 即为 cache_chain[cpu][item_id]，保证head不为NULL
 void insert_slab_to_head (slab* sb) {
-    int cpu = cpu_current();
+    int cpu = sb->cpu;
     int order  = sb->obj_order;
     //如果在链表的话，先从链表中删除
     sb->prev->next = sb->next;
