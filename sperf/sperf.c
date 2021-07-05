@@ -162,11 +162,9 @@ int main(int argc, char *argv[]) {
     
     int c = 0;
     char str[1024]; // 每次从文件流读取一行
-    // clock_t l = clock();
     time_t T = time(NULL);
     while(waitpid(-1, &status, WNOHANG) == 0) {
       if(!fgets(str, sizeof(str), stdin)) break;
-      // clock_t r = clock();
       if(time(NULL) > T) {
         T += 1;
         display();
