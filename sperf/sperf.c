@@ -157,7 +157,7 @@ int main(int argc, char *argv[]) {
     Assert("Should not reach here!");
   } else {
     int status = 0;
-    // close(fildes[1]);
+    close(fildes[1]);
     dup2(fildes[0], STDIN_FILENO);
     
     int c = 0;
