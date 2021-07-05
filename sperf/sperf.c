@@ -184,6 +184,13 @@ int main(int argc, char *argv[]) {
       }
       strncpy(name, str + name_match.rm_so, name_match.rm_eo - name_match.rm_so);
       name[name_match.rm_eo - name_match.rm_so - 1] = '\0';
+      //换成小写
+      for (int i = 0; name[i] != '\0'; ++i) {
+        if(name[i] >= 'A' && name[i] <= 'Z') {
+          name[i] += 32;
+        }
+      }
+
       //读取系统调用时间
       Log("name is %s",name);
       if(regexec(&time_preg, str, 1, &time_match, 0) == REG_NOMATCH) {
