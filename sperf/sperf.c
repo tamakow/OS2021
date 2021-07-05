@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
     while(waitpid(-1, &status, WNOHANG) == 0) {
       if(!fgets(str, sizeof(str), stdin)) break;
       // clock_t r = clock();
-      if(tiem(NULL) > T) {
+      if(time(NULL) > T) {
         T += 1;
         display();
       }
