@@ -199,7 +199,8 @@ int main(int argc, char *argv[]) {
       }
       strncpy(time, str + time_match.rm_so + 1, time_match.rm_eo - time_match.rm_so - 2);
       time[time_match.rm_eo - time_match.rm_so - 3] = '\0';
-      _time = atof(time); 
+      // _time = atof(time); 
+      sscanf(time, "%lf", &_time);
 
       //更新syscall_node_t链表
       if(head == NULL) {
