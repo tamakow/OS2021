@@ -104,5 +104,8 @@ int main(int argc, char *argv[]) {
     int fd = open(img, O_RDONLY);
     struct fat_header *disk = (struct fat_header *)mmap(NULL, sizeof(struct fat_header), PROT_READ, MAP_PRIVATE, fd, 0);  
     Assert(disk->Signature_word == 0xaa55, "not a valid fat");
+    munmap((void *)disk, sizeof(struct fat_header));
+    close(fd);
+    
     return 0;
 }
