@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     int fd = open(img, O_RDONLY);
     Assert(fd, "open img file failed!");
     struct fat_header *disk = (struct fat_header *)mmap(NULL, sizeof(struct fat_header), PROT_READ, MAP_PRIVATE, fd, 0);  
-    Log("%d %d", (int)disk->BPB_BytsPerSec, (int)disk->BPB_SecPerClus);
+    Log("Bytes per sector is %d,the number of sectors per cluster is   %d", (int)disk->BPB_BytsPerSec, (int)disk->BPB_SecPerClus);
     Assert(disk->Signature_word == 0xaa55, "not a valid fat");
     munmap((void *)disk, sizeof(struct fat_header));
     close(fd);
