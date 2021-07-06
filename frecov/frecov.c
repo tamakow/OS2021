@@ -2,7 +2,10 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
-
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #define bool uint8_t
 #define false 0
@@ -50,10 +53,6 @@
     } while (0)
 #endif
 
-
-
-
-
 struct fat_header {
     uint8_t BS_jmpBoot[3];
     uint8_t BS_OEMName[8];
@@ -84,10 +83,24 @@ struct fat_header {
     uint8_t BS_FilSysType[8];
     uint8_t  padding[420];
     uint16_t Signature_word;
-}__attribute__((packed));
+} __attribute__((packed));
+
+
+void Usage() {
+  printf("Invalid usage\n");
+  print(FONT_RED, "Usage: frecov file");
+}
 
 
 int main(int argc, char *argv[]) {
     Assert(sizeof(struct fat_header) == 512, "bad header!");
+    if(argc < 2) {
+      Usage();
+      exit(EXIT_FAILURE);
+    }
+    char *img = argv[1];
+    int fd = open(img, O_RDONLY);
+    struct fat_header *disk = (struct fat_header *)mmap(NULL, sizeof(struct fat_header)), PROT_READ, MAP_PRIVATE, fd, 0);  
+    Assert(disk->Signature_word == 0xaa55, "not a valid fat");
     return 0;
 }
