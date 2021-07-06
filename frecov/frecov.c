@@ -94,7 +94,7 @@ void Usage() {
 
 int main(int argc, char *argv[]) {
     Assert(sizeof(struct fat_header) == 512, "bad header!");
-    Log("%d", sizeof(struct fat_header));
+    Log("%ld", sizeof(struct fat_header));
     fflush(stdout);
     if(argc < 2) {
       Usage();
