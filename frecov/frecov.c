@@ -101,7 +101,9 @@ int main(int argc, char *argv[]) {
     }
     char *img = argv[1];
     int fd = open(img, O_RDONLY);
+    Assert(fd, "open img file failed!");
     struct fat_header *disk = (struct fat_header *)mmap(NULL, sizeof(struct fat_header), PROT_READ, MAP_PRIVATE, fd, 0);  
+    Log("%x", disk->BS_jmpBoot);
     Assert(disk->Signature_word == 0xaa55, "not a valid fat");
     munmap((void *)disk, sizeof(struct fat_header));
     close(fd);
