@@ -206,7 +206,7 @@ int main(int argc, char *argv[]) {
     disk = (struct FAT*)malloc(sizeof(struct FAT));
     disk->fat_head = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);  
     
-    disk->bpb =  (struct fat_header *)disk->fat_head;
+    disk->bpb =  (struct FAT_HEADER *)disk->fat_head;
     Log("Bytes per sector is %d,the number of sectors per cluster is %d", (int)disk->bpb->BPB_BytsPerSec, (int)disk->bpb->BPB_SecPerClus);
     Log("the number of FAT is %d", (int)disk->bpb->BPB_NumFATs);
     Assert(disk->bpb->Signature_word == 0xaa55, "not a valid fat");
