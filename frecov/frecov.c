@@ -54,6 +54,9 @@
 #endif
 
 
+
+#define  FAT_COPIES     2
+
 #define  ATTR_READ_ONLY 0x01
 #define  ATTR_HIDDEN    0x02
 #define  ATTR_SYSTEM    0x04
@@ -70,7 +73,7 @@
 
 // bios paremeter block(BPB)
 // the first sector of the volume
-struct fat_header {
+struct FAT_HEADER {
     uint8_t BS_jmpBoot[3];
     uint8_t BS_OEMName[8];
     uint16_t BPB_BytsPerSec;
@@ -103,7 +106,29 @@ struct fat_header {
     uint16_t Signature_word;
 } __attribute__((packed));
 
-struct fat_dir {
+struct FSINFO {
+  uint32_t FSI_LeadSig;        
+  uint8_t  FSI_Reserved1[480]; 
+  uint32_t FSI_StrucSig;       
+  uint32_t FSI_Free_Count;     
+  uint32_t FSI_Nxt_Free;       
+  uint8_t  FSI_Reserved2[12];  
+  uint32_t FSI_TrailSig;       
+} __attribute__((packed));
+
+struct FAT_TABLE {
+  uint32_t next;
+} __attribute__((packed));
+
+struct FAT {
+  void *fat_head;
+  struct FAT_HEADER *bpb;
+  struct FSINFO *fsinfo;
+  struct FAT_TABLE *fat[FAT_COPIES];
+  void *data;
+};
+
+struct FAT_DIR {
   uint8_t DIR_Name[11]; //short name (limited to 11 characters)
   uint8_t DIR_Attr;
   uint8_t DIR_NTRes;
@@ -118,7 +143,7 @@ struct fat_dir {
   uint32_t DIR_FileSize;
  } __attribute__((packed));
 
-struct fat_ldir {
+struct FAT_LDIR {
   uint8_t LDIR_Ord;
   uint8_t LDIR_Name1[10];
   uint8_t LDIR_Attr;
@@ -131,14 +156,14 @@ struct fat_ldir {
 
 
 // http://www.ece.ualberta.ca/~elliott/ee552/studentAppNotes/2003_w/misc/bmp_file_format/bmp_file_format.htm
-struct bmp_header {
+struct BMP_HEADER {
   uint16_t Signature; // 'BM'
   uint32_t FileSize; // File size in bytes
   uint32_t reserved; //0
   uint32_t DataOffset;
 } __attribute__((packed));
 
-struct bmp_infoheader {
+struct BMPINFO_HEADER {
   uint32_t Size;
   int32_t  Width;  
   int32_t  Height; 
@@ -152,6 +177,10 @@ struct bmp_infoheader {
   uint32_t ImportantColors;
 } __attribute__((packed));
 
+
+
+struct FAT *disk;
+
 void Usage() {
   printf("Invalid usage\n");
   print(FONT_RED, "Usage: frecov file");
@@ -159,8 +188,8 @@ void Usage() {
 
 
 int main(int argc, char *argv[]) {
-    Assert(sizeof(struct fat_header) == 512, "bad header!");
-    Log("%d", (int)sizeof(struct fat_header));
+    Assert(sizeof(struct FAT_HEADER) == 512, "bad header!");
+    Log("%d", (int)sizeof(struct FAT_HEADER));
     
     if(argc < 2) {
       Usage();
@@ -173,13 +202,15 @@ int main(int argc, char *argv[]) {
     struct stat st;
     Assert(fstat(fd, &st) != -1, "Read img stat failed!");
     
-    void *FAT_HEAD = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);  
+
+    disk = (struct FAT*)malloc(sizeof(struct FAT));
+    disk->fat_head = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);  
     
-    struct fat_header* BPB =  (struct fat_header *)FAT_HEAD;
-    Log("Bytes per sector is %d,the number of sectors per cluster is %d", (int)BPB->BPB_BytsPerSec, (int)BPB->BPB_SecPerClus);
-    Log("the number of FAT is %d", (int)BPB->BPB_NumFATs);
-    Assert(BPB->Signature_word == 0xaa55, "not a valid fat");
-    munmap(FAT_HEAD, st.st_size);
+    disk->bpb =  (struct fat_header *)disk->fat_head;
+    Log("Bytes per sector is %d,the number of sectors per cluster is %d", (int)disk->bpb->BPB_BytsPerSec, (int)disk->bpb->BPB_SecPerClus);
+    Log("the number of FAT is %d", (int)disk->bpb->BPB_NumFATs);
+    Assert(disk->bpb->Signature_word == 0xaa55, "not a valid fat");
+    munmap(disk->fat_head, st.st_size);
     close(fd);
     
     return 0;
