@@ -213,6 +213,7 @@ int main(int argc, char *argv[]) {
     Assert(disk->bpb->Signature_word == 0xaa55, "not a valid BPB");
     
     disk->fsinfo = (struct FSINFO*)(disk->fat_head + BPB_SIZE);
+    Log("0x%x", (int)(disk->fsinfo->FSI_TrailSig));
     Assert(disk->fsinfo->FSI_TrailSig != 0xaa550000, "not a valid FSINFO");
     
     munmap(disk->fat_head, st.st_size);
