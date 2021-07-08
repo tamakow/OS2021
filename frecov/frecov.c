@@ -56,6 +56,7 @@
 
 
 #define  FAT_COPIES     2
+#define  BPB_SIZE    512
 
 #define  ATTR_READ_ONLY 0x01
 #define  ATTR_HIDDEN    0x02
@@ -188,7 +189,7 @@ void Usage() {
 
 
 int main(int argc, char *argv[]) {
-    Assert(sizeof(struct FAT_HEADER) == 512, "bad header!");
+    Assert(sizeof(struct FAT_HEADER) == BPB_SIZE, "bad header!");
     Log("%d", (int)sizeof(struct FAT_HEADER));
     
     if(argc < 2) {
@@ -209,7 +210,11 @@ int main(int argc, char *argv[]) {
     disk->bpb =  (struct FAT_HEADER *)disk->fat_head;
     Log("Bytes per sector is %d,the number of sectors per cluster is %d", (int)disk->bpb->BPB_BytsPerSec, (int)disk->bpb->BPB_SecPerClus);
     Log("the number of FAT is %d", (int)disk->bpb->BPB_NumFATs);
-    Assert(disk->bpb->Signature_word == 0xaa55, "not a valid fat");
+    Assert(disk->bpb->Signature_word == 0xaa55, "not a valid BPB");
+    
+    disk->fsinfo = (struct FSINFO*)(disk->fat_head + BPB_SIZE);
+    Assert(disk->fsinfo->FSI_TrailSig != 0xaa550000, "not a valid FSINFO");
+    
     munmap(disk->fat_head, st.st_size);
     close(fd);
     
