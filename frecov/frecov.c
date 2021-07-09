@@ -315,7 +315,7 @@ int main(int argc, char *argv[]) {
             char str[50], buf[50];
             
 
-            if((size_t)(bmphead + FileSize) > disk->fat_head + st.st_size) continue;
+            if((size_t)(bmphead + FileSize) > (size_t)disk->fat_head + st.st_size) continue;
             Assert((fd = mkstemp(tmpfile)) != -1, "create tmp_file failed!");
             write(fd, (void *)bmphead, FileSize); // continuous storage condition!!
             close(fd);
