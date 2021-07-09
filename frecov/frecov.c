@@ -54,6 +54,23 @@
 #endif
 
 
+#ifdef  DEBUG
+  #define Cassert(cond, format, ...) \
+    do { \
+      if (!(cond)) { \
+        Log(format, ## __VA_ARGS__); \
+        continue; \
+      } \
+    } while (0)
+#else
+#define Cassert(cond, format, ...)\
+    do { \
+      if (!(cond)) { \
+        continue; \
+      } \
+    } while (0)
+#endif
+
 
 #define  FAT_COPIES     2
 #define  BPB_SIZE       512
@@ -290,11 +307,10 @@ int main(int argc, char *argv[]) {
           if(dir->DIR_Name[8] == 'B' && dir->DIR_Name[9] == 'M' && dir->DIR_Name[10] == 'P') {
             //judge valid bmphead and compute sha1sum
             uint16_t clu_idx = (dir->DIR_FstClusHI << 16) | dir->DIR_FstClusLO;
-            Log("the clu_idx is %d", (int) clu_idx);
-            Assert(clu_idx >= 2 && clu_idx <= MAX_CLU_NR, "Invalid cluster idx!");
+            Cassert(clu_idx >= 2 && clu_idx <= MAX_CLU_NR, "Invalid cluster idx!");
             struct BMP_HEADER *bmphead = (struct BMP_HEADER*) (disk->data + (clu_idx - 2) * clu_sz);
-            Assert(bmphead->Signature == 0x4d42, "Not a valid bmpheader"); //should not assert
-            Assert(label[clu_idx - 2] == BMPHEAD, "Not a valid bmphead");
+            Cassert(bmphead->Signature == 0x4d42, "Not a valid bmpheader"); //should not assert
+            Cassert(label[clu_idx - 2] == BMPHEAD, "Not a valid bmphead");
 
             // find filename
             uint8_t chksum = ChkSum((unsigned char*)dir->DIR_Name);
