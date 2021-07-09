@@ -292,7 +292,7 @@ int main(int argc, char *argv[]) {
             uint16_t clu_idx = (dir->DIR_FstClusHI << 16) | dir->DIR_FstClusLO;
             Assert(clu_idx >= 2 && clu_idx <= MAX_CLU_NR, "Invalid cluster idx!");
             struct BMP_HEADER *bmphead = (struct BMP_HEADER*) (disk->data + (clu_idx - 2) * clu_sz);
-            Assert(bmphead->Signature == 0x424d, "Not a valid bmpheader"); //should not assert
+            Assert(bmphead->Signature == 0x4d42, "Not a valid bmpheader"); //should not assert
             Assert(label[clu_idx - 2] == BMPHEAD, "Not a valid bmphead");
 
             // find filename
