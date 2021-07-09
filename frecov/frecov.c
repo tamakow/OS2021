@@ -260,6 +260,7 @@ int main(int argc, char *argv[]) {
     int tot = 0;
     for (void *clu = disk->data; clu < disk->fat_head + st.st_size; clu += clu_sz) {
       int c = UNLABEL;
+      int cnt = 0;
       for (int i = 0; i < dir_nr; ++i) {
         // scan every dir in a cluster to judge types of the cluster
         struct FAT_DIR *dir = (struct FAT_DIR*)(clu + i * DIR_SIZE);
@@ -270,8 +271,11 @@ int main(int argc, char *argv[]) {
             break;
         }
         if(dir->DIR_Name[8] == 'B' && dir->DIR_Name[9] == 'M' && dir->DIR_Name[10] == 'P') {
-            c = DIRECT;
-            break;
+            cnt ++;
+            if(cnt > 1) {
+              c = DIRECT;
+              break;
+            }
         }
       }
       if (c == UNLABEL) c = BMPDATA; // UNUSED is regarded as BMPDATA
