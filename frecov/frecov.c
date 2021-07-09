@@ -320,7 +320,7 @@ int main(int argc, char *argv[]) {
             write(fd, (void *)bmphead, FileSize); // continuous storage condition!!
             close(fd);
             sprintf(str, "sha1sum %s", tmpfile);
-            FILE *fp = popen("sha1sum /tmp/your-tmp-filename", "r");
+            FILE *fp = popen(str, "r");
             Assert(fp != NULL, "popen");
             fscanf(fp, "%s", buf); // Get it!
             Log("the len of buf is %d", (int)strlen(buf));
