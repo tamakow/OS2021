@@ -56,7 +56,8 @@
 
 
 #define  FAT_COPIES     2
-#define  BPB_SIZE    512
+#define  BPB_SIZE       512
+#define  DIR_SIZE       32
 
 #define  ATTR_READ_ONLY 0x01
 #define  ATTR_HIDDEN    0x02
@@ -130,7 +131,7 @@ struct FAT {
 };
 
 struct FAT_DIR {
-  uint8_t DIR_Name[11]; //short name (limited to 11 characters)
+  uint8_t DIR_Name[11]; //short name (limited to 8 characters)
   uint8_t DIR_Attr;
   uint8_t DIR_NTRes;
   uint8_t DIR_CrtTimeTenth;
@@ -180,7 +181,8 @@ struct BMPINFO_HEADER {
 
 
 
-struct FAT *disk;
+static struct FAT *disk;
+enum {UNLABEL = 0, DIRECT, BMPHEAD, BMPDATA, UNUSED};
 
 void Usage() {
   printf("Invalid usage\n");
@@ -203,7 +205,10 @@ int main(int argc, char *argv[]) {
     struct stat st;
     Assert(fstat(fd, &st) != -1, "Read img stat failed!");
     
-
+// ====================================================================================
+//                                 Initialize Disk
+//=====================================================================================
+    
     disk = (struct FAT*)malloc(sizeof(struct FAT));
     disk->fat_head = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);  
     
@@ -214,6 +219,49 @@ int main(int argc, char *argv[]) {
     
     disk->fsinfo = (struct FSINFO*)(disk->fat_head + BPB_SIZE);
     Assert(disk->fsinfo->FSI_TrailSig == 0xaa550000, "not a valid FSINFO");
+    
+    size_t ft_off = (size_t)(disk->bpb->BPB_BytsPerSec * disk->bpb->BPB_RsvdSecCnt); // FAT_TABLE offset
+    size_t ft_sz  = (size_t)(disk->bpb->BPB_BytsPerSec * disk->bpb->BPB_FATSz32);
+    disk->fat[0] = (struct FAT_TABLE*)(disk->fat_head + ft_off);
+    // It's recommanded that the number of FAT table should be 2
+    if(disk->bpb->BPB_NumFATs == 2)
+      disk->fat[1] = (struct FAT_TABLE*)((void *)disk->fat[0] + ft_sz); // Since FAT32
+    else
+      disk->fat[1] = disk->fat[0];
+    
+    // the value of rootclus is recommended to be 2 or the first usable cluster
+    size_t data_off = (ft_off + 
+                      (size_t)(ft_sz * disk->bpb->BPB_NumFATs) + 
+                      (size_t)((disk->bpb->BPB_RootClus - 2) * disk->bpb->BPB_SecPerClus * disk->bpb->BPB_BytsPerSec));
+    disk->data = (void *)(disk->fat_head + data_off);
+
+
+// ====================================================================================
+//                                 Scan Cluster
+//=====================================================================================
+
+    // scan every cluster
+    size_t clu_sz = disk->bpb->BPB_BytsPerSec * disk->bpb->BPB_SecPerClus;
+    int dir_nr = clu_sz / DIR_SIZE;
+    for (void *clu = disk->data; clu < disk->fat_head + st.st_size; clu += clu_sz) {
+      int c = UNLABEL;
+      for (int i = 0; i < dir_nr; ++i) {
+        // scan every dir in a cluster to judge types of the cluster
+        struct FAT_DIR *dir = (struct FAT_DIR*)(clu + i * DIR_SIZE);
+        if (dir->DIR_Name[0] == 0x00) break; // all dir entry following this are also free
+        if (dir->DIR_Name[0] == 0xe5) continue; // empty dir
+        if(i == 0 && dir->DIR_Name[0] == 'B' && dir->DIR_Name[1] == 'M') {
+            c = BMPHEAD;
+            break;
+        }
+        if(dir->DIR_Name[8] == 'B' && dir->DIR_Name[9] == 'M' && dir->DIR_Name[10] == 'P') {
+            c = DIRECT;
+            break;
+        }
+      }
+      if (c == UNLABEL) c = BMPDATA; // UNUSED is regarded as BMPDATA
+      
+    }
     
     munmap(disk->fat_head, st.st_size);
     close(fd);
