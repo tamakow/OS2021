@@ -12,7 +12,7 @@
 #define false 0
 #define true 1
 
-#define DEBUG
+// #define DEBUG
 
 #define  FONT_BLACK          "\033[1;30m"
 #define  FONT_RED            "\033[1;31m"
@@ -288,7 +288,7 @@ int main(int argc, char *argv[]) {
         void *clu_addr = disk->data + clu_sz * i;
         for (int j = 0; j < dir_nr; ++j) {
           struct FAT_DIR *dir = (struct FAT_DIR*)(clu_addr + j * DIR_SIZE);
-          if(dir->DIR_Name[8] == 'B' && dir->DIR_Name[9] == 'M' && dir->DIR_Name[10] == 'P') {
+          if(j > 0 && dir->DIR_Name[8] == 'B' && dir->DIR_Name[9] == 'M' && dir->DIR_Name[10] == 'P') {
             //judge valid bmphead
             uint16_t clu_idx = (dir->DIR_FstClusHI << 16) | dir->DIR_FstClusLO;
             
@@ -308,6 +308,11 @@ int main(int argc, char *argv[]) {
               continue;
             }
 
+            uint8_t chksum = ChkSum((unsigned char*)dir->DIR_Name);
+            struct FAT_LDIR *ldir = (struct FAT_LDIR *)((void *)dir - DIR_SIZE);
+            if(ldir->LDIR_Attr != ATTR_LONG_NAME) continue;
+            if(ldir->LDIR_Chksum != chksum) continue;
+
             //compute sha1sum
             uint16_t FileSize = bmphead->FileSize;
             char tmpfile[] = "/tmp/tmp_XXXXXX";
@@ -326,9 +331,28 @@ int main(int argc, char *argv[]) {
             Log("the len of buf is %d", (int)strlen(buf));
             printf("%s ", buf); //sha1sum!
             pclose(fp);
-            // find filename
-            uint8_t chksum = ChkSum((unsigned char*)dir->DIR_Name);
 
+            // find filename
+            uint16_t name[1024];
+            int len = 0;
+            while ((size_t)ldir >= (size_t)clu_addr) {
+              if ((ldir->LDIR_Ord & 0x40)) break;
+              if (ldir->LDIR_Chksum == ChkSum) {
+                for (int i = 0; i < 5; ++i) name[len++] = ldir->LDIR_Name1[i << 1];
+                for (int i = 0; i < 6; ++i) name[len++] = ldir->LDIR_Name2[i << 1];
+                for (int i = 0; i < 2; ++i) name[len++] = ldir->LDIR_Name3[i << 1];
+              }
+              ldir--;
+            }
+            for (int i = 0; i < len; ++i) {
+              if(name[i] == 0x00) {
+                printf(".bmp\n");
+                break;
+              } else {
+                printf("%c", name[i]);
+              }
+            }
+            fflush(stdout);
           }
         }
       }
