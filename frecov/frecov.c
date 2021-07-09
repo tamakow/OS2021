@@ -346,13 +346,9 @@ int main(int argc, char *argv[]) {
             }
             Log("%d", len);
             for (int i = 0; i < len; ++i) {
-              if(name[i] == 0x00 || name[i] == 0xff) {
-                printf(".bmp\n");
-                break;
-              } else {
-                // printf("%c", name[i]);
-              }
+              printf("%c", name[i]);
             }
+            printf(".bmp\n");
             fflush(stdout);
           }
         }
