@@ -58,6 +58,7 @@
 #define  FAT_COPIES     2
 #define  BPB_SIZE       512
 #define  DIR_SIZE       32
+#define  MAX_CLU_NR     32768   // 硬编码的数据， 由于磁盘最多128MiB， 每个cluster的size为 8 * 512 B = 4 KiB
 
 #define  ATTR_READ_ONLY 0x01
 #define  ATTR_HIDDEN    0x02
@@ -182,11 +183,24 @@ struct BMPINFO_HEADER {
 
 
 static struct FAT *disk;
+static int label[MAX_CLU_NR] = {}; 
 enum {UNLABEL = 0, DIRECT, BMPHEAD, BMPDATA, UNUSED};
 
 void Usage() {
   printf("Invalid usage\n");
   print(FONT_RED, "Usage: frecov file");
+}
+
+unsigned char Char ChkSum (unsigned char *pFcbName) {
+  short FcbNameLen;
+  unsigned char Sum;
+
+  Sum = 0;
+  for (FcbNameLen = 11; FcbNameLen != 0; --FcbNameLen) {
+    // NOTE: The operation is an unsigned char rotate right
+    Sum = ((Sum & 1) ? 0x80 : 0) + (Sum >> 1) + *pFcbName++;
+  }
+  return Sum;
 }
 
 
@@ -243,6 +257,7 @@ int main(int argc, char *argv[]) {
     // scan every cluster
     size_t clu_sz = disk->bpb->BPB_BytsPerSec * disk->bpb->BPB_SecPerClus;
     int dir_nr = clu_sz / DIR_SIZE;
+    int tot = 0;
     for (void *clu = disk->data; clu < disk->fat_head + st.st_size; clu += clu_sz) {
       int c = UNLABEL;
       for (int i = 0; i < dir_nr; ++i) {
@@ -260,9 +275,24 @@ int main(int argc, char *argv[]) {
         }
       }
       if (c == UNLABEL) c = BMPDATA; // UNUSED is regarded as BMPDATA
-      
+      label[tot++] = c;
     }
-    
+          
+// ====================================================================================
+//                                 Recover files
+//=====================================================================================
+
+    for (int i = 0; i < tot; ++i) {
+      if(label[i] == DIRECT) {
+        void *clu_addr = disk->data + clu_sz * i;
+        for (int j = 0; j < dir_nr; ++j) {
+          struct FAT_DIR *dir = (struct FAT_DIR*)(clu_addr + j * DIR_SIZE);
+          if(dir->DIR_Name[8] == 'B' && dir->DIR_Name[9] == 'M' && dir->DIR_Name[10] == 'P') {
+            //find short name dir  
+          }
+        }
+      }
+    }
     munmap(disk->fat_head, st.st_size);
     close(fd);
     
