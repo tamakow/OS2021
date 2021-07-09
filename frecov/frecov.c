@@ -349,7 +349,7 @@ int main(int argc, char *argv[]) {
                 printf(".bmp\n");
                 break;
               } else {
-                printf("%c", name[i]);
+                // printf("%c", name[i]);
               }
             }
             fflush(stdout);
