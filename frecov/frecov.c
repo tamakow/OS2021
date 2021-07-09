@@ -12,7 +12,7 @@
 #define false 0
 #define true 1
 
-// #define DEBUG
+#define DEBUG
 
 #define  FONT_BLACK          "\033[1;30m"
 #define  FONT_RED            "\033[1;31m"
