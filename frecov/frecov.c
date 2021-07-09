@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <string.h>
 
 #define bool uint8_t
 #define false 0
@@ -260,7 +261,6 @@ int main(int argc, char *argv[]) {
     int tot = 0;
     for (void *clu = disk->data; clu < disk->fat_head + st.st_size; clu += clu_sz) {
       int c = UNLABEL;
-      int cnt = 0;
       for (int i = 0; i < dir_nr; ++i) {
         // scan every dir in a cluster to judge types of the cluster
         struct FAT_DIR *dir = (struct FAT_DIR*)(clu + i * DIR_SIZE);
@@ -271,11 +271,8 @@ int main(int argc, char *argv[]) {
             break;
         }
         if(dir->DIR_Name[8] == 'B' && dir->DIR_Name[9] == 'M' && dir->DIR_Name[10] == 'P') {
-            cnt ++;
-            if(cnt > 1) {
-              c = DIRECT;
-              break;
-            }
+            c = DIRECT;
+            break;
         }
       }
       if (c == UNLABEL) c = BMPDATA; // UNUSED is regarded as BMPDATA
@@ -292,13 +289,16 @@ int main(int argc, char *argv[]) {
         for (int j = 0; j < dir_nr; ++j) {
           struct FAT_DIR *dir = (struct FAT_DIR*)(clu_addr + j * DIR_SIZE);
           if(dir->DIR_Name[8] == 'B' && dir->DIR_Name[9] == 'M' && dir->DIR_Name[10] == 'P') {
-            //judge valid bmphead and compute sha1sum
+            //judge valid bmphead
             uint16_t clu_idx = (dir->DIR_FstClusHI << 16) | dir->DIR_FstClusLO;
+            
             if(clu_idx < 2 || clu_idx > MAX_CLU_NR) {
               Log("invalid clu idx: %d", clu_idx);
               continue;
             }
+
             struct BMP_HEADER *bmphead = (struct BMP_HEADER*) (disk->data + (clu_idx - 2) * clu_sz);
+            
             if(bmphead->Signature != 0x4d42){
               Log("invalid bmphead");
               continue;
@@ -308,6 +308,24 @@ int main(int argc, char *argv[]) {
               continue;
             }
 
+            //compute sha1sum
+            uint16_t FileSize = bmphead->FileSize;
+            char tmpfile[] = "/tmp/tmp_XXXXXX";
+            int fd;
+            char str[50], buf[50];
+            
+
+            if((size_t)(bmphead + FileSize) > disk->fat_head + st.st_size) continue;
+            Assert((fd = mkstemp(tmpfile)) != -1, "create tmp_file failed!");
+            write(fd, (void *)bmphead, FileSize); // continuous storage condition!!
+            close(fd);
+            sprintf(str, "sha1sum %s", tmpfile);
+            FILE *fp = popen("sha1sum /tmp/your-tmp-filename", "r");
+            Assert(fp != NULL, "popen");
+            fscanf(fp, "%s", buf); // Get it!
+            Log("the len of buf is %d", (int)strlen(buf));
+            printf("%s ", buf); //sha1sum!
+            pclose(fp);
             // find filename
             uint8_t chksum = ChkSum((unsigned char*)dir->DIR_Name);
 
