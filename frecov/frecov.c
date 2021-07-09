@@ -345,7 +345,7 @@ int main(int argc, char *argv[]) {
               ldir--;
             }
             for (int i = 0; i < len; ++i) {
-              if(name[i] == 0x00) {
+              if(name[i] == 0x00 || name[i] == 0xff) {
                 printf(".bmp\n");
                 break;
               } else {
