@@ -344,6 +344,7 @@ int main(int argc, char *argv[]) {
               }
               ldir -= DIR_SIZE;
             }
+            Log("%s", name);
             for (int i = 0; i < len; ++i) {
               if(name[i] == 0x00 || name[i] == 0xff) {
                 printf(".bmp\n");
