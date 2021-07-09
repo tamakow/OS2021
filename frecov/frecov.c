@@ -290,6 +290,7 @@ int main(int argc, char *argv[]) {
           if(dir->DIR_Name[8] == 'B' && dir->DIR_Name[9] == 'M' && dir->DIR_Name[10] == 'P') {
             //judge valid bmphead and compute sha1sum
             uint16_t clu_idx = (dir->DIR_FstClusHI << 16) | dir->DIR_FstClusLO;
+            Log("the clu_idx is %d", (int) clu_idx);
             Assert(clu_idx >= 2 && clu_idx <= MAX_CLU_NR, "Invalid cluster idx!");
             struct BMP_HEADER *bmphead = (struct BMP_HEADER*) (disk->data + (clu_idx - 2) * clu_sz);
             Assert(bmphead->Signature == 0x4d42, "Not a valid bmpheader"); //should not assert
