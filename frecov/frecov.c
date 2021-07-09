@@ -342,7 +342,7 @@ int main(int argc, char *argv[]) {
                 for (int i = 0; i < 6; ++i) name[len++] = ldir->LDIR_Name2[i << 1];
                 for (int i = 0; i < 2; ++i) name[len++] = ldir->LDIR_Name3[i << 1];
               }
-              ldir--;
+              ldir -= DIR_SIZE;
             }
             for (int i = 0; i < len; ++i) {
               if(name[i] == 0x00 || name[i] == 0xff) {
