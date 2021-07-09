@@ -191,7 +191,7 @@ void Usage() {
   print(FONT_RED, "Usage: frecov file");
 }
 
-unsigned char Char ChkSum (unsigned char *pFcbName) {
+unsigned char ChkSum (unsigned char *pFcbName) {
   short FcbNameLen;
   unsigned char Sum;
 
@@ -288,7 +288,16 @@ int main(int argc, char *argv[]) {
         for (int j = 0; j < dir_nr; ++j) {
           struct FAT_DIR *dir = (struct FAT_DIR*)(clu_addr + j * DIR_SIZE);
           if(dir->DIR_Name[8] == 'B' && dir->DIR_Name[9] == 'M' && dir->DIR_Name[10] == 'P') {
-            //find short name dir  
+            //judge valid bmphead and compute sha1sum
+            uint16_t clu_idx = (dir->DIR_FstClusHI << 16) | dir->DIR_FstClusLO;
+            Assert(clu_idx >= 2 && clu_idx <= MAX_CLU_NR, "Invalid cluster idx!");
+            struct BMP_HEADER *bmphead = (struct BMP_HEADER*) (disk->data + (clu_idx - 2) * clu_sz);
+            Assert(bmphead->Signature == 0x424d, "Not a valid bmpheader"); //should not assert
+            Assert(label[clu_idx - 2] == BMPHEAD, "Not a valid bmphead");
+
+            // find filename
+            uint8_t chksum = ChkSum((unsigned char*)dir->DIR_Name);
+
           }
         }
       }
