@@ -339,8 +339,6 @@ int main(int argc, char *argv[]) {
             long long remain_sz = FileSize - clu_sz;
             int now_clu = clu_idx + 1;
             long long bmp_w = ((bmpinfo->Width * 3 - 1) / 4 + 1) * 4;
-            printf("%lld\n", bmp_w);
-            fflush(stdout);
             while(remain_sz > 0) {
               void *now_addr = disk->data + (now_clu - disk->bpb->BPB_RootClus) * clu_sz;
               if((size_t)(now_addr + clu_sz) > (size_t)disk->fat_head + st.st_size) break;
