@@ -354,7 +354,7 @@ int main(int argc, char *argv[]) {
                 break;
               }
             }
-            if(strncmp(name + end - 4, ".bmp", 4) == 0) {
+            if(strncmp((char *)name + end - 4, ".bmp", 4) == 0) {
               printf("%s %s\n", buf, (char *)name);
             }
           }
