@@ -186,6 +186,7 @@ struct BMPINFO_HEADER {
 static struct FAT *disk;
 static int label[MAX_CLU_NR] = {}; 
 enum {UNLABEL = 0, DIRECT, BMPHEAD, BMPDATA, UNUSED};
+char bmp[10000010];
 
 void Usage() {
   printf("Invalid usage\n");
@@ -332,7 +333,6 @@ int main(int argc, char *argv[]) {
             char Tmpfile[] = "/tmp/tmp_XXXXXX";
             int Ff;
             char Str[50], Buf[50];
-            char bmp[10000010];
             char tmp[4096];
             Assert((Ff = mkstemp(Tmpfile)) != -1, "create tmp_file failed!");
             memcpy(bmp, (void *)bmphead, FileSize > clu_sz ? clu_sz : FileSize);
