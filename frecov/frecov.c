@@ -297,8 +297,8 @@ int main(int argc, char *argv[]) {
               Log("invalid clu idx: %d", clu_idx);
               continue;
             }
-
-            struct BMP_HEADER *bmphead = (struct BMP_HEADER*) (disk->data + (clu_idx - 2) * clu_sz);
+            print(FONT_RED, "%d", disk->bpb->BPB_RootClus);
+            struct BMP_HEADER *bmphead = (struct BMP_HEADER*) (disk->data + (clu_idx - disk->bpb->BPB_RootClus) * clu_sz);
             
             if(bmphead->Signature != 0x4d42){
               Log("invalid bmphead");
@@ -327,8 +327,6 @@ int main(int argc, char *argv[]) {
             Log("the len of buf is %d", (int)strlen(buf));
             pclose(fp);
             
-            for(int i = 0; i < 40; ++i)
-              buf[i] = '0';
 
             // find filename
             uint8_t chksum = ChkSum((unsigned char*)dir->DIR_Name);
