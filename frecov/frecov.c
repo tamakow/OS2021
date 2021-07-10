@@ -227,6 +227,7 @@ int main(int argc, char *argv[]) {
     disk = (struct FAT*)malloc(sizeof(struct FAT));
     disk->fat_head = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);  
     Assert(disk->fat_head != MAP_FAILED, "mmap failed!");
+    close(fd);
 
     disk->bpb =  (struct FAT_HEADER *)disk->fat_head;
     Log("Bytes per sector is %d,the number of sectors per cluster is %d", (int)disk->bpb->BPB_BytsPerSec, (int)disk->bpb->BPB_SecPerClus);
@@ -309,17 +310,13 @@ int main(int argc, char *argv[]) {
               continue;
             }
 
-            //compute sha1sum
+
+            //compute sha1sum for continuous storage
             uint32_t FileSize = bmphead->FileSize;
             char tmpfile[] = "/tmp/tmp_XXXXXX";
             int ff;
             char str[50], buf[50];
             size_t bmphi_sz = sizeof(struct BMP_HEADER) + sizeof(struct BMPINFO_HEADER);
-            // uint32_t bmp_h = bmpinfo->Height;
-            // uint32_t bmp_w = ((bmpinfo->Width * 3 - 1) / 4 + 1) * 4;
-            // int remain = bmp_h * bmp_w;
-            // Assert(remain + bmphi_sz == FileSize, "bmp failed");
-
 
             if((size_t)(bmphead + FileSize) > (size_t)disk->fat_head + st.st_size) continue;
             Assert((ff = mkstemp(tmpfile)) != -1, "create tmp_file failed!");
@@ -332,6 +329,8 @@ int main(int argc, char *argv[]) {
             Log("the len of buf is %d", (int)strlen(buf));
             pclose(fp);
             
+            //compute sha1sum for noncontinuous storage
+            char Tmpfile[] = "/tmp/tmp_XXXXXX";
 
             // find filename
             uint8_t chksum = ChkSum((unsigned char*)dir->DIR_Name);
@@ -361,13 +360,10 @@ int main(int argc, char *argv[]) {
             }
             if(strncmp(name_str + strlen(name_str) - 4, ".bmp", 4) == 0) {
               printf("%s %s\n", buf, name_str);
-              printf("%s %s\n", buf, name_str);
             }
           }
         }
       }
     }
-    munmap(disk->fat_head, st.st_size);
-    close(fd);
     return 0;
 }
