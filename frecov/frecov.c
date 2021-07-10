@@ -291,7 +291,6 @@ int main(int argc, char *argv[]) {
         for (int j = 0; j < dir_nr; ++j) {
           struct FAT_DIR *dir = (struct FAT_DIR*)(clu_addr + j * DIR_SIZE);
           if(j > 0 && dir->DIR_Name[8] == 'B' && dir->DIR_Name[9] == 'M' && dir->DIR_Name[10] == 'P') {
-            //judge valid bmphead
             uint16_t clu_idx = (dir->DIR_FstClusHI << 16) | dir->DIR_FstClusLO;
             
             if(clu_idx < disk->bpb->BPB_RootClus || clu_idx > MAX_CLU_NR) {
@@ -300,7 +299,8 @@ int main(int argc, char *argv[]) {
             }
             struct BMP_HEADER *bmphead = (struct BMP_HEADER*) (disk->data + (clu_idx - disk->bpb->BPB_RootClus) * clu_sz);
             struct BMPINFO_HEADER *bmpinfo = (struct BMPINFO_HEADER*) ((void *)bmphead + sizeof(struct BMP_HEADER));
-            
+            size_t bmphi_sz = sizeof(struct BMP_HEADER) + sizeof(struct BMPINFO_HEADER);
+
             if(bmphead->Signature != 0x4d42){
               Log("invalid bmphead");
               continue;
@@ -316,7 +316,6 @@ int main(int argc, char *argv[]) {
             char tmpfile[] = "/tmp/tmp_XXXXXX";
             int ff;
             char str[50], buf[50];
-            size_t bmphi_sz = sizeof(struct BMP_HEADER) + sizeof(struct BMPINFO_HEADER);
 
             if((size_t)(bmphead + FileSize) > (size_t)disk->fat_head + st.st_size) continue;
             Assert((ff = mkstemp(tmpfile)) != -1, "create tmp_file failed!");
@@ -331,6 +330,43 @@ int main(int argc, char *argv[]) {
             
             //compute sha1sum for noncontinuous storage
             char Tmpfile[] = "/tmp/tmp_XXXXXX";
+            int Ff;
+            char Str[50], Buf[50];
+            char bmp[10000010];
+            char tmp[4096];
+            Assert((Ff = mkstemp(Tmpfile)) != -1, "create tmp_file failed!");
+            memcpy(bmp, (void *)bmphead, FileSize > clu_sz ? clu_sz : FileSize);
+            long long remain_sz = FileSize - clu_sz;
+            int now_clu = clu_idx + 1;
+            int bmp_w = ((bmpinfo->Width * 3 - 1) / 4 + 1) * 4;
+            while(remain_sz > 0) {
+              void *now_addr = disk->data + (now_clu - disk->bpb->BPB_RootClus) * clu_sz;
+              if((size_t)(now_addr + clu_sz) > (size_t)disk->fat_head + st.st_size) break;
+              int allosz_clu = (remain_sz > clu_sz) ? clu_sz : remain_sz;
+              memcpy(tmp, now_addr, allosz_clu);
+              int l = FileSize - remain_sz;
+              int cx = 0;
+              int count = 0;
+              for (int i = 0; i < bmp_w - 2; i += 3, cx++) {
+                if(((bmp[l + i - bmp_w] - tmp[i]) * (bmp[l + i - bmp_w] - tmp[i]) + 
+                   (bmp[l + i - bmp_w + 1] - tmp[i + 1]) * (bmp[l + i - bmp_w + 1] - tmp[i + 1]) +
+                   (bmp[l + i - bmp_w + 2] - tmp[i + 2]) * (bmp[l + i - bmp_w + 2] - tmp[i + 2])) > 1000)
+                   count++;
+              }
+              if(count * 3 <= cx) {
+                memcpy(bmp + (FileSize - remain_sz), (void *)now_addr, allosz_clu);
+                remain_sz -= allosz_clu;
+              }
+              now_clu ++;
+            }
+            write(Ff, (void *)bmp, FileSize);
+            close(Ff);
+            sprintf(Str, "sha1sum %s", Tmpfile);
+            fp = popen(Str, "r");
+            Assert(fp != NULL, "popen");
+            fscanf(fp, "%s", Buf); // Get it!
+            Log("the len of buf is %d", (int)strlen(Buf));
+            pclose(fp);
 
             // find filename
             uint8_t chksum = ChkSum((unsigned char*)dir->DIR_Name);
@@ -360,6 +396,7 @@ int main(int argc, char *argv[]) {
             }
             if(strncmp(name_str + strlen(name_str) - 4, ".bmp", 4) == 0) {
               printf("%s %s\n", buf, name_str);
+              printf("%s %s\n", Buf, name_str);
             }
           }
         }
