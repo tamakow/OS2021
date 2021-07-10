@@ -337,7 +337,7 @@ int main(int argc, char *argv[]) {
             int len = 0;
             int ord = 1;
             while ((size_t)ldir >= (size_t)clu_addr) {
-              if (ldir->LDIR_Chksum == chksum && ldir->LDIR_Ord == ord) {
+              if (ldir->LDIR_Chksum == chksum && (ldir->LDIR_Ord & 0x0f) == ord) {
                 ord ++;
                 for (int i = 0; i < 5; ++i) name[len++] = ldir->LDIR_Name1[i << 1];
                 for (int i = 0; i < 6; ++i) name[len++] = ldir->LDIR_Name2[i << 1];
