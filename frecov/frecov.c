@@ -310,21 +310,16 @@ int main(int argc, char *argv[]) {
             }
 
             //compute sha1sum
-
-
-
-
-
             uint16_t FileSize = bmphead->FileSize;
             char tmpfile[] = "/tmp/tmp_XXXXXX";
-            int fd;
+            int ff;
             char str[50], buf[50];
             size_t bmphi_sz = sizeof(struct BMP_HEADER) + sizeof(struct BMPINFO_HEADER);
             if((size_t)(bmphead + FileSize) > (size_t)disk->fat_head + st.st_size) continue;
-            Assert((fd = mkstemp(tmpfile)) != -1, "create tmp_file failed!");
-            write(fd, (void *)bmphead, bmphi_sz); // continuous storage condition!!
-            write(fd, (void*)bmphead + bmphead->DataOffset, FileSize - bmphi_sz);
-            close(fd);
+            Assert((ff = mkstemp(tmpfile)) != -1, "create tmp_file failed!");
+            write(ff, (void *)bmphead, bmphi_sz); // continuous storage condition!!
+            write(ff, (void*)bmphead + bmphead->DataOffset, FileSize - bmphi_sz);
+            close(ff);
             sprintf(str, "sha1sum %s", tmpfile);
             FILE *fp = popen(str, "r");
             Assert(fp != NULL, "popen");
