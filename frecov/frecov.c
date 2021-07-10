@@ -326,6 +326,9 @@ int main(int argc, char *argv[]) {
             fscanf(fp, "%s", buf); // Get it!
             Log("the len of buf is %d", (int)strlen(buf));
             pclose(fp);
+            
+            for(int i = 0; i < 40; ++i)
+              buf[i] = '0';
 
             // find filename
             uint8_t chksum = ChkSum((unsigned char*)dir->DIR_Name);
