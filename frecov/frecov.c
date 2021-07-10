@@ -318,7 +318,8 @@ int main(int argc, char *argv[]) {
             uint32_t bmp_h = bmpinfo->Height;
             uint32_t bmp_w = ((bmpinfo->Width * 3 - 1) / 4 + 1) * 4;
             int remain = bmp_h * bmp_w;
-            Assert(remain + bmphi_sz != FileSize, "bmp failed");
+            Assert(remain + bmphi_sz == FileSize, "bmp failed");
+
 
             if((size_t)(bmphead + FileSize) > (size_t)disk->fat_head + st.st_size) continue;
             Assert((ff = mkstemp(tmpfile)) != -1, "create tmp_file failed!");
