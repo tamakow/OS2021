@@ -315,7 +315,11 @@ int main(int argc, char *argv[]) {
             int ff;
             char str[50], buf[50];
             size_t bmphi_sz = sizeof(struct BMP_HEADER) + sizeof(struct BMPINFO_HEADER);
-            
+            uint32_t bmp_h = bmpinfo->Height;
+            uint32_t bmp_w = ((bmpinfo->Width * 3 - 1) / 4 + 1) * 4;
+            int remain = bmp_h * bmp_w;
+            Assert(remain + bmphi_sz != FileSize, "bmp failed");
+
             if((size_t)(bmphead + FileSize) > (size_t)disk->fat_head + st.st_size) continue;
             Assert((ff = mkstemp(tmpfile)) != -1, "create tmp_file failed!");
             write(ff, (void *)bmphead, FileSize); // continuous storage condition!!
