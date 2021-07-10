@@ -346,11 +346,11 @@ int main(int argc, char *argv[]) {
               ldir --;
             }
             Log("%d", len);
-            int end = 0;
+            // int end = 0;
             for (int i = 0; i < len; ++i) {
               if(name[i] == 0x0000 || name[i] == 0xffff) {
                 name[i] = '\0';
-                end = i;
+                // end = i;
                 break;
               }
             }
