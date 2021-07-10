@@ -201,7 +201,7 @@ unsigned char ChkSum (unsigned char *pFcbName) {
     // NOTE: The operation is an unsigned char rotate right
     Sum = ((Sum & 1) ? 0x80 : 0) + (Sum >> 1) + *pFcbName++;
   }
-  return Sum;
+  return (Sum);
 }
 
 
@@ -225,8 +225,9 @@ int main(int argc, char *argv[]) {
 //=====================================================================================
     
     disk = (struct FAT*)malloc(sizeof(struct FAT));
-    disk->fat_head = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);  
-    
+    disk->fat_head = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);  
+    Assert(disk->fat_head != MAP_FAILED, "mmap failed!");
+
     disk->bpb =  (struct FAT_HEADER *)disk->fat_head;
     Log("Bytes per sector is %d,the number of sectors per cluster is %d", (int)disk->bpb->BPB_BytsPerSec, (int)disk->bpb->BPB_SecPerClus);
     Log("the number of FAT is %d", (int)disk->bpb->BPB_NumFATs);
@@ -270,7 +271,7 @@ int main(int argc, char *argv[]) {
             c = BMPHEAD;
             break;
         }
-        if(dir->DIR_Name[8] == 'B' && dir->DIR_Name[9] == 'M' && dir->DIR_Name[10] == 'P') {
+        if(dir->DIR_NTRes == 0 && dir->DIR_Name[8] == 'B' && dir->DIR_Name[9] == 'M' && dir->DIR_Name[10] == 'P') {
             c = DIRECT;
             break;
         }
@@ -292,7 +293,7 @@ int main(int argc, char *argv[]) {
             //judge valid bmphead
             uint16_t clu_idx = (dir->DIR_FstClusHI << 16) | dir->DIR_FstClusLO;
             
-            if(clu_idx < 2 || clu_idx > MAX_CLU_NR) {
+            if(clu_idx < disk->bpb->BPB_RootClus || clu_idx > MAX_CLU_NR) {
               Log("invalid clu idx: %d", clu_idx);
               continue;
             }
@@ -307,11 +308,6 @@ int main(int argc, char *argv[]) {
               Log("Not a valid bmphead");
               continue;
             }
-
-            uint8_t chksum = ChkSum((unsigned char*)dir->DIR_Name);
-            struct FAT_LDIR *ldir = (struct FAT_LDIR *)((void *)dir - DIR_SIZE);
-            if(ldir->LDIR_Attr != ATTR_LONG_NAME) continue;
-            if(ldir->LDIR_Chksum != chksum) continue;
 
             //compute sha1sum
             uint16_t FileSize = bmphead->FileSize;
@@ -329,30 +325,38 @@ int main(int argc, char *argv[]) {
             Assert(fp != NULL, "popen");
             fscanf(fp, "%s", buf); // Get it!
             Log("the len of buf is %d", (int)strlen(buf));
-            printf("%s ", buf); //sha1sum!
             pclose(fp);
 
             // find filename
+            uint8_t chksum = ChkSum((unsigned char*)dir->DIR_Name);
+            struct FAT_LDIR *ldir = (struct FAT_LDIR *)((void *)dir - DIR_SIZE);
+            if(ldir->LDIR_Attr != ATTR_LONG_NAME) continue;
+            if(ldir->LDIR_Chksum != chksum) continue;
             uint16_t name[1024];
             int len = 0;
+            int ord = 1;
             while ((size_t)ldir >= (size_t)clu_addr) {
-              if ((ldir->LDIR_Ord & 0x40)) break;
-              // if (ldir->LDIR_Chksum == chksum) {
+              if (ldir->LDIR_Chksum == chksum && ldir->LDIR_Ord == ord) {
+                ord ++;
                 for (int i = 0; i < 5; ++i) name[len++] = ldir->LDIR_Name1[i << 1];
                 for (int i = 0; i < 6; ++i) name[len++] = ldir->LDIR_Name2[i << 1];
                 for (int i = 0; i < 2; ++i) name[len++] = ldir->LDIR_Name3[i << 1];
-              // }
-              ldir -= DIR_SIZE;
+              }
+              if (ldir->LDIR_Chksum == chksum && (ldir->LDIR_Ord & 0x40)) break;
+              ldir --;
             }
             Log("%d", len);
+            int end = 0;
             for (int i = 0; i < len; ++i) {
               if(name[i] == 0x0000 || name[i] == 0xffff) {
+                name[i] = '\0';
+                end = i;
                 break;
               }
-              printf("%c", name[i]);
             }
-            printf(".bmp\n");
-            fflush(stdout);
+            if(strncmp(name + i - 4, ".bmp", 4) == 0) {
+              printf("%s %s\n", buf, name);
+            }
           }
         }
       }
