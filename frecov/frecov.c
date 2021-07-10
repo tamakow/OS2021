@@ -353,9 +353,9 @@ int main(int argc, char *argv[]) {
                 break;
               } else name_str[i] = (char)name[i];
             }
-            if(strncmp(name_str + strlen(name_str) - 4, ".bmp", 4) == 0) {
+            // if(strncmp(name_str + strlen(name_str) - 4, ".bmp", 4) == 0) {
               printf("%s %s\n", buf, name_str);
-            }
+            // }
           }
         }
       }
