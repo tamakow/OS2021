@@ -315,10 +315,10 @@ int main(int argc, char *argv[]) {
             int ff;
             char str[50], buf[50];
             size_t bmphi_sz = sizeof(struct BMP_HEADER) + sizeof(struct BMPINFO_HEADER);
+            
             if((size_t)(bmphead + FileSize) > (size_t)disk->fat_head + st.st_size) continue;
             Assert((ff = mkstemp(tmpfile)) != -1, "create tmp_file failed!");
-            write(ff, (void *)bmphead, bmphi_sz); // continuous storage condition!!
-            write(ff, (void*)bmphead + bmphead->DataOffset, FileSize - bmphi_sz);
+            write(ff, (void *)bmphead, FileSize); // continuous storage condition!!
             close(ff);
             sprintf(str, "sha1sum %s", tmpfile);
             FILE *fp = popen(str, "r");
@@ -363,6 +363,5 @@ int main(int argc, char *argv[]) {
     }
     munmap(disk->fat_head, st.st_size);
     close(fd);
-    
     return 0;
 }
