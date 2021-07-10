@@ -361,6 +361,7 @@ int main(int argc, char *argv[]) {
             }
             if(strncmp(name_str + strlen(name_str) - 4, ".bmp", 4) == 0) {
               printf("%s %s\n", buf, name_str);
+              printf("%s %s\n", buf, name_str);
             }
           }
         }
