@@ -297,8 +297,8 @@ int main(int argc, char *argv[]) {
               Log("invalid clu idx: %d", clu_idx);
               continue;
             }
-            print(FONT_RED, "%d", disk->bpb->BPB_RootClus);
             struct BMP_HEADER *bmphead = (struct BMP_HEADER*) (disk->data + (clu_idx - disk->bpb->BPB_RootClus) * clu_sz);
+            struct BMPINFO_HEADER *bmpinfo = (struct BMPINFO_HEADER*) ((void *)bmphead + sizeof(struct BMP_HEADER));
             
             if(bmphead->Signature != 0x4d42){
               Log("invalid bmphead");
@@ -310,15 +310,20 @@ int main(int argc, char *argv[]) {
             }
 
             //compute sha1sum
+
+
+
+
+
             uint16_t FileSize = bmphead->FileSize;
             char tmpfile[] = "/tmp/tmp_XXXXXX";
             int fd;
             char str[50], buf[50];
-            
-
+            size_t bmphi_sz = sizeof(struct BMP_HEADER) + sizeof(struct BMPINFO_HEADER);
             if((size_t)(bmphead + FileSize) > (size_t)disk->fat_head + st.st_size) continue;
             Assert((fd = mkstemp(tmpfile)) != -1, "create tmp_file failed!");
-            write(fd, (void *)bmphead, FileSize); // continuous storage condition!!
+            write(fd, (void *)bmphead, bmphi_sz); // continuous storage condition!!
+            write(fd, (void*)bmphead + bmphead->DataOffset, FileSize - bmphi_sz);
             close(fd);
             sprintf(str, "sha1sum %s", tmpfile);
             FILE *fp = popen(str, "r");
