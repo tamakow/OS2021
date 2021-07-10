@@ -332,7 +332,8 @@ int main(int argc, char *argv[]) {
             struct FAT_LDIR *ldir = (struct FAT_LDIR *)((void *)dir - DIR_SIZE);
             if(ldir->LDIR_Attr != ATTR_LONG_NAME) continue;
             if(ldir->LDIR_Chksum != chksum) continue;
-            uint16_t name[1024];
+            uint16_t name[256];
+            char name_str[256];
             int len = 0;
             int ord = 1;
             while ((size_t)ldir >= (size_t)clu_addr) {
@@ -346,17 +347,15 @@ int main(int argc, char *argv[]) {
               ldir --;
             }
             Log("%d", len);
-            // int end = 0;
             for (int i = 0; i < len; ++i) {
               if(name[i] == 0x0000 || name[i] == 0xffff) {
-                name[i] = '\0';
-                // end = i;
+                name_str[i] = '\0';
                 break;
-              }
+              } else name_str[i] = (char)name[i];
             }
-            // if(strncmp((char *)name + end - 4, ".bmp", 4) == 0) {
-              printf("%s %s\n", buf, (char *)name);
-            // }
+            if(strncmp(name_str + strlen(name_str) - 4, ".bmp", 4) == 0) {
+              printf("%s %s\n", buf, name_str);
+            }
           }
         }
       }
