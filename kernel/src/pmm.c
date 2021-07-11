@@ -99,14 +99,14 @@ static void *kalloc(size_t size) {
   if(full_slab(now)) assert(0);
   print(FONT_RED, "get lock!");
   
+  // if(cpu_count() == 4)
+  acquire(&now->lock);
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
   Log("now start_ptr is %p", now->start_ptr);
   Log("now offset is %p", now->offset);
   Log("now ptr is %p", now_ptr);
   //分配完，更新最新的offset，并更新它的下一个offset
-  // if(cpu_count() == 4)
-  // acquire(&now->lock);
   struct obj_head *objhead = (struct obj_head *)now_ptr;
   
   
@@ -114,7 +114,7 @@ static void *kalloc(size_t size) {
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
   // if(cpu_count() == 4)
-  // release(&now->lock);
+  release(&now->lock);
   
   Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
@@ -135,7 +135,7 @@ static void kfree(void *ptr) {
   uintptr_t slab_head = ROUNDDOWN(ptr, PAGE_SIZE);
   Log("slabhead is %p", slab_head);
   slab* sb = (slab *)slab_head;
-  // struct obj_head* objhead = (struct obj_head*) ptr;
+  struct obj_head* objhead = (struct obj_head*) ptr;
   if(sb->obj_cnt == 1) {
     acquire(&global_lock);
     struct freelist *empty = (struct freelist*)sb;
@@ -150,15 +150,15 @@ static void kfree(void *ptr) {
     release(&global_lock);
     return;
   }
-  // acquire(&sb->lock);
-  // sb->obj_cnt--;
-  // Log("objcnt is %d", sb->obj_cnt);
-  // objhead->next_offset = sb->offset;
-  // Log("next_offset is %d", objhead->next_offset);
-  // sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
-  // Log("sb->offset is %d", sb->offset);
-  // release(&sb->lock);
-  // insert_slab_to_head(sb);
+  acquire(&sb->lock);
+  sb->obj_cnt--;
+  Log("objcnt is %d", sb->obj_cnt);
+  objhead->next_offset = sb->offset;
+  Log("next_offset is %d", objhead->next_offset);
+  sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
+  Log("sb->offset is %d", sb->offset);
+  release(&sb->lock);
+  insert_slab_to_head(sb);
 }
 
 static void pmm_init() {
