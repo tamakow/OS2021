@@ -171,8 +171,8 @@ static void pmm_init() {
   struct freelist *walk = head;
   int cnt = 0;
   printf("%d\n",(int)((uintptr_t)big_alloc_head - (uintptr_t)head) / PAGE_SIZE);
-  while((uintptr_t)(walk + PAGE_SIZE) < (uintptr_t)big_alloc_head) {
-    walk->next = (void *)(walk + PAGE_SIZE);
+  while((uintptr_t)(walk + (1 << 15)) < (uintptr_t)big_alloc_head) {
+    walk->next = (void *)(walk + (1 << 15));
     printf("%p %p\n", walk, walk->next);
     cnt++;
     walk = (struct freelist *)walk->next;
