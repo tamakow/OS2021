@@ -32,12 +32,13 @@ static inline size_t pow2 (size_t size) {
 }
 
 static inline void * alloc_mem (size_t size) {
+    acquire(&global_lock);
     void *ret = (void *)head;
     if(head->next != NULL) {
-      acquire(&global_lock);
       head = head->next;
       release(&global_lock);
     }
+    release(&global_lock);
     return ret;
 }
 
