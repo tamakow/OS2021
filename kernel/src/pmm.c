@@ -169,16 +169,10 @@ static void pmm_init() {
   tail = heap.end;
   big_alloc_head = (void*)((uintptr_t)tail - 4 * (1 << 20));
   struct freelist *walk = head;
-  int cnt = 0;
-  printf("%d\n",(int)((uintptr_t)big_alloc_head - (uintptr_t)head) / PAGE_SIZE);
-  printf("%p\n", PAGE_SIZE);
   while((uintptr_t)((void *)walk + PAGE_SIZE) < (uintptr_t)big_alloc_head) {
     walk->next = (void *)((void *)walk + PAGE_SIZE);
-    // printf("%p %p\n", walk, walk->next);
-    cnt++;
     walk = (struct freelist *)walk->next;
   }
-  printf("%d\n", cnt);
   walk->next = NULL;
   Log("%d",cpu_count());
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
