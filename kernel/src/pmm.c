@@ -34,7 +34,7 @@ static inline size_t pow2 (size_t size) {
 static inline void * alloc_mem (size_t size) {
     acquire(&global_lock);
     void *ret = (void *)head;
-    if(head->next != NULL) {
+    if(ret != NULL) {
       head = head->next;
       release(&global_lock);
     }
@@ -148,10 +148,14 @@ static void kfree(void *ptr) {
   release(&sb->lock);
   if(sb->obj_cnt == 0) {
     acquire(&global_lock);
-    struct freelist *empty = (struct freelist*)sb;
-    void *tmp = head->next;
-    head->next = empty;
-    empty->next = tmp;
+    // TODO
+
+
+
+    // struct freelist *empty = (struct freelist*)sb;
+    // void *tmp = head->next;
+    // head->next = empty;
+    // empty->next = tmp;
     release(&global_lock);
   }
   else insert_slab_to_head(sb);
