@@ -32,7 +32,6 @@ static inline size_t pow2 (size_t size) {
 }
 
 static inline void * alloc_mem (size_t size) {
-    acquire(&global_lock);
     void *ret = (void *)head;
     if(head->next != NULL) {
       acquire(&global_lock);
@@ -56,10 +55,10 @@ static void *kalloc(size_t size) {
     // acquire(&global_lock);
     // release(&global_lock);
     void *tmp = tail;
-    acquire(&global_lock);
+    acquire(&big_alloc_lock);
     tail -= size; 
     tail = (void*)(((size_t)tail / bsize) * bsize);
-    release(&global_lock);
+    release(&big_alloc_lock);
     void *ret = tail; 
     if((uintptr_t)tail < (uintptr_t)big_alloc_head) {
       tail = tmp;
