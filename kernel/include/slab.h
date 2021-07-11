@@ -29,6 +29,10 @@ struct obj_head {
     uint16_t next_offset; //下一个分配的地址离start_ptr的offset
 };
 
+struct freelist {
+    void *next;
+};
+
 
 slab* cache_chain[MAX_CPU + 1][NR_ITEM_SIZE + 1];
 

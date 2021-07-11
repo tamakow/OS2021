@@ -3,8 +3,26 @@
 #include <slab.h>
 
 
+struct big_page {
+  void *start_ptr; //为了对齐可能会不是从page的head开始分配起
+  int  alloc_slab; //分配的
+};
+
+static struct big_page big_alloc[10];
+static int big_alloc_tot = 0;
 static struct spinlock global_lock;
-void *tail, *head;
+static struct spinlock big_alloc_lock;
+void *tail;
+void *big_alloc_head;
+static struct freelist* head;
+
+static inline void big_alloc_init() {
+  for (int i = 0; i < 10; ++i) {
+    big_alloc[i].start_ptr = NULL;
+    big_alloc[i].alloc_slab = 0;
+  }
+}
+
 
 //cache的最小单位为2B，但是pow2只给大内存分配(> 4096)，即最小的ret都是 1<<13 所以问题不大
 static inline size_t pow2 (size_t size) {
@@ -15,35 +33,35 @@ static inline size_t pow2 (size_t size) {
 
 static inline void * alloc_mem (size_t size) {
     acquire(&global_lock);
-    void *ret;
-    if((uintptr_t)head + PAGE_SIZE  > (uintptr_t)tail) ret = NULL;
-    else {
-       ret = head;
-       head += PAGE_SIZE;
+    void *ret = (void *)head;
+    if(head->next != NULL) {
+      acquire(&global_lock);
+      head = head->next;
+      release(&global_lock);
     }
-    release(&global_lock);
     return ret;
 }
 
 int cnt = 0;
-bool free_flag = 0;
-
 static void *kalloc(size_t size) {
   int cpu = cpu_current();
 
   if(size > PAGE_SIZE) {
     // TODO!!
     // 写freelist来分配
-    if (cpu_count() == 4 && cnt > 2) return NULL;
-    cnt++; 
+    if (big_alloc_tot >= 3) return NULL;
+    big_alloc_tot ++;
     size_t bsize = pow2(size);
+    // int slab_num = bsize / PAGE_SIZE;
+    // acquire(&global_lock);
+    // release(&global_lock);
     void *tmp = tail;
     acquire(&global_lock);
     tail -= size; 
     tail = (void*)(((size_t)tail / bsize) * bsize);
     release(&global_lock);
     void *ret = tail; 
-    if((uintptr_t)tail < (uintptr_t)head) {
+    if((uintptr_t)tail < (uintptr_t)big_alloc_head) {
       tail = tmp;
       return NULL;
     }
@@ -81,7 +99,7 @@ static void *kalloc(size_t size) {
   if(full_slab(now)) assert(0);
   print(FONT_RED, "get lock!");
   
-  if(cpu_count() == 4 && free_flag)
+  if(cpu_count() == 4)
   acquire(&now->lock);
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
@@ -95,7 +113,7 @@ static void *kalloc(size_t size) {
   now->offset = objhead->next_offset;
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
-  if(cpu_count() == 4  && free_flag)
+  if(cpu_count() == 4)
   release(&now->lock);
   
   Log("Ready to judge if now is full");
@@ -113,15 +131,10 @@ static void *kalloc(size_t size) {
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
   if(cpu_count() != 4) return;
-  if((uintptr_t)ptr >= (uintptr_t)tail) return; //大内存不释放
+  if((uintptr_t)ptr >= (uintptr_t)big_alloc_head) return; //大内存不释放
   uintptr_t slab_head = ROUNDDOWN(ptr, PAGE_SIZE);
   Log("slabhead is %p", slab_head);
   slab* sb = (slab *)slab_head;
-  if(sb->obj_order != 12) return;
-  if(free_flag == false){
-    free_flag = true;
-    return;
-  }
   struct obj_head* objhead = (struct obj_head*) ptr;
   acquire(&sb->lock);
   sb->obj_cnt--;
@@ -131,14 +144,31 @@ static void kfree(void *ptr) {
   sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
   Log("sb->offset is %d", sb->offset);
   release(&sb->lock);
-  insert_slab_to_head(sb);
+  if(sb->obj_cnt == 0) {
+    acquire(&global_lock);
+    struct freelist *empty = (struct freelist*)sb;
+    void *tmp = head->next;
+    head->next = empty;
+    empty->next = tmp;
+    release(&global_lock);
+  }
+  else insert_slab_to_head(sb);
 }
 
 static void pmm_init() {
   slab_init();
+  big_alloc_init();
   initlock(&global_lock, "globallock");
-  head = heap.start;
+  initlock(&big_alloc_lock, "big_alloc_lock");
+  head = (struct freelist*)heap.start;
+  big_alloc_head = (void*)((uintptr_t)tail - 4 * (1 << 20));
   tail = heap.end;
+  struct freelist *walk = head;
+  while((uintptr_t)(walk + PAGE_SIZE) < (uintptr_t)big_alloc_head) {
+    walk->next = (void *)(walk + PAGE_SIZE);
+    walk = (struct freelist *)walk->next;
+  }
+  walk->next = NULL;
   Log("%d",cpu_count());
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
