@@ -135,7 +135,7 @@ static void kfree(void *ptr) {
   uintptr_t slab_head = ROUNDDOWN(ptr, PAGE_SIZE);
   Log("slabhead is %p", slab_head);
   slab* sb = (slab *)slab_head;
-  struct obj_head* objhead = (struct obj_head*) ptr;
+  // struct obj_head* objhead = (struct obj_head*) ptr;
   if(sb->obj_cnt == 1) {
     acquire(&global_lock);
     struct freelist *empty = (struct freelist*)sb;
@@ -150,15 +150,15 @@ static void kfree(void *ptr) {
     release(&global_lock);
     return;
   }
-  acquire(&sb->lock);
-  sb->obj_cnt--;
-  Log("objcnt is %d", sb->obj_cnt);
-  objhead->next_offset = sb->offset;
-  Log("next_offset is %d", objhead->next_offset);
-  sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
-  Log("sb->offset is %d", sb->offset);
-  release(&sb->lock);
-  insert_slab_to_head(sb);
+  // acquire(&sb->lock);
+  // sb->obj_cnt--;
+  // Log("objcnt is %d", sb->obj_cnt);
+  // objhead->next_offset = sb->offset;
+  // Log("next_offset is %d", objhead->next_offset);
+  // sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
+  // Log("sb->offset is %d", sb->offset);
+  // release(&sb->lock);
+  // insert_slab_to_head(sb);
 }
 
 static void pmm_init() {
