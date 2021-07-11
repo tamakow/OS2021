@@ -34,7 +34,7 @@ static inline size_t pow2 (size_t size) {
 static inline void * alloc_mem (size_t size) {
     acquire(&global_lock);
     void *ret = (void *)head;
-    if(ret != NULL) {
+    if(head != NULL) {
       head = head->next;
       release(&global_lock);
     }
