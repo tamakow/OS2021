@@ -99,22 +99,22 @@ static void *kalloc(size_t size) {
   if(full_slab(now)) assert(0);
   print(FONT_RED, "get lock!");
   
-  // if(cpu_count() == 4)
-  // acquire(&now->lock);
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
   Log("now start_ptr is %p", now->start_ptr);
   Log("now offset is %p", now->offset);
   Log("now ptr is %p", now_ptr);
   //分配完，更新最新的offset，并更新它的下一个offset
+  if(cpu_count() == 4)
+  acquire(&now->lock);
   struct obj_head *objhead = (struct obj_head *)now_ptr;
   
   
   now->offset = objhead->next_offset;
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
-  // if(cpu_count() == 4)
-  // release(&now->lock);
+  if(cpu_count() == 4)
+  release(&now->lock);
   
   Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
@@ -130,8 +130,7 @@ static void *kalloc(size_t size) {
 
 //只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
-  return;
-  // if(cpu_count() != 4) return;
+  if(cpu_count() != 4) return;
   if((uintptr_t)ptr >= (uintptr_t)big_alloc_head) return; //大内存不释放
   uintptr_t slab_head = ROUNDDOWN(ptr, PAGE_SIZE);
   Log("slabhead is %p", slab_head);
@@ -147,14 +146,15 @@ static void kfree(void *ptr) {
   release(&sb->lock);
   if(sb->obj_cnt == 0) {
     acquire(&global_lock);
-    // TODO
-
-
-
-    // struct freelist *empty = (struct freelist*)sb;
-    // void *tmp = head->next;
-    // head->next = empty;
-    // empty->next = tmp;
+    struct freelist *empty = (struct freelist*)sb;
+    if(head != NULL) {
+      void *tmp = head->next;
+      head->next = empty;
+      empty->next = tmp;
+    } else {
+      head = empty;
+      head->next = NULL;
+    }
     release(&global_lock);
   }
   else insert_slab_to_head(sb);
