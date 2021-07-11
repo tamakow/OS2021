@@ -105,16 +105,16 @@ static void *kalloc(size_t size) {
   Log("now offset is %p", now->offset);
   Log("now ptr is %p", now_ptr);
   //分配完，更新最新的offset，并更新它的下一个offset
-  if(cpu_count() == 4)
-  acquire(&now->lock);
+  // if(cpu_count() == 4)
+  // acquire(&now->lock);
   struct obj_head *objhead = (struct obj_head *)now_ptr;
   
   
   now->offset = objhead->next_offset;
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
-  if(cpu_count() == 4)
-  release(&now->lock);
+  // if(cpu_count() == 4)
+  // release(&now->lock);
   
   Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
