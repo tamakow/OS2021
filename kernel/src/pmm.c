@@ -36,7 +36,6 @@ static inline void * alloc_mem (size_t size) {
     void *ret = (void *)head;
     if(head != NULL) {
       head = head->next;
-      release(&global_lock);
     }
     release(&global_lock);
     return ret;
