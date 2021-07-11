@@ -9,6 +9,7 @@ static void os_run() {
     putch(*s == '*' ? '0' + cpu_current() : *s);
   }
   // pmm->alloc(4);
+  for (int i = 0; i < 100000; ++i)
   pmm->alloc(4096);
   Log("After first allocation");
   pmm->alloc(4096);
