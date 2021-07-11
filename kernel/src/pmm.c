@@ -174,7 +174,7 @@ static void pmm_init() {
   printf("%p\n", PAGE_SIZE);
   while((uintptr_t)(walk + PAGE_SIZE) < (uintptr_t)big_alloc_head) {
     walk->next = (void *)(walk + PAGE_SIZE);
-    // printf("%p %p\n", walk, walk->next);
+    printf("%p %p\n", walk, walk->next);
     cnt++;
     walk = (struct freelist *)walk->next;
   }
