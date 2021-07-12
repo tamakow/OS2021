@@ -110,7 +110,7 @@ static void *kalloc(size_t size) {
   if(full_slab(now)) assert(0);
   print(FONT_RED, "get lock!");
   
-  // if(cpu_count() == 4)
+  if(cpu_count() == 4)
   acquire(&now->lock);
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
@@ -124,7 +124,7 @@ static void *kalloc(size_t size) {
   now->offset = objhead->next_offset;
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
-  // if(cpu_count() == 4)
+  if(cpu_count() == 4)
   release(&now->lock);
   
   Log("Ready to judge if now is full");
