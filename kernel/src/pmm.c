@@ -38,6 +38,17 @@ static inline void * alloc_mem (size_t size, int cpu) {
       head[cpu] = head[cpu]->next;
     }
     release(&global_lock[cpu]);
+    if(ret == NULL) {
+      for (int i = 0; i < cpu_count(); ++i) {
+        if(head[i] != NULL) {
+          acquire(&global_lock[i]);
+          ret = (void *)head[i];
+          head[i] = head[i]->next;
+          release(&global_lock[i]);
+          break;
+        }
+      }
+    }
     return ret;
 }
 
