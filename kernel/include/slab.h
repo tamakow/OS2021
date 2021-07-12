@@ -31,6 +31,7 @@ struct obj_head {
 
 struct freelist {
     void *next;
+    int cpu;
 };
 
 

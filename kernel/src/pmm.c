@@ -10,11 +10,11 @@ struct big_page {
 
 static struct big_page big_alloc[10];
 static int big_alloc_tot = 0;
-static struct spinlock global_lock;
+static struct spinlock global_lock[MAX_CPU];
 static struct spinlock big_alloc_lock;
 void *tail;
 void *big_alloc_head;
-static struct freelist* head;
+static struct freelist* head[MAX_CPU];
 
 static inline void big_alloc_init() {
   for (int i = 0; i < 10; ++i) {
@@ -31,13 +31,13 @@ static inline size_t pow2 (size_t size) {
   return ret;
 }
 
-static inline void * alloc_mem (size_t size) {
-    acquire(&global_lock);
-    void *ret = (void *)head;
-    if(head != NULL) {
-      head = head->next;
+static inline void * alloc_mem (size_t size, int cpu) {
+    acquire(&global_lock[cpu]);
+    void *ret = (void *)head[cpu];
+    if(head[cpu] != NULL) {
+      head[cpu] = head[cpu]->next;
     }
-    release(&global_lock);
+    release(&global_lock[cpu]);
     return ret;
 }
 
@@ -73,7 +73,7 @@ static void *kalloc(size_t size) {
   while(size > (1 << item_id)) item_id++;
   slab *now;
   if(cache_chain[cpu][item_id] == NULL){
-    cache_chain[cpu][item_id] = (slab*) alloc_mem(PAGE_SIZE);
+    cache_chain[cpu][item_id] = (slab*) alloc_mem(PAGE_SIZE, cpu);
     Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]);
     if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
     new_slab(cache_chain[cpu][item_id], cpu, item_id);
@@ -82,7 +82,7 @@ static void *kalloc(size_t size) {
     if(full_slab(cache_chain[cpu][item_id])) {
       print(FONT_RED, "the cache_chain is full, needed to allocate new space");
       //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
-      slab* sb = (slab*) alloc_mem(PAGE_SIZE);
+      slab* sb = (slab*) alloc_mem(PAGE_SIZE, cpu);
       Log("alloc memory addr is %p", (void *)sb);
       if(sb == NULL) return NULL;
       new_slab(sb, cpu, item_id);
@@ -137,17 +137,17 @@ static void kfree(void *ptr) {
   slab* sb = (slab *)slab_head;
   struct obj_head* objhead = (struct obj_head*) ptr;
   if(sb->obj_cnt == 1) {
-    acquire(&global_lock);
+    acquire(&global_lock[sb->cpu]);
     struct freelist *empty = (struct freelist*)sb;
     if(head != NULL) {
-      void *tmp = head->next;
-      head->next = empty;
+      void *tmp = head[sb->cpu]->next;
+      head[sb->cpu]->next = empty;
       empty->next = tmp;
     } else {
-      head = empty;
-      head->next = NULL;
+      head[sb->cpu] = empty;
+      head[sb->cpu]->next = NULL;
     }
-    release(&global_lock);
+    release(&global_lock[sb->cpu]);
     return;
   }
   acquire(&sb->lock);
@@ -164,15 +164,29 @@ static void kfree(void *ptr) {
 static void pmm_init() {
   slab_init();
   big_alloc_init();
-  initlock(&global_lock, "globallock");
+  int cpu_nr = cpu_count();
+  for(int i = 0; i < cpu_nr; ++i)
+    initlock(&global_lock[i], "globallock");
   initlock(&big_alloc_lock, "big_alloc_lock");
-  head = (struct freelist*)heap.start;
+  head[0] = (struct freelist*)heap.start;
   tail = heap.end;
   big_alloc_head = (void*)((uintptr_t)tail - 4 * (1 << 20));
-  struct freelist *walk = head;
-  while((uintptr_t)((void *)walk + PAGE_SIZE) < (uintptr_t)big_alloc_head) {
-    walk->next = (void *)((void *)walk + PAGE_SIZE);
-    walk = (struct freelist *)walk->next;
+  int page_nr = ((uintptr_t)big_alloc_head - (uintptr_t)head[0]) / PAGE_SIZE;
+  int page_per_cpu = page_nr / cpu_nr;
+  int count = 0;
+  int cpu_idx = 0;
+  struct freelist *walk = head[0];
+  while(cpu_idx < cpu_nr && (uintptr_t)((void *)walk + PAGE_SIZE) < (uintptr_t)big_alloc_head) {
+    walk->cpu = cpu_idx;
+    if(count > page_per_cpu) {
+      count = 0;
+      walk->next = NULL;
+      cpu_idx++;
+    } else {
+      count++;
+      walk->next = (void *)((void *)walk + PAGE_SIZE);
+    }
+    walk = (struct freelist *)((void *)walk + PAGE_SIZE);
   }
   walk->next = NULL;
   Log("%d",cpu_count());
