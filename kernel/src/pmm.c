@@ -42,6 +42,7 @@ static inline void * alloc_mem (size_t size, int cpu) {
       release(&global_lock[cpu]);
     } else {
       for (int i = 0; i < cpu_count(); ++i) {
+        if(i == cpu) continue;
         if(head[i] != NULL) {
           acquire(&global_lock[i]);
           ret = (void *)head[i];
@@ -56,8 +57,6 @@ static inline void * alloc_mem (size_t size, int cpu) {
 
 static void *kalloc(size_t size) {
   int cpu = cpu_current();
-  if(cpu >= 2)
-    assert(0);
 
   if(size > PAGE_SIZE) {
     // TODO!!
