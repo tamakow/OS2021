@@ -6,15 +6,17 @@
 struct big_page {
   void *start_ptr; //为了对齐可能会不是从page的head开始分配起
   int  alloc_sz; //分配的大小
+  int  next;
 };
 
-static struct big_page big_alloc[10];
+static struct big_page big_alloc[128];
 static int big_alloc_tot = 0;
+void *big_alloc_head;
+
 static struct spinlock global_lock[MAX_CPU];
 static struct spinlock big_alloc_lock;
-void *tail;
-void *big_alloc_head;
 static struct freelist* head[MAX_CPU];
+void *tail;
 
 static inline void big_alloc_init() {
   for (int i = 0; i < 10; ++i) {
