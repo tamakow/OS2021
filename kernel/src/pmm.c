@@ -54,9 +54,10 @@ static inline void * alloc_mem (size_t size, int cpu) {
     return ret;
 }
 
-int cnt = 0;
 static void *kalloc(size_t size) {
   int cpu = cpu_current();
+  if(cpu >= 2)
+    assert(0);
 
   if(size > PAGE_SIZE) {
     // TODO!!
