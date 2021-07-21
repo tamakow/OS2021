@@ -5,7 +5,7 @@
 
 struct big_page {
   void *start_ptr; //为了对齐可能会不是从page的head开始分配起
-  int  alloc_slab; //分配的
+  int  alloc_sz; //分配的大小
 };
 
 static struct big_page big_alloc[10];
@@ -19,7 +19,7 @@ static struct freelist* head[MAX_CPU];
 static inline void big_alloc_init() {
   for (int i = 0; i < 10; ++i) {
     big_alloc[i].start_ptr = NULL;
-    big_alloc[i].alloc_slab = 0;
+    big_alloc[i].alloc_sz = 0;
   }
 }
 
@@ -111,7 +111,7 @@ static void *kalloc(size_t size) {
   print(FONT_RED, "get lock!");
   
   // if(cpu_count() == 4)
-  acquire(&now->lock);
+  // acquire(&now->lock);
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
   Log("now start_ptr is %p", now->start_ptr);
@@ -125,7 +125,7 @@ static void *kalloc(size_t size) {
   Log("use this slab, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
   // if(cpu_count() == 4)
-  release(&now->lock);
+  // release(&now->lock);
   
   Log("Ready to judge if now is full");
   if(full_slab(cache_chain[cpu][item_id])) { //已经满了
@@ -140,6 +140,7 @@ static void *kalloc(size_t size) {
 
 
 static void kfree(void *ptr) {
+  return;
   // if(cpu_count() != 4) return;
   if((uintptr_t)ptr >= (uintptr_t)big_alloc_head) return; //大内存不释放
   uintptr_t slab_head = ROUNDDOWN(ptr, PAGE_SIZE);
