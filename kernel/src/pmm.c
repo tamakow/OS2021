@@ -32,13 +32,13 @@ static inline size_t pow2 (size_t size) {
 }
 
 static inline void * alloc_mem (size_t size, int cpu) {
-    acquire(&global_lock[cpu]);
-    void *ret = (void *)head[cpu];
+    void *ret = NULL;
     if(head[cpu] != NULL) {
+      acquire(&global_lock[cpu]);
+      ret = (void *)head[cpu];
       head[cpu] = head[cpu]->next;
-    }
-    release(&global_lock[cpu]);
-    if(ret == NULL) {
+      release(&global_lock[cpu]);
+    } else {
       for (int i = 0; i < cpu_count(); ++i) {
         if(head[i] != NULL) {
           acquire(&global_lock[i]);
@@ -139,7 +139,6 @@ static void *kalloc(size_t size) {
 }
 
 
-//只是回收了slab中的对象，如果slab整个空了无法回收
 static void kfree(void *ptr) {
   // if(cpu_count() != 4) return;
   if((uintptr_t)ptr >= (uintptr_t)big_alloc_head) return; //大内存不释放
@@ -181,7 +180,7 @@ static void pmm_init() {
   initlock(&big_alloc_lock, "big_alloc_lock");
   head[0] = (struct freelist*)heap.start;
   tail = heap.end;
-  big_alloc_head = (void*)((uintptr_t)tail - 4 * (1 << 20));
+  big_alloc_head = (void*)((uintptr_t)tail - 4 * (1 << 20)); // 给大内存分 4 MiB
   int page_nr = ((uintptr_t)big_alloc_head - (uintptr_t)head[0]) / PAGE_SIZE;
   int page_per_cpu = page_nr / cpu_nr;
   int count = 0;
