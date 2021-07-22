@@ -54,7 +54,7 @@ bool full_page(page_t* sb) {
     return sb->obj_cnt >= sb->max_obj;
 }
 
-void remove_page(page_t* pg, cache_t *ch) {
+void move_page_to_full(page_t *pg, cache_t *ch) {
     if(ch->available_list == pg) {
         ch->available_list = pg->next;
     } else {
@@ -64,13 +64,10 @@ void remove_page(page_t* pg, cache_t *ch) {
                 walk->next = pg->next;
                 break;
             }
+            walk = walk->next;
         }
     }
     pg->next = NULL;
-}
-
-void move_page_to_full(page_t *pg, cache_t *ch) {
-    remove_page(pg, ch);
     if(ch->full_list) {
         page_t *walk = ch->full_list;
         while(walk->next) {
@@ -86,12 +83,13 @@ void move_page_to_available(page_t *pg, cache_t *ch) {
     if(ch->full_list == pg) {
         ch->full_list = pg->next;
     } else {
-        page_t *walk = ch->available_list;
+        page_t *walk = ch->full_list;
         while(walk && walk->next) {
             if(walk->next == pg) {
                 walk->next = pg->next;
                 break;
             }
+            walk = walk->next;
         }
     }
     pg->next = NULL;
