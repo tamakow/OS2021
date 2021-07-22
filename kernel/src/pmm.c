@@ -166,7 +166,7 @@ static void pmm_init() {
   initlock(&big_alloc_lock, "big_alloc_lock");
   head[0] = (struct listhead*)heap.start;
   tail = heap.end;
-  big_alloc_head = (void*)((uintptr_t)tail - (1 << 20)); // 给大内存分 4 MiB
+  big_alloc_head = (void*)((uintptr_t)tail - (1 << 24)); // 给大内存分 4 MiB
   int page_nr = ((uintptr_t)big_alloc_head - (uintptr_t)head[0]) / PAGE_SIZE;
   int page_per_cpu = page_nr / cpu_nr;
   int count = 0;
