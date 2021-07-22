@@ -48,9 +48,6 @@ static void *kalloc(size_t size) {
     // if (big_alloc_tot >= 3) return NULL;
     // big_alloc_tot ++;
     size_t bsize = pow2(size);
-    // int page_num = bsize / PAGE_SIZE;
-    // acquire(&global_lock);
-    // release(&global_lock);
     void *tmp = tail;
     acquire(&big_alloc_lock);
     tail -= size; 
@@ -133,7 +130,7 @@ static void kfree(void *ptr) {
     release(&global_lock[sb->cpu]);
     return;
   }
-  if(sb->obj_cnt == sb->max_obj)
+  if(sb->obj_cnt >= sb->max_obj)
     move_page_to_available(sb, cache_chain[sb->cpu][sb->obj_order]);
   acquire(&sb->lock);
   sb->obj_cnt--;
