@@ -110,7 +110,6 @@ static void *kalloc(size_t size) {
 
 
 static void kfree(void *ptr) {
-  if(cpu_count() != 4) return;
   if((uintptr_t)ptr >= (uintptr_t)big_alloc_head) return; //大内存不释放
   uintptr_t page_head = ROUNDDOWN(ptr, PAGE_SIZE);
   Log("pagehead is %p", page_head);
