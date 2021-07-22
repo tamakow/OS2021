@@ -17,7 +17,7 @@ static inline size_t pow2 (size_t size) {
   return ret;
 }
 
-static inline void * alloc_mem (size_t size, int cpu) {
+static inline void *alloc_mem (size_t size, int cpu) {
     void *ret = NULL;
     if(head[cpu] != NULL) {
       acquire(&global_lock[cpu]);
@@ -97,19 +97,20 @@ static void *kalloc(size_t size) {
   Log("use this page, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
   // if(cpu_count() == 4)
-  release(&now->lock);
+  // release(&now->lock);
   
   Log("Ready to judge if now is full");
   if(full_page(now)) { //已经满了
     move_page_to_full(now, cache_chain[cpu][item_id]);
   }
-
+  release(&now->lock);
   print(FONT_RED, "release lock!");
   return ret;
 }
 
 
 static void kfree(void *ptr) {
+  return;
   if((uintptr_t)ptr >= (uintptr_t)big_alloc_head) return; //大内存不释放
   uintptr_t page_head = ROUNDDOWN(ptr, PAGE_SIZE);
   Log("pagehead is %p", page_head);
