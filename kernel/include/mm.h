@@ -34,8 +34,8 @@ struct listhead {
 };
 
 typedef struct cache {
-    page_t *full_list;
     page_t *available_list;
+    page_t *full_list;
 }cache_t;
 
 
