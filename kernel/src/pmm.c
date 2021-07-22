@@ -132,10 +132,10 @@ static void kfree(void *ptr) {
   Log("pagehead is %p", page_head);
   page_t* sb = (page_t *)page_head;
   struct obj_head* objhead = (struct obj_head*) ptr;
-  if(sb->obj_cnt == 1) {
+  if(sb->obj_cnt == 1 && sb->obj_order != 12) {
     acquire(&global_lock[sb->cpu]);
     struct listhead *empty = (struct listhead*)sb;
-    if(head != NULL) {
+    if(head[sb->cpu] != NULL) {
       void *tmp = head[sb->cpu]->next;
       head[sb->cpu]->next = empty;
       empty->next = tmp;
