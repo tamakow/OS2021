@@ -1,6 +1,6 @@
 #include <common.h>
 #include <spinlock.h>
-#include <slab.h>
+#include <mm.h>
 
 
 struct big_page {
@@ -64,7 +64,7 @@ static void *kalloc(size_t size) {
     if (big_alloc_tot >= 3) return NULL;
     big_alloc_tot ++;
     size_t bsize = pow2(size);
-    // int slab_num = bsize / PAGE_SIZE;
+    // int page_num = bsize / PAGE_SIZE;
     // acquire(&global_lock);
     // release(&global_lock);
     void *tmp = tail;
@@ -84,32 +84,32 @@ static void *kalloc(size_t size) {
   // cache的最小单位为 2B
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
-  slab *now;
+  page *now;
   if(cache_chain[cpu][item_id] == NULL){
-    cache_chain[cpu][item_id] = (slab*) alloc_mem(PAGE_SIZE, cpu);
+    cache_chain[cpu][item_id] = (page*) alloc_mem(PAGE_SIZE, cpu);
     Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]);
     if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
-    new_slab(cache_chain[cpu][item_id], cpu, item_id);
-    Log("after new_slab start_ptr is %p", cache_chain[cpu][item_id]->start_ptr);
+    new_page(cache_chain[cpu][item_id], cpu, item_id);
+    Log("after new_page start_ptr is %p", cache_chain[cpu][item_id]->start_ptr);
   } else{
-    if(full_slab(cache_chain[cpu][item_id])) {
+    if(full_page(cache_chain[cpu][item_id])) {
       print(FONT_RED, "the cache_chain is full, needed to allocate new space");
-      //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
-      slab* sb = (slab*) alloc_mem(PAGE_SIZE, cpu);
+      //如果表头都满了，代表没有空闲的page了，分配一个page，并插在表头
+      page* sb = (page*) alloc_mem(PAGE_SIZE, cpu);
       Log("alloc memory addr is %p", (void *)sb);
       if(sb == NULL) return NULL;
-      new_slab(sb, cpu, item_id);
-      //这里注意，本来不应该用insert的，因为它是一个new的slab，本身不在链表上
-      insert_slab_to_head(sb);
+      new_page(sb, cpu, item_id);
+      //这里注意，本来不应该用insert的，因为它是一个new的page，本身不在链表上
+      insert_page_to_head(sb);
     }
   }
   now = cache_chain[cpu][item_id];
   Log("now is %p", (uintptr_t)now);
   if(now == NULL) return NULL;
-  //成功找到slab
+  //成功找到page
   // TODO
   //应该有空位
-  if(full_slab(now)) assert(0);
+  if(full_page(now)) assert(0);
   print(FONT_RED, "get lock!");
   
   // if(cpu_count() == 4)
@@ -124,13 +124,13 @@ static void *kalloc(size_t size) {
   
   
   now->offset = objhead->next_offset;
-  Log("use this slab, the offset is %p %d", now->offset, now->offset);
+  Log("use this page, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
   // if(cpu_count() == 4)
   release(&now->lock);
   
   Log("Ready to judge if now is full");
-  if(full_slab(cache_chain[cpu][item_id])) { //已经满了
+  if(full_page(cache_chain[cpu][item_id])) { //已经满了
     Log("%p:cache_chain[%d][%d] is full, now->offset is %d",(void*)cache_chain[cpu][item_id], cpu, item_id, cache_chain[cpu][item_id]->offset);
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
     Log("%p:Now cache_chain is not full and now->offset is %d",(void*)cache_chain[cpu][item_id],cache_chain[cpu][item_id]->offset);
@@ -144,9 +144,9 @@ static void *kalloc(size_t size) {
 static void kfree(void *ptr) {
   // if(cpu_count() != 4) return;
   if((uintptr_t)ptr >= (uintptr_t)big_alloc_head) return; //大内存不释放
-  uintptr_t slab_head = ROUNDDOWN(ptr, PAGE_SIZE);
-  Log("slabhead is %p", slab_head);
-  slab* sb = (slab *)slab_head;
+  uintptr_t page_head = ROUNDDOWN(ptr, PAGE_SIZE);
+  Log("pagehead is %p", page_head);
+  page* sb = (page *)page_head;
   struct obj_head* objhead = (struct obj_head*) ptr;
   if(sb->obj_cnt == 1) {
     acquire(&global_lock[sb->cpu]);
@@ -170,11 +170,11 @@ static void kfree(void *ptr) {
   sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
   Log("sb->offset is %d", sb->offset);
   release(&sb->lock);
-  insert_slab_to_head(sb);
+  insert_page_to_head(sb);
 }
 
 static void pmm_init() {
-  slab_init();
+  page_init();
   big_alloc_init();
   int cpu_nr = cpu_count();
   for(int i = 0; i < cpu_nr; ++i)
