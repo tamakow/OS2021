@@ -101,8 +101,7 @@ static void *kalloc(size_t size) {
   
   Log("Ready to judge if now is full");
   if(full_page(now)) { //已经满了
-    cache_chain[cpu][item_id]->available_list = now->next;
-    // move_page_to_full(now, cache_chain[cpu][item_id]);
+    move_page_to_full(now, cache_chain[cpu][item_id]);
   }
   
   print(FONT_RED, "release lock!");
