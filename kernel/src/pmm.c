@@ -2,28 +2,12 @@
 #include <spinlock.h>
 #include <mm.h>
 
-
-struct big_page {
-  void *start_ptr; //为了对齐可能会不是从page的head开始分配起
-  int  alloc_sz; //分配的大小
-  int  next;
-};
-
-static struct big_page big_alloc[128];
-static int big_alloc_tot = 0;
 void *big_alloc_head;
-
 static struct spinlock global_lock[MAX_CPU];
 static struct spinlock big_alloc_lock;
-static struct freelist* head[MAX_CPU];
+static struct listhead* head[MAX_CPU];
 void *tail;
 
-static inline void big_alloc_init() {
-  for (int i = 0; i < 10; ++i) {
-    big_alloc[i].start_ptr = NULL;
-    big_alloc[i].alloc_sz = 0;
-  }
-}
 
 
 //cache的最小单位为2B，但是pow2只给大内存分配(> 4096)，即最小的ret都是 1<<13 所以问题不大
@@ -38,7 +22,7 @@ static inline void * alloc_mem (size_t size, int cpu) {
     if(head[cpu] != NULL) {
       acquire(&global_lock[cpu]);
       ret = (void *)head[cpu];
-      head[cpu] = head[cpu]->next;
+      head[cpu] = (struct listhead *)head[cpu]->next;
       release(&global_lock[cpu]);
     } else {
       for (int i = 0; i < cpu_count(); ++i) {
@@ -46,7 +30,7 @@ static inline void * alloc_mem (size_t size, int cpu) {
         if(head[i] != NULL) {
           acquire(&global_lock[i]);
           ret = (void *)head[i];
-          head[i] = head[i]->next;
+          head[i] = (struct listhead *)head[i]->next;
           release(&global_lock[i]);
           break;
         }
@@ -61,8 +45,8 @@ static void *kalloc(size_t size) {
   if(size > PAGE_SIZE) {
     // TODO!!
     // 写freelist来分配
-    if (big_alloc_tot >= 3) return NULL;
-    big_alloc_tot ++;
+    // if (big_alloc_tot >= 3) return NULL;
+    // big_alloc_tot ++;
     size_t bsize = pow2(size);
     // int page_num = bsize / PAGE_SIZE;
     // acquire(&global_lock);
@@ -84,9 +68,9 @@ static void *kalloc(size_t size) {
   // cache的最小单位为 2B
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
-  page *now;
+  page_t *now;
   if(cache_chain[cpu][item_id] == NULL){
-    cache_chain[cpu][item_id] = (page*) alloc_mem(PAGE_SIZE, cpu);
+    cache_chain[cpu][item_id] = (page_t*) alloc_mem(PAGE_SIZE, cpu);
     Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]);
     if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
     new_page(cache_chain[cpu][item_id], cpu, item_id);
@@ -95,7 +79,7 @@ static void *kalloc(size_t size) {
     if(full_page(cache_chain[cpu][item_id])) {
       print(FONT_RED, "the cache_chain is full, needed to allocate new space");
       //如果表头都满了，代表没有空闲的page了，分配一个page，并插在表头
-      page* sb = (page*) alloc_mem(PAGE_SIZE, cpu);
+      page_t* sb = (page_t*) alloc_mem(PAGE_SIZE, cpu);
       Log("alloc memory addr is %p", (void *)sb);
       if(sb == NULL) return NULL;
       new_page(sb, cpu, item_id);
@@ -142,15 +126,16 @@ static void *kalloc(size_t size) {
 
 
 static void kfree(void *ptr) {
+  return;
   // if(cpu_count() != 4) return;
   if((uintptr_t)ptr >= (uintptr_t)big_alloc_head) return; //大内存不释放
   uintptr_t page_head = ROUNDDOWN(ptr, PAGE_SIZE);
   Log("pagehead is %p", page_head);
-  page* sb = (page *)page_head;
+  page_t* sb = (page_t *)page_head;
   struct obj_head* objhead = (struct obj_head*) ptr;
   if(sb->obj_cnt == 1) {
     acquire(&global_lock[sb->cpu]);
-    struct freelist *empty = (struct freelist*)sb;
+    struct listhead *empty = (struct listhead*)sb;
     if(head != NULL) {
       void *tmp = head[sb->cpu]->next;
       head[sb->cpu]->next = empty;
@@ -175,30 +160,29 @@ static void kfree(void *ptr) {
 
 static void pmm_init() {
   page_init();
-  big_alloc_init();
   int cpu_nr = cpu_count();
   for(int i = 0; i < cpu_nr; ++i)
     initlock(&global_lock[i], "globallock");
   initlock(&big_alloc_lock, "big_alloc_lock");
-  head[0] = (struct freelist*)heap.start;
+  head[0] = (struct listhead*)heap.start;
   tail = heap.end;
-  big_alloc_head = (void*)((uintptr_t)tail - 4 * (1 << 20)); // 给大内存分 4 MiB
+  big_alloc_head = (void*)((uintptr_t)tail - (1 << 20)); // 给大内存分 4 MiB
   int page_nr = ((uintptr_t)big_alloc_head - (uintptr_t)head[0]) / PAGE_SIZE;
   int page_per_cpu = page_nr / cpu_nr;
   int count = 0;
   int cpu_idx = 0;
-  struct freelist *walk = head[0];
+  struct listhead *walk = head[0];
   while(cpu_idx < cpu_nr && (uintptr_t)((void *)walk + PAGE_SIZE) < (uintptr_t)big_alloc_head) {
     walk->cpu = cpu_idx;
     if(count > page_per_cpu) {
       count = 0;
       walk->next = NULL;
-      cpu_idx++;
+      head[++cpu_idx] = (void *)((void *)walk + PAGE_SIZE);
     } else {
-      count++;
+      ++count;
       walk->next = (void *)((void *)walk + PAGE_SIZE);
     }
-    walk = (struct freelist *)((void *)walk + PAGE_SIZE);
+    walk = (struct listhead *)((void *)walk + PAGE_SIZE);
   }
   walk->next = NULL;
   Log("%d",cpu_count());

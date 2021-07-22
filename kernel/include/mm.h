@@ -6,7 +6,7 @@
 #define  HDR_SIZE       (1 << 7)
 #define  NR_ITEM_SIZE   12
 
-//item size 设置为{2, 4, 8, 16,... ,2^12} 共12项
+//item size 设置为{2, 4, 8, 16,... ,4096} 共12项
 typedef union page {
     struct {
         struct spinlock lock; //锁，用于串行化分配和并发的free
@@ -23,23 +23,23 @@ typedef union page {
         uint8_t header[HDR_SIZE];
         uint8_t data[PAGE_SIZE - HDR_SIZE];
   } __attribute__((packed));
-} page;
+} page_t;
 
 struct obj_head {
     uint16_t next_offset; //下一个分配的地址离start_ptr的offset
 };
 
-struct freelist {
+struct listhead {
     void *next;
     int cpu;
 };
 
 
-page* cache_chain[MAX_CPU + 1][NR_ITEM_SIZE + 1];
+page_t* cache_chain[MAX_CPU + 1][NR_ITEM_SIZE + 1];
 
 void page_init();
-void new_page(page *, int, int);
-bool full_page(page* );
-void insert_page_to_head (page* );
+void new_page(page_t *, int, int);
+bool full_page(page_t *);
+void insert_page_to_head (page_t *);
 
 #endif
