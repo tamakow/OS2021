@@ -14,7 +14,6 @@ typedef union page {
         int max_obj; //最多可分配的对象数
         uintptr_t offset; //start_ptr + offset就是目前分配到的地方，在这个位置上有一个obj_head代表下一个可供分配的位置
         union page *next; //同一个cpu下的其他页面
-        union page *prev;
         int obj_order; //分配的大小为2^obj_order
         uintptr_t start_ptr; //第一个数据的起始位置
         int cpu;
@@ -34,12 +33,17 @@ struct listhead {
     int cpu;
 };
 
+typedef struct cache {
+    page_t *full_list;
+    page_t *available_list;
+}cache_t;
 
-page_t* cache_chain[MAX_CPU + 1][NR_ITEM_SIZE + 1];
+
+cache_t* cache_chain[MAX_CPU + 1][NR_ITEM_SIZE + 1];
 
 void page_init();
 void new_page(page_t *, int, int);
 bool full_page(page_t *);
-void insert_page_to_head (page_t *);
-
+void move_page_to_full(page_t *, cache_t *);
+void move_page_to_available(page_t *, cache_t *);
 #endif
