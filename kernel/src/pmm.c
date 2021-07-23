@@ -79,7 +79,7 @@ static void *kalloc(size_t size) {
   //成功找到page
   // TODO
   //应该有空位
-  if(full_page(now)) now = cache_chain[cpu][item_id]->available_list;
+  if(full_page(now)) return NULL;
   print(FONT_RED, "get lock!");
   
   // if(cpu_count() == 4)
@@ -97,12 +97,12 @@ static void *kalloc(size_t size) {
   Log("use this page, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
   // if(cpu_count() == 4)
-  
+  release(&now->lock);
+
   Log("Ready to judge if now is full");
   if(full_page(now)) { //已经满了
     move_page_to_full(now, cache_chain[cpu][item_id]);
   }
-  release(&now->lock);
   
   print(FONT_RED, "release lock!");
   return ret;
