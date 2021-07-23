@@ -20,18 +20,18 @@ static inline size_t pow2 (size_t size) {
 static inline void *alloc_mem (size_t size, int cpu) {
     void *ret = NULL;
     if(head[cpu] != NULL) {
-      // acquire(&global_lock[cpu]);
+      acquire(&global_lock[cpu]);
       ret = (void *)head[cpu];
       head[cpu] = (struct listhead *)head[cpu]->next;
-      // release(&global_lock[cpu]);
+      release(&global_lock[cpu]);
     } else {
       for (int i = 0; i < cpu_count(); ++i) {
         if(i == cpu) continue;
         if(head[i] != NULL) {
-          // acquire(&global_lock[i]);
+          acquire(&global_lock[i]);
           ret = (void *)head[i];
           head[i] = (struct listhead *)head[i]->next;
-          // release(&global_lock[i]);
+          release(&global_lock[i]);
           break;
         }
       }
@@ -42,7 +42,7 @@ static inline void *alloc_mem (size_t size, int cpu) {
 static void *kalloc(size_t size) {
   int cpu = cpu_current();
 
-  if(size > PAGE_SIZE) {
+  if(size > 4096) {
     // TODO!!
     // 写freelist来分配
     // if (big_alloc_tot >= 3) return NULL;
@@ -62,8 +62,6 @@ static void *kalloc(size_t size) {
     return ret;
   }
 
-
-  acquire(&big_alloc_lock);
   // cache的最小单位为 2B
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
@@ -71,30 +69,21 @@ static void *kalloc(size_t size) {
   if(cache_chain[cpu][item_id]->available_list == NULL){
     cache_chain[cpu][item_id]->available_list = (page_t*) alloc_mem(PAGE_SIZE, cpu);
     Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]->available_list);
-    if(cache_chain[cpu][item_id]->available_list == NULL){
-       release(&big_alloc_lock);
-       return NULL; // 分配不成功
-    }
+    if(cache_chain[cpu][item_id]->available_list == NULL) return NULL; // 分配不成功
     new_page(cache_chain[cpu][item_id]->available_list, cpu, item_id);
     Log("after new_page start_ptr is %p", cache_chain[cpu][item_id]->available_list->start_ptr);
   }
   now = cache_chain[cpu][item_id]->available_list;
   Log("now is %p", (uintptr_t)now);
-  if(now == NULL) {
-    release(&big_alloc_lock);
-    return NULL;
-  }
+  if(now == NULL) return NULL;
   //成功找到page
   // TODO
   //应该有空位
-  if(full_page(now)) {
-    release(&big_alloc_lock);
-    return NULL;
-  }
+  if(full_page(now)) return NULL;
   print(FONT_RED, "get lock!");
   
   // if(cpu_count() == 4)
-  // acquire(&now->lock);
+  acquire(&now->lock);
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
   Log("now start_ptr is %p", now->start_ptr);
@@ -108,13 +97,13 @@ static void *kalloc(size_t size) {
   Log("use this page, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
   // if(cpu_count() == 4)
-  // release(&now->lock);
-
+  release(&now->lock);
+  
   Log("Ready to judge if now is full");
   if(full_page(now)) { //已经满了
     move_page_to_full(now, cache_chain[cpu][item_id]);
   }
-  release(&big_alloc_lock);
+  
   print(FONT_RED, "release lock!");
   return ret;
 }
