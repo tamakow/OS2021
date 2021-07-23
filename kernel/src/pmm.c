@@ -42,7 +42,7 @@ static inline void *alloc_mem (size_t size, int cpu) {
 static void *kalloc(size_t size) {
   int cpu = cpu_current();
 
-  if(size > 4096) {
+  if(size > (4 KiB)) {
     // TODO!!
     // 写freelist来分配
     // if (big_alloc_tot >= 3) return NULL;
