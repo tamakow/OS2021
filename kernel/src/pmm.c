@@ -6,8 +6,9 @@ void *big_alloc_head;
 static struct spinlock global_lock[MAX_CPU];
 static struct spinlock big_alloc_lock;
 static struct listhead* head[MAX_CPU];
+static int cpu_nr;
+static int big_alloc_tot = 0;
 void *tail;
-
 
 
 //cache的最小单位为2B，但是pow2只给大内存分配(> 4096)，即最小的ret都是 1<<13 所以问题不大
@@ -17,7 +18,7 @@ static inline size_t pow2 (size_t size) {
   return ret;
 }
 
-static inline void *alloc_mem (size_t size, int cpu) {
+static inline void *alloc_mem (int cpu) {
     void *ret = NULL;
     if(head[cpu] != NULL) {
       acquire(&global_lock[cpu]);
@@ -25,7 +26,7 @@ static inline void *alloc_mem (size_t size, int cpu) {
       head[cpu] = (struct listhead *)head[cpu]->next;
       release(&global_lock[cpu]);
     } else {
-      for (int i = 0; i < cpu_count(); ++i) {
+      for (int i = 0; i < cpu_nr; ++i) {
         if(i == cpu) continue;
         if(head[i] != NULL) {
           acquire(&global_lock[i]);
@@ -45,8 +46,8 @@ static void *kalloc(size_t size) {
   if(size > (4 KiB)) {
     // TODO!!
     // 写freelist来分配
-    // if (big_alloc_tot >= 3) return NULL;
-    // big_alloc_tot ++;
+    if (big_alloc_tot >= 3) return NULL;
+    big_alloc_tot ++;
     size_t bsize = pow2(size);
     void *tmp = tail;
     acquire(&big_alloc_lock);
@@ -67,7 +68,7 @@ static void *kalloc(size_t size) {
   while(size > (1 << item_id)) item_id++;
   page_t *now;
   if(cache_chain[cpu][item_id]->available_list == NULL){
-    cache_chain[cpu][item_id]->available_list = (page_t*) alloc_mem(PAGE_SIZE, cpu);
+    cache_chain[cpu][item_id]->available_list = (page_t*) alloc_mem(cpu);
     Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]->available_list);
     if(cache_chain[cpu][item_id]->available_list == NULL) return NULL; // 分配不成功
     new_page(cache_chain[cpu][item_id]->available_list, cpu, item_id);
@@ -100,9 +101,9 @@ static void *kalloc(size_t size) {
   release(&now->lock);
   
   Log("Ready to judge if now is full");
-  if(full_page(now)) { //已经满了
-    move_page_to_full(now, cache_chain[cpu][item_id]);
-  }
+  // if(full_page(now)) { //已经满了
+  //   move_page_to_full(now, cache_chain[cpu][item_id]);
+  // }
   
   print(FONT_RED, "release lock!");
   return ret;
@@ -144,7 +145,7 @@ static void kfree(void *ptr) {
 
 static void pmm_init() {
   page_init();
-  int cpu_nr = cpu_count();
+  cpu_nr = cpu_count();
   for(int i = 0; i < cpu_nr; ++i)
     initlock(&global_lock[i], "globallock");
   initlock(&big_alloc_lock, "big_alloc_lock");
