@@ -25,7 +25,8 @@ void new_page(page_t *sb, int cpu, int item_id) {
     sb->offset = 0;
     sb->max_obj = (int)((uintptr_t)sb + PAGE_SIZE - sb->start_ptr) / size;
     sb->cpu = cpu;
-    sb->next = NULL;
+    sb->next = sb;
+    sb->prev = sb;
     Log("sb's max_obj is %d", sb->max_obj);
     // init obj_head;
     // 只在未分配的obj上有用，已分配的无所谓

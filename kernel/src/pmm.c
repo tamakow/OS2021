@@ -76,7 +76,7 @@ static void *kalloc(size_t size) {
   } else{
     if(full_page(cache_chain[cpu][item_id])) {
       print(FONT_RED, "the cache_chain is full, needed to allocate new space");
-      //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
+      //如果表头都满了，代表没有空闲的page了，分配一个page，并插在表头
       page_t* sb = (page_t*) alloc_mem(cpu);
       Log("alloc memory addr is %p", (void *)sb);
       if(sb == NULL) return NULL;
