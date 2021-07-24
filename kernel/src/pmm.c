@@ -76,14 +76,14 @@ static void *kalloc(size_t size) {
   }
   now = cache_chain[cpu][item_id]->available_list;
   Log("now is %p", (uintptr_t)now);
-  // if(now == NULL) return NULL;
+  if(now == NULL) return NULL;
   //成功找到page
   // TODO
   //应该有空位
-  // if(full_page(now)) return NULL;
+  if(full_page(now)) return NULL;
   Log("after new_page lock is %d", (int)now->lock.locked);
   // if(cpu_count() == 4)
-  acquire(&now->lock);
+  acquire(&cache_chain[cpu][item_id]->available_list->lock);
   print(FONT_RED, "get lock!");
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
