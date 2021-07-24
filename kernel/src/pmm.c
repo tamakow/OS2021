@@ -84,6 +84,7 @@ static void *kalloc(size_t size) {
   Log("after new_page lock is %d", (int)now->lock.locked);
   // if(cpu_count() == 4)
   acquire(&now->lock);
+  printf("helloc");
   print(FONT_RED, "get lock!");
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
