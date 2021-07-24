@@ -1,7 +1,7 @@
 #include <common.h>
 #include <mm.h>
 
-// int page_cnt = 0;
+int page_cnt = 0;
 
 void page_init() {
     for(int i = 0; i < MAX_CPU + 1; ++i) {
@@ -15,10 +15,10 @@ void page_init() {
 void new_page(page_t *sb, int cpu, int item_id) {
     assert(sb != NULL);
     int size = (1 << item_id);
-    // char name[128];
-    // sprintf(name, "lock%d",page_cnt++);
-    // Log("%s", name);
-    initlock(&sb->lock, "lock");
+    char name[128];
+    sprintf(name, "lock%d",page_cnt++);
+    Log("%s", name);
+    initlock(&sb->lock, name);
     sb->obj_cnt = 0;
     sb->obj_order = item_id;
     sb->start_ptr = (uintptr_t)(((uintptr_t)(sb->data) - 1) / size + 1) * size; 
