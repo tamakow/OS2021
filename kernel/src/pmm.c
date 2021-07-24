@@ -127,6 +127,13 @@ static void kfree(void *ptr) {
   page_t* sb = (page_t *)page_head;
   struct obj_head* objhead = (struct obj_head*) ptr;
   if(sb->obj_cnt == 1) {
+    if(cache_chain[sb->cpu][sb->obj_order] == sb && cache_chain[sb->cpu][sb->obj_order]->next == sb) {
+      cache_chain[sb->cpu][sb->obj_order] = NULL;
+    } else {
+      sb->prev->next = sb->next;
+      sb->next->prev = sb->prev;
+    }
+    sb->next = sb->prev = NULL;
     acquire(&global_lock[sb->cpu]);
     struct listhead *empty = (struct listhead*)sb;
     if(head[sb->cpu] != NULL) {
