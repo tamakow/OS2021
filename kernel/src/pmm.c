@@ -24,7 +24,6 @@ static inline void *alloc_mem (int cpu) {
       acquire(&global_lock[cpu]);
       ret = (void *)head[cpu];
       head[cpu] = (struct listhead *)head[cpu]->next;
-      Log("this cpu is enough");
       release(&global_lock[cpu]);
     } else {
       for (int i = 0; i < cpu_nr; ++i) {
@@ -83,6 +82,9 @@ static void *kalloc(size_t size) {
   //应该有空位
   if(full_page(now)) assert(0);
   Log("after new_page lock is %d", (int)now->lock.locked);
+  acquire(&global_lock[cpu]);
+  Log("can get lock");
+  release(&global_lock[cpu]);
   // if(cpu_count() == 4)
   acquire(&now->lock);
   print(FONT_RED, "get lock!");
