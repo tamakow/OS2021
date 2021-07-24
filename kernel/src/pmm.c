@@ -66,7 +66,6 @@ static void *kalloc(size_t size) {
   // cache的最小单位为 2B
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
-  page_t *now;
   if(cache_chain[cpu][item_id]->available_list == NULL){
     cache_chain[cpu][item_id]->available_list = (page_t*) alloc_mem(cpu);
     Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]->available_list);
@@ -74,7 +73,7 @@ static void *kalloc(size_t size) {
     new_page(cache_chain[cpu][item_id]->available_list, cpu, item_id);
     Log("after new_page start_ptr is %p", cache_chain[cpu][item_id]->available_list->start_ptr);
   }
-  now = cache_chain[cpu][item_id]->available_list;
+  page_t* now = cache_chain[cpu][item_id]->available_list;
   Log("now is %p", (uintptr_t)now);
   if(now == NULL) return NULL;
   //成功找到page
@@ -82,9 +81,6 @@ static void *kalloc(size_t size) {
   //应该有空位
   if(full_page(now)) assert(0);
   Log("after new_page lock is %d", (int)now->lock.locked);
-  acquire(&global_lock[cpu]);
-  Log("can get lock");
-  release(&global_lock[cpu]);
   // if(cpu_count() == 4)
   acquire(&now->lock);
   print(FONT_RED, "get lock!");
