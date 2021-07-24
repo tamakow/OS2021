@@ -6,8 +6,7 @@ int page_cnt = 0;
 void page_init() {
     for(int i = 0; i < MAX_CPU + 1; ++i) {
         for(int j = 0; j < NR_ITEM_SIZE + 1; ++j) {
-            cache_chain[i][j]->available_list = NULL;
-            cache_chain[i][j]->full_list = NULL;
+            cache_chain[i][j] = NULL;
         }
     }
 }
@@ -53,82 +52,82 @@ bool full_page(page_t* sb) {
     return sb->obj_cnt >= sb->max_obj;
 }
 
-void move_page_to_full(page_t *pg, cache_t *ch) {
-    if(ch->available_list == pg) {
-        ch->available_list = pg->next;
-    } else {
-        page_t *walk = ch->available_list;
-        while(walk && walk->next) {
-            if(walk->next == pg) {
-                walk->next = pg->next;
-                break;
-            }
-            walk = walk->next;
-        }
-    }
-    pg->next = NULL;
-    if(ch->full_list) {
-        page_t *walk = ch->full_list;
-        while(walk->next) {
-            walk = walk->next;
-        }
-        walk->next = pg;
-    } else {
-        ch->full_list = pg;
-    }
-}
+// void move_page_to_full(page_t *pg, cache_t *ch) {
+//     if(ch->available_list == pg) {
+//         ch->available_list = pg->next;
+//     } else {
+//         page_t *walk = ch->available_list;
+//         while(walk && walk->next) {
+//             if(walk->next == pg) {
+//                 walk->next = pg->next;
+//                 break;
+//             }
+//             walk = walk->next;
+//         }
+//     }
+//     pg->next = NULL;
+//     if(ch->full_list) {
+//         page_t *walk = ch->full_list;
+//         while(walk->next) {
+//             walk = walk->next;
+//         }
+//         walk->next = pg;
+//     } else {
+//         ch->full_list = pg;
+//     }
+// }
 
-void move_page_to_available(page_t *pg, cache_t *ch) {
-    if(ch->full_list == pg) {
-        ch->full_list = pg->next;
-    } else {
-        page_t *walk = ch->full_list;
-        while(walk && walk->next) {
-            if(walk->next == pg) {
-                walk->next = pg->next;
-                break;
-            }
-            walk = walk->next;
-        }
-    }
-    pg->next = NULL;
-    if(ch->available_list) {
-        page_t *walk = ch->available_list;
-        while(walk->next) {
-            walk = walk->next;
-        }
-        walk->next = pg;
-    } else {
-        ch->available_list = pg;
-    }
-}
+// void move_page_to_available(page_t *pg, cache_t *ch) {
+//     if(ch->full_list == pg) {
+//         ch->full_list = pg->next;
+//     } else {
+//         page_t *walk = ch->full_list;
+//         while(walk && walk->next) {
+//             if(walk->next == pg) {
+//                 walk->next = pg->next;
+//                 break;
+//             }
+//             walk = walk->next;
+//         }
+//     }
+//     pg->next = NULL;
+//     if(ch->available_list) {
+//         page_t *walk = ch->available_list;
+//         while(walk->next) {
+//             walk = walk->next;
+//         }
+//         walk->next = pg;
+//     } else {
+//         ch->available_list = pg;
+//     }
+// }
 
 // // head 即为 cache_chain[cpu][item_id]，保证head不为NULL
-// void insert_page_to_head (page_t* sb) {
-//     int cpu = sb->cpu;
-//     int order  = sb->obj_order;
-//     //如果在链表的话，先从链表中删除
-//     sb->prev->next = sb->next;
-//     sb->next->prev = sb->prev;
-//     //再加在表头之前
-//     page_t* head = cache_chain[cpu][order];
-//     // if(cpu_count() == 4) {
-//     while(!full_page(head) && head != sb) {
-//         head = head->next;
-//     }
-//     // }
-//     if(head == NULL){
-//       print(FONT_RED, "Why your cache_chain[%d][%d] is NULL!!!!!!(insert_page_to_head)", cpu, order);
-//       assert(0);
-//     }
-//     if(head == sb) return;
-//     sb->next = head;
-//     sb->prev = head->prev;
-//     head->prev->next = sb;
-//     head->prev = sb;
+void insert_page_to_head (page_t* sb) {
+    int cpu = sb->cpu;
+    int order  = sb->obj_order;
+    //如果在链表的话，先从链表中删除
+    sb->prev->next = sb->next;
+    sb->next->prev = sb->prev;
+    //再加在表头之前
+    page_t* head = cache_chain[cpu][order];
+    // if(cpu_count() == 4) {
+    while(!full_page(head) && head != sb) {
+        head = head->next;
+    }
+    // }
+    if(head == NULL){
+      print(FONT_RED, "Why your cache_chain[%d][%d] is NULL!!!!!!(insert_page_to_head)", cpu, order);
+      assert(0);
+    }
+    if(head == sb) return;
+    sb->next = head;
+    sb->prev = head->prev;
+    head->prev->next = sb;
+    head->prev = sb;
     
     
-//     //然后把表头向前移动一位
-//     if(head == cache_chain[cpu][order])
-//         cache_chain[cpu][order] = sb;
-// }
+    //然后把表头向前移动一位
+    if(head == cache_chain[cpu][order])
+        cache_chain[cpu][order] = sb;
+}

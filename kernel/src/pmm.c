@@ -66,22 +66,32 @@ static void *kalloc(size_t size) {
   // cache的最小单位为 2B
   int item_id = 1;
   while(size > (1 << item_id)) item_id++;
-  if(cache_chain[cpu][item_id]->available_list == NULL){
-    cache_chain[cpu][item_id]->available_list = (page_t*) alloc_mem(cpu);
-    memset(cache_chain[cpu][item_id]->available_list, 0x0, PAGE_SIZE);
-    Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]->available_list);
-    if(cache_chain[cpu][item_id]->available_list == NULL) return NULL; // 分配不成功
-    new_page(cache_chain[cpu][item_id]->available_list, cpu, item_id);
-    Log("after new_page start_ptr is %p", cache_chain[cpu][item_id]->available_list->start_ptr);
+  page_t *now;
+  if(cache_chain[cpu][item_id] == NULL){
+    cache_chain[cpu][item_id] = (page_t*) alloc_mem(cpu);
+    Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]);
+    if(cache_chain[cpu][item_id] == NULL) return NULL; // 分配不成功
+    new_page(cache_chain[cpu][item_id], cpu, item_id);
+    Log("after new_page start_ptr is %p", cache_chain[cpu][item_id]->start_ptr);
+  } else{
+    if(full_page(cache_chain[cpu][item_id])) {
+      print(FONT_RED, "the cache_chain is full, needed to allocate new space");
+      //如果表头都满了，代表没有空闲的slab了，分配一个slab，并插在表头
+      page_t* sb = (page_t*) alloc_mem(cpu);
+      Log("alloc memory addr is %p", (void *)sb);
+      if(sb == NULL) return NULL;
+      new_page(sb, cpu, item_id);
+      //这里注意，本来不应该用insert的，因为它是一个new的slab，本身不在链表上
+      insert_page_to_head(sb);
+    }
   }
-  page_t* now = cache_chain[cpu][item_id]->available_list;
+  now = cache_chain[cpu][item_id];
   Log("now is %p", (uintptr_t)now);
   if(now == NULL) return NULL;
-  //成功找到page
+  //成功找到slab
   // TODO
   //应该有空位
   if(full_page(now)) assert(0);
-  Log("after new_page lock is %d", (int)now->lock.locked);
   // if(cpu_count() == 4)
   acquire(&now->lock);
   print(FONT_RED, "get lock!");
@@ -102,7 +112,7 @@ static void *kalloc(size_t size) {
   
   Log("Ready to judge if now is full");
   if(full_page(now)) { //已经满了
-    move_page_to_full(now, cache_chain[cpu][item_id]);
+    cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
   }
   
   print(FONT_RED, "release lock!");
@@ -131,8 +141,6 @@ static void kfree(void *ptr) {
     release(&global_lock[sb->cpu]);
     return;
   }
-  if(sb->obj_cnt >= sb->max_obj)
-    move_page_to_available(sb, cache_chain[sb->cpu][sb->obj_order]);
   acquire(&sb->lock);
   sb->obj_cnt--;
   Log("objcnt is %d", sb->obj_cnt);
@@ -141,6 +149,7 @@ static void kfree(void *ptr) {
   sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
   Log("sb->offset is %d", sb->offset);
   release(&sb->lock);
+  insert_page_to_head(sb);
 }
 
 static void pmm_init() {
