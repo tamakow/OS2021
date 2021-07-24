@@ -154,7 +154,8 @@ static void kfree(void *ptr) {
     sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
     Log("sb->offset is %d", sb->offset);
     release(&sb->lock);
-    insert_page_to_head(sb);
+    if(sb->obj_cnt == sb->max_obj - 1)
+      insert_page_to_head(sb);
   }
 }
 
