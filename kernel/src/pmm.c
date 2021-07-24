@@ -80,7 +80,7 @@ static void *kalloc(size_t size) {
   //成功找到page
   // TODO
   //应该有空位
-  if(full_page(now)) return NULL;
+  if(full_page(now)) assert(0);
   Log("after new_page lock is %d", (int)now->lock.locked);
   // if(cpu_count() == 4)
   acquire(&now->lock);
