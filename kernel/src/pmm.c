@@ -81,7 +81,7 @@ static void *kalloc(size_t size) {
   // TODO
   //应该有空位
   if(full_page(now)) return NULL;
-  
+  Log("after new_page lock is %d", (int)now->lock.locked);
   // if(cpu_count() == 4)
   acquire(&now->lock);
   print(FONT_RED, "get lock!");
