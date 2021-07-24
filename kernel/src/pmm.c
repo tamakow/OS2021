@@ -72,6 +72,9 @@ static void *kalloc(size_t size) {
     Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]->available_list);
     if(cache_chain[cpu][item_id]->available_list == NULL) return NULL; // 分配不成功
     new_page(cache_chain[cpu][item_id]->available_list, cpu, item_id);
+    acquire(&cache_chain[cpu][item_id]->available_list->lock);
+    Log("can get lock");
+    release(&cache_chain[cpu][item_id]->available_list->lock);
     Log("after new_page start_ptr is %p", cache_chain[cpu][item_id]->available_list->start_ptr);
   }
   now = cache_chain[cpu][item_id]->available_list;
@@ -83,7 +86,7 @@ static void *kalloc(size_t size) {
   if(full_page(now)) return NULL;
   Log("after new_page lock is %d", (int)now->lock.locked);
   // if(cpu_count() == 4)
-  acquire(&cache_chain[cpu][item_id]->available_list->lock);
+  acquire(&now->lock);
   print(FONT_RED, "get lock!");
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
