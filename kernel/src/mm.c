@@ -33,8 +33,8 @@ void new_page(page_t *sb, int cpu, int item_id) {
     uintptr_t offset = 0;
     while(sb->start_ptr + offset + size <= (uintptr_t)sb + PAGE_SIZE) {
         struct obj_head* objhead = (struct obj_head*) (sb->start_ptr + offset);
-        objhead->next_offset = offset + size;
         offset += size;
+        objhead->next_offset = offset;
     }
 #ifdef DEBUG
     struct obj_head* objhead = (struct obj_head*) sb->start_ptr;
