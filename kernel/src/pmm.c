@@ -80,7 +80,10 @@ static void *kalloc(size_t size) {
   //成功找到page
   // TODO
   //应该有空位
-  if(full_page(now)) return NULL;
+  if(full_page(now)) {
+    cache_chain[cpu][item_id]->available_list = NULL;
+    return NULL;
+  }
   print(FONT_RED, "get lock!");
   
   // if(cpu_count() == 4)
