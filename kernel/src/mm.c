@@ -107,26 +107,23 @@ bool full_page(page_t* sb) {
 void insert_page_to_head (page_t* sb) {
     int cpu = sb->cpu;
     int order  = sb->obj_order;
-    //如果在链表的话，先从链表中删除
-    sb->prev->next = sb->next;
-    sb->next->prev = sb->prev;
-    //再加在表头之前
     page_t* head = cache_chain[cpu][order];
-    // if(cpu_count() == 4) {
-    while(!full_page(head) && head != sb) {
-        head = head->next;
-    }
-    // }
     if(head == NULL){
       print(FONT_RED, "Why your cache_chain[%d][%d] is NULL!!!!!!(insert_page_to_head)", cpu, order);
       assert(0);
     }
     if(head == sb) return;
+    //如果在链表的话，先从链表中删除
+    sb->prev->next = sb->next;
+    sb->next->prev = sb->prev;
+    //再加在表头之前
+    // while(!full_page(head) && head != sb) {
+    //     head = head->next;
+    // }
     sb->next = head;
     sb->prev = head->prev;
     head->prev->next = sb;
     head->prev = sb;
-    
     
     //然后把表头向前移动一位
     if(head == cache_chain[cpu][order])
