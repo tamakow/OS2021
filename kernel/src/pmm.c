@@ -69,10 +69,6 @@ static void *kalloc(size_t size) {
   if(cache_chain[cpu][item_id]->available_list == NULL){
     cache_chain[cpu][item_id]->available_list = (page_t*) alloc_mem(cpu);
     memset(cache_chain[cpu][item_id]->available_list, 0x0, PAGE_SIZE);
-    initlock(&cache_chain[cpu][item_id]->available_list->lock, "lock");
-    acquire(&cache_chain[cpu][item_id]->available_list->lock);
-    Log("can get lock");
-    release(&cache_chain[cpu][item_id]->available_list->lock);
     Log("alloc memory addr is %p", (void *)cache_chain[cpu][item_id]->available_list);
     if(cache_chain[cpu][item_id]->available_list == NULL) return NULL; // 分配不成功
     new_page(cache_chain[cpu][item_id]->available_list, cpu, item_id);
