@@ -68,7 +68,7 @@ static void *kalloc(size_t size) {
   while(size > (1 << item_id)) item_id++;
   if(cache_chain[cpu][item_id]->available_list == NULL){
     cache_chain[cpu][item_id]->available_list = (page_t*) alloc_mem(cpu);
-    memset(&cache_chain[cpu][item_id]->available_list, 0x0, PAGE_SIZE);
+    memset(cache_chain[cpu][item_id]->available_list, 0x0, PAGE_SIZE);
     initlock(&cache_chain[cpu][item_id]->available_list->lock, "lock");
     acquire(&cache_chain[cpu][item_id]->available_list->lock);
     Log("can get lock");
