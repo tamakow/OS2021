@@ -24,6 +24,7 @@ static inline void *alloc_mem (int cpu) {
       acquire(&global_lock[cpu]);
       ret = (void *)head[cpu];
       head[cpu] = (struct listhead *)head[cpu]->next;
+      Log("this cpu is enough");
       release(&global_lock[cpu]);
     } else {
       for (int i = 0; i < cpu_nr; ++i) {
