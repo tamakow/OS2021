@@ -121,13 +121,12 @@ static void *kalloc(size_t size) {
 
 
 static void kfree(void *ptr) {
-  return;
   if((uintptr_t)ptr >= (uintptr_t)big_alloc_head) return; //大内存不释放
   uintptr_t page_head = ROUNDDOWN(ptr, PAGE_SIZE);
   Log("pagehead is %p", page_head);
   page_t* sb = (page_t *)page_head;
   struct obj_head* objhead = (struct obj_head*) ptr;
-  if(sb->obj_cnt == 1 && sb->obj_order != 12) {
+  if(sb->obj_cnt == 1) {
     acquire(&global_lock[sb->cpu]);
     struct listhead *empty = (struct listhead*)sb;
     if(head[sb->cpu] != NULL) {
@@ -139,17 +138,17 @@ static void kfree(void *ptr) {
       head[sb->cpu]->next = NULL;
     }
     release(&global_lock[sb->cpu]);
-    return;
+  } else {
+    acquire(&sb->lock);
+    sb->obj_cnt--;
+    Log("objcnt is %d", sb->obj_cnt);
+    objhead->next_offset = sb->offset;
+    Log("next_offset is %d", objhead->next_offset);
+    sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
+    Log("sb->offset is %d", sb->offset);
+    release(&sb->lock);
+    insert_page_to_head(sb);
   }
-  acquire(&sb->lock);
-  sb->obj_cnt--;
-  Log("objcnt is %d", sb->obj_cnt);
-  objhead->next_offset = sb->offset;
-  Log("next_offset is %d", objhead->next_offset);
-  sb->offset = (uintptr_t)ptr - (uintptr_t)sb->start_ptr;
-  Log("sb->offset is %d", sb->offset);
-  release(&sb->lock);
-  insert_page_to_head(sb);
 }
 
 static void pmm_init() {
