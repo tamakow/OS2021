@@ -31,7 +31,6 @@ static Context *os_trap(Event ev, Context *context) {
 }
 
 static void os_on_irq(int seq, int event, handler_t handler) {
-  printf("add irq, seq is %d\n", seq);
   struct os_irq *walk = &irq_head;
   struct os_irq *new_irq = pmm->alloc(sizeof(struct os_irq));
   new_irq->seq = seq;
