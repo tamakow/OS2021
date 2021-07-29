@@ -50,11 +50,11 @@ Context* kmt_schedule(Event ev, Context *context) {
         if(walk == Current) continue;
         if(walk->state == RUNNABLE) {
             ret = walk;
+            ret->state = RUNNING;
             break;
         }
     }
     if(!ret) ret = &Idle;
-    ret->state = RUNNING;
     return ret->context;
 }
 
