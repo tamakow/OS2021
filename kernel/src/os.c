@@ -18,7 +18,7 @@ static void os_run() {
 
 static Context *os_trap(Event ev, Context *context) {
   Context *ret = NULL;
-  for(struct os_irq *h = irq_head.next; h != NULL; ++h) {
+  for(struct os_irq *h = irq_head.next; h != NULL; h = h->next) {
      if (h->event == EVENT_NULL || h->event == ev.event) {
       Context *r = h->handler(ev, context);
       panic_on(r && ret, "returning multiple contexts");
