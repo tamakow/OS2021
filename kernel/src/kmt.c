@@ -35,7 +35,6 @@ void kmt_teardown(task_t *task){
 }
 
 Context* kmt_schedule(Event ev, Context *context) {
-    return NULL;
     if(Current->state == DEADED) {
         task_t* walk = &task_head;
         while(walk && walk->next != Current) walk = walk->next;
@@ -56,7 +55,7 @@ Context* kmt_schedule(Event ev, Context *context) {
 }
 
 Context* kmt_context_save(Event ev, Context *context) {
-    // Current->context = context;
+    Current->context = context;
     return NULL;
 }
 
@@ -88,7 +87,7 @@ void kmt_init() {
         idle[i].context = kcontext((Area){(void*)((uintptr_t)idle[i].stack),(void*)((uintptr_t)idle[i].stack+STACK_SIZE)}, ientry, NULL);
         idle[i].id = -1;
 
-        current[i] = &idle[i];
+        current[i] = NULL;
     }
     
     os->on_irq(INT_MIN, EVENT_NULL, kmt_context_save);
