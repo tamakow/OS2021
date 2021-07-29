@@ -57,6 +57,7 @@ Context* kmt_schedule(Event ev, Context *context) {
 
 Context* kmt_context_save(Event ev, Context *context) {
     Current->context = context;
+    KLog("hello");
     return NULL;
 }
 
