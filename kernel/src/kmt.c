@@ -44,7 +44,6 @@ Context* kmt_schedule(Event ev, Context *context) {
         pmm->free(Current->stack);
         pmm->free(Current);
     }
-    KLog("hello");
 
     task_t *ret = NULL;
     for (task_t *walk = &task_head; walk != NULL; walk = walk->next) {
@@ -53,6 +52,7 @@ Context* kmt_schedule(Event ev, Context *context) {
             break;
         }
     }
+    if(!ret) ret = &Idle;
     return ret->context;
 }
 
