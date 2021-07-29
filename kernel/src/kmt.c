@@ -46,10 +46,20 @@ Context* kmt_schedule(Event ev, Context *context) {
         walk->next = Current->next;
     }
     task_t *ret = NULL;
-    for (task_t *walk = &task_head; walk != NULL; walk = walk->next) {
-        if(walk->state == RUNNABLE) {
-            ret = walk;
-            break;
+    if(Current != &Idle) {
+        for (task_t *walk = Current; walk != NULL; walk = walk->next) {
+            if(walk->state == RUNNABLE) {
+                ret = walk;
+                break;
+            }
+        }
+    }
+    if(!ret) {
+        for (task_t *walk = &task_head; walk != NULL; walk = walk->next) {
+            if(walk->state == RUNNABLE) {
+                ret = walk;
+                break;
+            }
         }
     }
     if(!ret) ret = &Idle;
