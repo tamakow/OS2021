@@ -66,15 +66,10 @@ void ientry() {
 
 void kmt_init() {
     initlock(&task_lock, "task_lock");
-    KLog("ok1");
     task_head.id = id_cnt++;
-    KLog("ok2");
     task_head.name = "task_head";
-    KLog("ok3");
     task_head.next = NULL;
-    KLog("ok4");
     task_head.stack = pmm->alloc(STACK_SIZE);
-    KLog("ok5");
     task_head.state = HEAD;
     task_head.context = NULL;
 
@@ -87,11 +82,11 @@ void kmt_init() {
         idle[i].context = kcontext((Area){(void*)((uintptr_t)idle[i].stack),(void*)((uintptr_t)idle[i].stack+STACK_SIZE)}, ientry, NULL);
         idle[i].id = -1;
 
-        current[i] = NULL;
+        current[i] = &idle[i];
     }
     
-    os->on_irq(INT_MIN, EVENT_NULL, kmt_context_save);
-    os->on_irq(INT_MAX, EVENT_NULL, kmt_schedule);
+    // os->on_irq(INT_MIN, EVENT_NULL, kmt_context_save);
+    // os->on_irq(INT_MAX, EVENT_NULL, kmt_schedule);
 }
 
 MODULE_DEF(kmt) = {
