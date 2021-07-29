@@ -4,15 +4,12 @@
 #include <sem.h>
 #include <limits.h>
 
-// #define Idle    idle[cpu_current()]
-// #define Current current[cpu_current()]
 
 spinlock_t task_lock;
 task_t task_head;
 static uint32_t id_cnt = 0;
 static task_t idle[MAX_CPU];
 task_t* current[MAX_CPU];
-// task_t* last[MAX_CPU];
 
 int kmt_create(task_t *task, const char *name, void (*entry)(void *arg), void *arg) {
     task->name = name;
@@ -49,16 +46,18 @@ Context* kmt_schedule(Event ev, Context *context) {
     if(Current != &Idle) {
         for (task_t *walk = Current; walk != NULL; walk = walk->next) {
             if(walk->state == RUNNABLE) {
-                ret = walk;
-                break;
+                if(!ret || ret->time >= walk->time) {
+                    ret = walk;
+                }
             }
         }
     }
     if(!ret) {
         for (task_t *walk = &task_head; walk != NULL; walk = walk->next) {
             if(walk->state == RUNNABLE) {
-                ret = walk;
-                break;
+                if(!ret || ret->time >= walk->time) {
+                    ret = walk;
+                }
             }
         }
     }
@@ -66,17 +65,13 @@ Context* kmt_schedule(Event ev, Context *context) {
     if(Current->state == RUNNING)
         Current->state = RUNNABLE;
     ret->state = RUNNING;
-    // panic_on(Last, "last current has not done!");
+    ret->time = (ret->time + 1) % 1000;
     Current = ret;
     release(&task_lock);
     return ret->context;
 }
 
 Context* kmt_context_save(Event ev, Context *context) {
-    // if(Last) {
-    //     Last->state = RUNNABLE;
-    //     Last = NULL;
-    // }
     acquire(&task_lock);
     Current->context = context;
     release(&task_lock);
@@ -96,11 +91,13 @@ void kmt_init() {
     task_head.stack = pmm->alloc(STACK_SIZE);
     task_head.state = HEAD;
     task_head.context = NULL;
+    task_head.time = 0;
 
     int cpu_nr = cpu_count();
     for (int i = 0; i < cpu_nr; ++i) {
         idle[i].name = "idle";
         idle[i].next = NULL;
+        idle[i].time = 0;
         idle[i].stack = pmm->alloc(STACK_SIZE);
         idle[i].state = RUNNABLE;
         idle[i].context = kcontext((Area){(void*)((uintptr_t)idle[i].stack),(void*)((uintptr_t)idle[i].stack+STACK_SIZE)}, ientry, NULL);
