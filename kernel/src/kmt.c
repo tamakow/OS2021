@@ -46,7 +46,7 @@ Context* kmt_context_save(Event ev, Context *context) {
 
 void kmt_init() {
     initlock(&task_lock, "task_lock");
-    
+    printf("helloc\n");
     task_head.id = id_cnt++;
     task_head.name = "task_head";
     task_head.next = NULL;
