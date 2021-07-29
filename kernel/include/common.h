@@ -7,7 +7,7 @@
 #include <../../abstract-machine/am/src/x86/x86.h>
 
 
-// #define DEBUG
+#define DEBUG
 #define KMT_DEBUG
 
 
