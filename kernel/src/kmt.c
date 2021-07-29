@@ -17,6 +17,7 @@ int kmt_create(task_t *task, const char *name, void (*entry)(void *arg), void *a
     task->name = name;
     task->id = id_cnt++;
     task->state = RUNNABLE;
+    task->stack = pmm->alloc(STACK_SIZE);
     task->context = kcontext((Area){(void*)((uintptr_t)task->stack),(void*)((uintptr_t)task->stack+STACK_SIZE)}, entry, arg);
     task->next = NULL;
     acquire(&task_lock);
@@ -85,8 +86,8 @@ void kmt_init() {
         current[i] = &idle[i];
     }
     
-    // os->on_irq(INT_MIN, EVENT_NULL, kmt_context_save);
-    // os->on_irq(INT_MAX, EVENT_NULL, kmt_schedule);
+    os->on_irq(INT_MIN, EVENT_NULL, kmt_context_save);
+    os->on_irq(INT_MAX, EVENT_NULL, kmt_schedule);
 }
 
 MODULE_DEF(kmt) = {
