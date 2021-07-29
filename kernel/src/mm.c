@@ -19,6 +19,9 @@ void new_page(page_t *sb, int cpu, int item_id) {
     Log("%s", name);
     initlock(&sb->lock, name);
     Log("lock is %d", (int)sb->lock.locked);
+    acquire(&sb->lock);
+    Log("hello");
+    release(&sb->lock);
     sb->obj_cnt = 0;
     sb->obj_order = item_id;
     sb->start_ptr = (uintptr_t)(((uintptr_t)(sb->data) - 1) / size + 1) * size; 
