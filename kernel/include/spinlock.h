@@ -8,7 +8,7 @@
 */
 
 struct spinlock {
-    bool locked;
+    int locked;
     const char *name;
     int cpu;
 };
