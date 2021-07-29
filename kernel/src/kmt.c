@@ -42,7 +42,7 @@ Context* kmt_schedule(Event ev, Context *context) {
         panic_on(!walk, "can not find this task");
         walk->next = Current->next;
         pmm->free(Current->stack);
-        pmm->free(Current);
+        // pmm->free(Current);
     }
 
     task_t *ret = NULL;
@@ -57,7 +57,6 @@ Context* kmt_schedule(Event ev, Context *context) {
 
 Context* kmt_context_save(Event ev, Context *context) {
     Current->context = context;
-    KLog("hello");
     return NULL;
 }
 
