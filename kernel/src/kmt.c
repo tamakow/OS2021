@@ -12,7 +12,7 @@ task_t task_head;
 static uint32_t id_cnt = 0;
 static task_t idle[MAX_CPU];
 task_t* current[MAX_CPU];
-task_t* last[MAX_CPU];
+// task_t* last[MAX_CPU];
 
 int kmt_create(task_t *task, const char *name, void (*entry)(void *arg), void *arg) {
     task->name = name;
@@ -47,7 +47,6 @@ Context* kmt_schedule(Event ev, Context *context) {
     }
     task_t *ret = NULL;
     for (task_t *walk = &task_head; walk != NULL; walk = walk->next) {
-        if(walk == Current) continue;
         if(walk->state == RUNNABLE) {
             ret = walk;
             break;
@@ -55,19 +54,19 @@ Context* kmt_schedule(Event ev, Context *context) {
     }
     if(!ret) ret = &Idle;
     ret->state = RUNNING;
-    panic_on(Last, "last current has not done!");
+    // panic_on(Last, "last current has not done!");
     if(Current != &Idle)
-        Last = Current;
+        Current->state = RUNNABLE;
     Current = ret;
     release(&task_lock);
     return ret->context;
 }
 
 Context* kmt_context_save(Event ev, Context *context) {
-    if(Last) {
-        Last->state = RUNNABLE;
-        Last = NULL;
-    }
+    // if(Last) {
+    //     Last->state = RUNNABLE;
+    //     Last = NULL;
+    // }
     Current->context = context;
     return NULL;
 }
