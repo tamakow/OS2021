@@ -31,7 +31,7 @@ void new_page(page_t *sb, int cpu, int item_id) {
     // init obj_head;
     // 只在未分配的obj上有用，已分配的无所谓
     uintptr_t offset = 0;
-    while(sb->start_ptr + offset + size <= (uintptr_t)sb + PAGE_SIZE) {
+    while(sb->start_ptr + offset + size < (uintptr_t)sb + PAGE_SIZE) {
         struct obj_head* objhead = (struct obj_head*) (sb->start_ptr + offset);
         offset += size;
         objhead->next_offset = offset;
