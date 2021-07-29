@@ -20,9 +20,9 @@ static struct os_irq irq_head = {
 static void os_init() {
   pmm->init();
   KLog("pmm init ok!");
-  kmt->init();
+  // kmt->init();
   KLog("kmt init ok!");
-  dev->init();
+  // dev->init();
   // dev->init();
   // kmt->sem_init(&empty, "empty", 5);  // 缓冲区大小为 5
   // kmt->sem_init(&fill,  "fill",  0);
