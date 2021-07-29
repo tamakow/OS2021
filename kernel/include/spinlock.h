@@ -9,11 +9,11 @@
 
 struct spinlock {
     bool locked;
-    char *name;
+    const char *name;
     int cpu;
 };
 
-void initlock(struct spinlock *, char*);
+void initlock(struct spinlock *, const char*);
 void acquire(struct spinlock *);
 void release(struct spinlock *);
 bool holding(struct spinlock *);

@@ -1,5 +1,5 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef __COMMON_H__
+#define __COMMON_H__
 
 #include <kernel.h>
 #include <klib.h>
@@ -11,5 +11,9 @@
 
 #include <debug.h>
 #include <spinlock.h>
+#include <kmt.h>
+#include <os.h>
+#include <sem.h>
+
 
 #endif

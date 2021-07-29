@@ -1,3 +1,9 @@
+#ifndef __DEVICES_H__
+#define __DEVICES_H__
+
+
+#include <common.h>
+
 typedef struct devops {
   int (*init)(device_t *dev);
   int (*read) (device_t *dev, int offset, void *buf, int count);
@@ -98,3 +104,5 @@ typedef struct {
   uint32_t blkcnt, blksz;
   uint8_t *buf;
 } sd_t;
+
+#endif

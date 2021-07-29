@@ -92,8 +92,7 @@ static void *kalloc(size_t size) {
   // TODO
   //应该有空位
   if(full_page(now)) assert(0);
-  // if(cpu_count() == 4)
-  // acquire(&now->lock);
+  acquire(&now->lock);
   print(FONT_RED, "get lock!");
   uintptr_t now_ptr = now->start_ptr + now->offset;
   void *ret = (void *)now_ptr;
@@ -107,8 +106,7 @@ static void *kalloc(size_t size) {
   now->offset = objhead->next_offset;
   Log("use this page, the offset is %p %d", now->offset, now->offset);
   now->obj_cnt ++;
-  // if(cpu_count() == 4)
-  // release(&now->lock);
+  release(&now->lock);
   
   Log("Ready to judge if now is full");
   if(full_page(now)) { //已经满了
@@ -121,7 +119,7 @@ static void *kalloc(size_t size) {
 
 
 static void kfree(void *ptr) {
-  return;
+  // return;
   if((uintptr_t)ptr >= (uintptr_t)big_alloc_head) return; //大内存不释放
   uintptr_t page_head = ROUNDDOWN(ptr, PAGE_SIZE);
   Log("pagehead is %p", page_head);
@@ -192,8 +190,23 @@ static void pmm_init() {
   printf("Got %d MiB heap: [%p, %p)\n", pmsize >> 20, heap.start, heap.end);
 }
 
+static void *kalloc_safe(size_t size) {
+  bool i = ienabled();
+  iset(false);
+  void *ret = kalloc(size);
+  if (i) iset(true);
+  return ret;
+}
+
+static void kfree_safe(void *ptr) {
+  int i = ienabled();
+  iset(false);
+  kfree(ptr);
+  if (i) iset(true);
+}
+
 MODULE_DEF(pmm) = {
   .init  = pmm_init,
-  .alloc = kalloc,
-  .free  = kfree,
+  .alloc = kalloc_safe,
+  .free  = kfree_safe,
 };

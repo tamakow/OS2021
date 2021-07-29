@@ -5,7 +5,7 @@ static int ncli[MAX_CPU] = {}; // Depth of pushcli nesting.
 static int intena[MAX_CPU] = {}; // Were interrupts enabled before pushcli?
 
 
-void initlock(struct spinlock *lk, char* name) {
+void initlock(struct spinlock *lk,const char* name) {
     lk->cpu = -1;
     lk->locked = 0;
     lk->name = name;
