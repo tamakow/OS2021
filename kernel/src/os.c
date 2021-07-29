@@ -20,7 +20,7 @@ static struct os_irq irq_head = {
 static void os_init() {
   pmm->init();
   KLog("pmm init ok!");
-  // kmt->init();
+  kmt->init();
   KLog("kmt init ok!");
   // dev->init();
   // dev->init();
@@ -34,9 +34,6 @@ static void os_init() {
 
 static void os_run() {
   // iset(true);
-  for (int i = 0; i < 100; ++i) {
-    pmm->alloc(4096);
-  }
   while (1);
   panic("os run should not touch here!");
 }
