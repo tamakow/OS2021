@@ -33,7 +33,7 @@ void kmt_teardown(task_t *task){
     acquire(&task_lock);
     panic_on(task->state == RUNNING, "teardown false!");
     task->state = DEADED;
-    pmm->free(Current->stack);
+    pmm->free(task->stack);
     release(&task_lock);
 }
 
