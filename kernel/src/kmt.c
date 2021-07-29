@@ -38,13 +38,13 @@ void kmt_teardown(task_t *task){
 }
 
 Context* kmt_schedule(Event ev, Context *context) {
-    if(Current->state == DEADED) {
-        task_t* walk = &task_head;
-        while(walk && walk->next != Current) walk = walk->next;
-        panic_on(!walk, "can not find this task");
-        walk->next = Current->next;
-    }
     acquire(&task_lock);
+    // if(Current->state == DEADED) {
+    //     task_t* walk = &task_head;
+    //     while(walk && walk->next != Current) walk = walk->next;
+    //     panic_on(!walk, "can not find this task");
+    //     walk->next = Current->next;
+    // }
     task_t *ret = NULL;
     for (task_t *walk = &task_head; walk != NULL; walk = walk->next) {
         if(walk == Current) continue;
