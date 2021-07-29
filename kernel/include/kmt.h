@@ -15,6 +15,7 @@ struct task {
       int state;
       int id;
       int time;
+      int cpu;
       struct task* next;
       Context *context;  
     };

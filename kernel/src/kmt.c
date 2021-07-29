@@ -17,6 +17,7 @@ int kmt_create(task_t *task, const char *name, void (*entry)(void *arg), void *a
     task->stack = pmm->alloc(STACK_SIZE);
     task->context = kcontext((Area){(void*)((uintptr_t)task->stack),(void*)((uintptr_t)task->stack+STACK_SIZE)}, entry, arg);
     task->next = NULL;
+    task->cpu = -1;
     acquire(&task_lock);
     task->id = id_cnt++;
     task_t *walk = &task_head;
@@ -45,6 +46,7 @@ Context* kmt_schedule(Event ev, Context *context) {
     task_t *ret = NULL;
     if(Current != &Idle) {
         for (task_t *walk = Current; walk != NULL; walk = walk->next) {
+            if(walk->cpu != -1 && walk->cpu != cpu_current()) continue;
             if(walk->state == RUNNABLE) {
                 if(!ret || ret->time >= walk->time) {
                     ret = walk;
@@ -54,6 +56,7 @@ Context* kmt_schedule(Event ev, Context *context) {
     }
     if(!ret) {
         for (task_t *walk = &task_head; walk != NULL; walk = walk->next) {
+            if(walk->cpu != -1 && walk->cpu != cpu_current()) continue;
             if(walk->state == RUNNABLE) {
                 if(!ret || ret->time >= walk->time) {
                     ret = walk;
@@ -64,6 +67,7 @@ Context* kmt_schedule(Event ev, Context *context) {
     if(!ret) ret = &Idle;
     if(Current->state == RUNNING)
         Current->state = RUNNABLE;
+    ret->cpu = (cpu_current() + 1) % cpu_count();
     ret->state = RUNNING;
     ret->time = (ret->time + 1) % 1000;
     Current = ret;
@@ -92,6 +96,7 @@ void kmt_init() {
     task_head.state = HEAD;
     task_head.context = NULL;
     task_head.time = 0;
+    task_head.cpu = -1;
 
     int cpu_nr = cpu_count();
     for (int i = 0; i < cpu_nr; ++i) {
@@ -102,6 +107,7 @@ void kmt_init() {
         idle[i].state = RUNNABLE;
         idle[i].context = kcontext((Area){(void*)((uintptr_t)idle[i].stack),(void*)((uintptr_t)idle[i].stack+STACK_SIZE)}, ientry, NULL);
         idle[i].id = -1;
+        idle[i].cpu = -1;
 
         current[i] = &idle[i];
     }
