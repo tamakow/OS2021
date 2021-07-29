@@ -56,7 +56,7 @@ Context* kmt_schedule(Event ev, Context *context) {
         }
     }
     if(!ret) {
-        for (task_t *walk = &task_head; walk != NULL; walk = walk->next) {
+        for (task_t *walk = &task_head; walk != NULL && walk != Current; walk = walk->next) {
             if(walk->cpu != -1 && walk->cpu != cpu_current()) continue;
             if(walk->state == RUNNABLE) {
                 if(!ret || ret->time >= walk->time) {
