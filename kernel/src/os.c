@@ -40,6 +40,7 @@ static void os_on_irq(int seq, int event, handler_t handler) {
     walk = walk->next;
   new_irq->next = walk->next;
   walk->next = new_irq;
+  printf("add irq, seq is %d\n", seq);
 }
 
 
