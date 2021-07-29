@@ -14,7 +14,7 @@ void initlock(struct spinlock *lk,const char* name) {
 void acquire(struct spinlock *lk) {
     pushcli(); //avoid deadlock
     if(holding(lk)) panic("acquire");
-Log("hay");
+    Log("%d", (int *)&lk->locked);
     while(atomic_xchg((int *)&lk->locked, 1) != 0) ;
     __sync_synchronize();
     lk->cpu = cpu_current();
