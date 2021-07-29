@@ -7,7 +7,6 @@ static struct spinlock global_lock[MAX_CPU];
 static struct spinlock big_alloc_lock;
 static struct listhead* head[MAX_CPU];
 static int cpu_nr;
-static int big_alloc_tot = 0;
 void *tail;
 
 
@@ -46,8 +45,6 @@ static void *kalloc(size_t size) {
   if(size > (4 KiB)) {
     // TODO!!
     // 写freelist来分配
-    if (big_alloc_tot >= 3) return NULL;
-    big_alloc_tot ++;
     size_t bsize = pow2(size);
     void *tmp = tail;
     acquire(&big_alloc_lock);
