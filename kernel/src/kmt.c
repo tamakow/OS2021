@@ -35,6 +35,7 @@ void kmt_teardown(task_t *task){
 }
 
 Context* kmt_schedule(Event ev, Context *context) {
+    return NULL;
     if(Current->state == DEADED) {
         task_t* walk = &task_head;
         while(walk && walk->next != Current) walk = walk->next;
@@ -55,7 +56,7 @@ Context* kmt_schedule(Event ev, Context *context) {
 }
 
 Context* kmt_context_save(Event ev, Context *context) {
-    Current->context = context;
+    // Current->context = context;
     return NULL;
 }
 
