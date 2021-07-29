@@ -68,12 +68,16 @@ void ientry() {
 
 void kmt_init() {
     initlock(&task_lock, "task_lock");
-        KLog("ok");
+    KLog("ok1");
     task_head.id = id_cnt++;
+    KLog("ok2");
     task_head.name = "task_head";
+    KLog("ok3");
     task_head.next = NULL;
     task_head.prev = NULL;
+    KLog("ok4");
     task_head.stack = pmm->alloc(STACK_SIZE);
+    KLog("ok5");
     task_head.state = HEAD;
     task_head.context = NULL;
 
