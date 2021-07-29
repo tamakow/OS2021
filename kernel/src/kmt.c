@@ -53,10 +53,10 @@ Context* kmt_schedule(Event ev, Context *context) {
         }
     }
     if(!ret) ret = &Idle;
+    if(Current->state == RUNNING)
+        Current->state = RUNNABLE;
     ret->state = RUNNING;
     // panic_on(Last, "last current has not done!");
-    if(Current != &Idle)
-        Current->state = RUNNABLE;
     Current = ret;
     release(&task_lock);
     return ret->context;
@@ -67,7 +67,9 @@ Context* kmt_context_save(Event ev, Context *context) {
     //     Last->state = RUNNABLE;
     //     Last = NULL;
     // }
+    acquire(&task_lock);
     Current->context = context;
+    release(&task_lock);
     return NULL;
 }
 
