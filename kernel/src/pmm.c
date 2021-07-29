@@ -109,7 +109,7 @@ static void *kalloc(size_t size) {
   if(full_page(now)) { //已经满了
     cache_chain[cpu][item_id] = cache_chain[cpu][item_id]->next;
   }
-  
+  KLog("ojjk");
   print(FONT_RED, "release lock!");
   return ret;
 }
