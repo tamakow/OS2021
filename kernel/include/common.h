@@ -14,6 +14,7 @@
 #include <kmt.h>
 #include <os.h>
 #include <sem.h>
+#include <devices.h>
 
 
 #endif
