@@ -23,7 +23,6 @@ int kmt_create(task_t *task, const char *name, void (*entry)(void *arg), void *a
     task_t *walk = &task_head;
     while(walk->next) walk = walk->next;
     walk->next = task;
-    task->prev = walk;
     release(&task_lock);
     return task->id;
 }
@@ -41,7 +40,6 @@ Context* kmt_schedule(Event ev, Context *context) {
         while(walk && walk->next != Current) walk = walk->next;
         panic_on(!walk, "can not find this task");
         walk->next = Current->next;
-        (Current->next)->prev = walk;
         pmm->free(Current->stack);
         pmm->free(Current);
     }
@@ -74,7 +72,6 @@ void kmt_init() {
     task_head.name = "task_head";
     KLog("ok3");
     task_head.next = NULL;
-    task_head.prev = NULL;
     KLog("ok4");
     task_head.stack = pmm->alloc(STACK_SIZE);
     KLog("ok5");
@@ -85,7 +82,6 @@ void kmt_init() {
     for (int i = 0; i < cpu_nr; ++i) {
         idle[i].name = "idle";
         idle[i].next = NULL;
-        idle[i].prev = NULL;
         idle[i].stack = pmm->alloc(STACK_SIZE);
         idle[i].state = RUNNABLE;
         idle[i].context = kcontext((Area){(void*)((uintptr_t)idle[i].stack),(void*)((uintptr_t)idle[i].stack+STACK_SIZE)}, ientry, NULL);
