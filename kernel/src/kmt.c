@@ -12,6 +12,7 @@ task_t task_head;
 static uint32_t id_cnt = 0;
 static task_t idle[MAX_CPU];
 task_t* current[MAX_CPU];
+task_t* last[MAX_CPU];
 
 int kmt_create(task_t *task, const char *name, void (*entry)(void *arg), void *arg) {
     task->name = name;
@@ -32,6 +33,7 @@ void kmt_teardown(task_t *task){
     acquire(&task_lock);
     panic_on(task->state == RUNNING, "teardown false!");
     task->state = DEADED;
+    pmm->free(Current->stack);
     release(&task_lock);
 }
 
@@ -41,11 +43,11 @@ Context* kmt_schedule(Event ev, Context *context) {
         while(walk && walk->next != Current) walk = walk->next;
         panic_on(!walk, "can not find this task");
         walk->next = Current->next;
-        pmm->free(Current->stack);
     }
 
     task_t *ret = NULL;
     for (task_t *walk = &task_head; walk != NULL; walk = walk->next) {
+        if(walk == Current) continue;
         if(walk->state == RUNNABLE) {
             ret = walk;
             break;
@@ -56,6 +58,10 @@ Context* kmt_schedule(Event ev, Context *context) {
 }
 
 Context* kmt_context_save(Event ev, Context *context) {
+    if(Last) {
+        Last->state = RUNNABLE;
+        Last = NULL;
+    }
     Current->context = context;
     return NULL;
 }
