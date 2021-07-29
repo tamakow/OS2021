@@ -16,12 +16,12 @@ task_t* last[MAX_CPU];
 
 int kmt_create(task_t *task, const char *name, void (*entry)(void *arg), void *arg) {
     task->name = name;
-    task->id = id_cnt++;
     task->state = RUNNABLE;
     task->stack = pmm->alloc(STACK_SIZE);
     task->context = kcontext((Area){(void*)((uintptr_t)task->stack),(void*)((uintptr_t)task->stack+STACK_SIZE)}, entry, arg);
     task->next = NULL;
     acquire(&task_lock);
+    task->id = id_cnt++;
     task_t *walk = &task_head;
     while(walk->next) walk = walk->next;
     walk->next = task;
@@ -44,17 +44,22 @@ Context* kmt_schedule(Event ev, Context *context) {
         panic_on(!walk, "can not find this task");
         walk->next = Current->next;
     }
-
+    acquire(&task_lock);
     task_t *ret = NULL;
     for (task_t *walk = &task_head; walk != NULL; walk = walk->next) {
         if(walk == Current) continue;
         if(walk->state == RUNNABLE) {
             ret = walk;
-            ret->state = RUNNING;
             break;
         }
     }
     if(!ret) ret = &Idle;
+    ret->state = RUNNING;
+    panic_on(Last, "last current has not done!");
+    if(Current != &Idle)
+        Last = Current;
+    Current = ret;
+    release(&task_lock);
     return ret->context;
 }
 
