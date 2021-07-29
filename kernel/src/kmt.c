@@ -54,6 +54,7 @@ Context* kmt_schedule(Event ev, Context *context) {
         }
     }
     if(!ret) ret = &Idle;
+    ret->state = RUNNING;
     return ret->context;
 }
 
