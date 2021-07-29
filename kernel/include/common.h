@@ -8,6 +8,8 @@
 
 
 // #define DEBUG
+#define KMT_DEBUG
+
 
 #include <debug.h>
 #include <spinlock.h>

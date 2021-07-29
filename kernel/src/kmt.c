@@ -75,7 +75,7 @@ void kmt_init() {
     task_head.stack = pmm->alloc(STACK_SIZE);
     task_head.state = HEAD;
     task_head.context = NULL;
-    
+    KLog("ok");
     int cpu_nr = cpu_count();
     for (int i = 0; i < cpu_nr; ++i) {
         idle[i].name = "idle";

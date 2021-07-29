@@ -24,4 +24,16 @@
 #define print(FONT_COLOR, format, ...)
 #endif
 
+#ifdef  KMT_DEBUG 
+#define KLog(format, ...) \
+    printf(FONT_BLUE "[%s,%d,%s] " format FONT_RESET"\n", \
+        __FILE__, __LINE__, __func__, ## __VA_ARGS__)
+#define Kprint(FONT_COLOR, format, ...) \
+    printf(FONT_COLOR format FONT_RESET "\n", \
+        ## __VA_ARGS__)
+#else
+#define KLog(format, ...)
+#define Kprint(FONT_COLOR, format, ...)
+#endif
+
 #endif

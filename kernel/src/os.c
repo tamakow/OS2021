@@ -19,9 +19,9 @@ static inline task_t *task_alloc() {
 
 static void os_init() {
   pmm->init();
-  printf("pmm init ok!\n");
-  // kmt->init();
-  printf("kmt init ok!\n");
+  KLog("pmm init ok!");
+  kmt->init();
+  KLog("kmt init ok!");
   // dev->init();
   kmt->sem_init(&empty, "empty", 5);  // 缓冲区大小为 5
   kmt->sem_init(&fill,  "fill",  0);
