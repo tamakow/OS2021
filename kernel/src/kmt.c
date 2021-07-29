@@ -86,7 +86,7 @@ void kmt_init() {
         current[i] = &idle[i];
     }
     
-    os->on_irq(INT_MIN, EVENT_NULL, kmt_context_save);
+    os->on_irq(-9999999, EVENT_NULL, kmt_context_save);
     os->on_irq(INT_MAX, EVENT_NULL, kmt_schedule);
 }
 
