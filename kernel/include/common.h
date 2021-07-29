@@ -8,7 +8,7 @@
 
 
 // #define DEBUG
-// #define KMT_DEBUG
+#define KMT_DEBUG
 
 
 #include <debug.h>
