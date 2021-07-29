@@ -19,9 +19,6 @@ void new_page(page_t *sb, int cpu, int item_id) {
     Log("%s", name);
     initlock(&sb->lock, name);
     Log("lock is %d", (int)sb->lock.locked);
-    acquire(&sb->lock);
-    Log("hello");
-    release(&sb->lock);
     sb->obj_cnt = 0;
     sb->obj_order = item_id;
     sb->start_ptr = (uintptr_t)(((uintptr_t)(sb->data) - 1) / size + 1) * size; 
@@ -31,17 +28,17 @@ void new_page(page_t *sb, int cpu, int item_id) {
     sb->next = sb;
     sb->prev = sb;
     Log("sb's max_obj is %d", sb->max_obj);
-    // init obj_head;
-    // 只在未分配的obj上有用，已分配的无所谓
-    uintptr_t offset = 0;
     acquire(&sb->lock);
     Log("hello");
     release(&sb->lock);
-    while(sb->start_ptr + offset + size <= (uintptr_t)sb + PAGE_SIZE) {
-        struct obj_head* objhead = (struct obj_head*) (sb->start_ptr + offset);
-        offset += size;
-        objhead->next_offset = offset;
-    }
+    // init obj_head;
+    // 只在未分配的obj上有用，已分配的无所谓
+    uintptr_t offset = 0;
+    // while(sb->start_ptr + offset + size <= (uintptr_t)sb + PAGE_SIZE) {
+    //     struct obj_head* objhead = (struct obj_head*) (sb->start_ptr + offset);
+    //     offset += size;
+    //     objhead->next_offset = offset;
+    // }
 #ifdef DEBUG
     struct obj_head* objhead = (struct obj_head*) sb->start_ptr;
 #endif
