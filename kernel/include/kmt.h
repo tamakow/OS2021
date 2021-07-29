@@ -3,10 +3,10 @@
 
 #define STACK_SIZE 4096
 #define Current current[cpu_current()]
-
+#define Idle    idle[cpu_current()]
 
 enum task_states {
-    BLOCKED = 1, RUNNABLE, DEADED, HEAD,
+    BLOCKED = 1, RUNNABLE, DEADED, HEAD, RUNNING,
 };
 
 struct task {
@@ -30,7 +30,7 @@ struct task {
 
 // typedef struct task_list tl_t; //task_list type
 
-task_t* current[MAX_CPU];
+// task_t* current[MAX_CPU];
 
 
 void kmt_init();

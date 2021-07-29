@@ -2,6 +2,8 @@
 #include <sem.h>
 #include <kmt.h>
 
+extern task_t *current[MAX_CPU];
+
 void sem_init(sem_t *sem, const char *name, int value){
     initlock(&sem->lock, "sem_lock");
     sem->name = name;

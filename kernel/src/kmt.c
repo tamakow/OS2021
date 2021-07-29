@@ -4,15 +4,14 @@
 #include <sem.h>
 #include <limits.h>
 
-// #define Current tasks[cpu_current()].current
-// #define Head    tasks[cpu_current()].head
-// #define Tail    tasks[cpu_current()].tail
-// #define Idle    tasks[cpu_current()].idle
+// #define Idle    idle[cpu_current()]
+// #define Current current[cpu_current()]
 
 spinlock_t task_lock;
 task_t task_head;
-static uint32_t id_cnt = 1;
+static uint32_t id_cnt = 0;
 static task_t idle[MAX_CPU];
+task_t* current[MAX_CPU];
 
 int kmt_create(task_t *task, const char *name, void (*entry)(void *arg), void *arg) {
     task->name = name;
@@ -31,22 +30,44 @@ int kmt_create(task_t *task, const char *name, void (*entry)(void *arg), void *a
 
 void kmt_teardown(task_t *task){
     acquire(&task_lock);
+    panic_on(task->state == RUNNING, "teardown false!");
     task->state = DEADED;
-    pmm->free(task->stack);
     release(&task_lock);
 }
 
 Context* kmt_schedule(Event ev, Context *context) {
-    return NULL;
+    if(Current->state == DEADED) {
+        task_t* walk = &task_head;
+        while(walk && walk->next != Current) walk = walk->next;
+        panic_on(!walk, "can not find this task");
+        walk->next = Current->next;
+        (Current->next)->prev = walk;
+        pmm->free(Current->stack);
+        pmm->free(Current);
+    }
+
+    task_t *ret = NULL;
+    for (task_t *walk = &task_head; walk != NULL; walk = walk->next) {
+        if(walk->state == RUNNABLE) {
+            ret = walk;
+            break;
+        }
+    }
+    return ret->context;
 }
 
 Context* kmt_context_save(Event ev, Context *context) {
+    Current->context = context;
     return NULL;
+}
+
+void ientry() {
+    iset(true);
+    while(1) yield();
 }
 
 void kmt_init() {
     initlock(&task_lock, "task_lock");
-    printf("helloc\n");
     task_head.id = id_cnt++;
     task_head.name = "task_head";
     task_head.next = NULL;
@@ -62,8 +83,10 @@ void kmt_init() {
         idle[i].prev = NULL;
         idle[i].stack = pmm->alloc(STACK_SIZE);
         idle[i].state = RUNNABLE;
-        idle[i].context = NULL;
-        idle[i].id = id_cnt++;
+        idle[i].context = kcontext((Area){(void*)((uintptr_t)idle[i].stack),(void*)((uintptr_t)idle[i].stack+STACK_SIZE)}, ientry, NULL);
+        idle[i].id = -1;
+
+        current[i] = &idle[i];
     }
     
     os->on_irq(INT_MIN, EVENT_NULL, kmt_context_save);
