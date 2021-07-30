@@ -37,17 +37,11 @@ void kmt_teardown(task_t *task){
 
 Context* kmt_schedule(Event ev, Context *context) {
     acquire(&task_lock);
-    if(Current->state == DEADED) {
-        task_t* walk = &task_head;
-        while(walk && walk->next != Current) walk = walk->next;
-        panic_on(!walk, "can not find this task");
-        walk->next = Current->next;
-    }
     task_t *ret = NULL;
     //Round Robin
     if(Current != &Idle) {
         for (task_t *walk = Current; walk != NULL; walk = walk->next) {
-            // if(walk->cpu != -1 && walk->cpu != cpu_current()) continue;
+            if(walk->cpu != -1 && walk->cpu != cpu_current()) continue;
             if(walk->state == RUNNABLE) {
                 if(!ret || ret->time >= walk->time) {
                     ret = walk;
@@ -57,7 +51,7 @@ Context* kmt_schedule(Event ev, Context *context) {
     }
     if(!ret) {
         for (task_t *walk = &task_head; walk != NULL; walk = walk->next) {
-            // if(walk->cpu != -1 && walk->cpu != cpu_current()) continue;
+            if(walk->cpu != -1 && walk->cpu != cpu_current()) continue;
             if(walk->state == RUNNABLE) {
                 if(!ret || ret->time >= walk->time) {
                     ret = walk;
@@ -66,6 +60,12 @@ Context* kmt_schedule(Event ev, Context *context) {
         }
     }
     if(!ret) ret = &Idle;
+    if(Current->state == DEADED) {
+        task_t* walk = &task_head;
+        while(walk && walk->next != Current) walk = walk->next;
+        panic_on(!walk, "can not find this task");
+        walk->next = Current->next;
+    }
     if(Current->state == RUNNING)
         Current->state = RUNNABLE;
     ret->cpu = (cpu_current() + 1) % cpu_count();
